@@ -41,10 +41,11 @@ These are logical relationships using Craft's existing model. A project may
 choose its own content schema; the reusable plugin must not require demo fields,
 sections, entry types or new storage tables.
 
-## Current demonstration contract
+## Historical demonstration contract
 
-The current [controller](../src/Http/EntriesController.php) and
-[TypeScript types](../resources/js/types.ts) expose the following values:
+The original demo (before STEP-01) exposed the following values. Its runtime,
+routes and package-owned frontend have been removed; the consuming project now
+owns the example controllers and pages:
 
 | Value                              | Current representation and meaning                                                                         |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -58,14 +59,16 @@ The current [controller](../src/Http/EntriesController.php) and
 | `section.handle`, `section.exists` | Overview's configured section and whether it exists.                                                       |
 | `isPreview`                        | Detail's server-supplied preview state.                                                                    |
 
-This is a demo-specific contract. It must not become a universal schema for
-every Craft site. Adding generic transport must not silently change the meaning
-of these existing fields while the demonstration remains supported.
+This was a demo-specific contract. STEP-01 removes the numeric demo routes and
+moves the examples into the consuming project. It does not turn these fields
+into a universal schema.
 
 ## Target request contract
 
-The following responsibilities are proposed for the reusable integration;
-they are not an implemented API:
+The following responsibilities define the reusable integration;
+STEP-01 implements items 1–4 through native destinations, required
+`CurrentElement` parameters and opt-in public middleware. Item 5 currently uses
+a conservative private/no-store policy; production caching belongs to STEP-06:
 
 1. Craft resolves site context, normal session authority and any valid preview
    token before the public page consumes content.
@@ -107,8 +110,9 @@ plugin consumes the resolved version; it must not duplicate those transitions.
 
 Preview markers can be removed during Craft's internal request preparation.
 Consume the server-resolved element and context rather than relying on query
-markers. Canonical URL previews, revisions and multisite remain future
-acceptance work; the saved E2E run covers the numeric demonstration.
+markers. STEP-01 exercises basic canonical URL token/privacy boundaries;
+complete editor preview, revisions and multisite acceptance remain STEP-03.
+The original saved E2E run covers the numeric demonstration.
 
 ## Mutations and failures
 
@@ -127,9 +131,24 @@ transport contract; STEP-05 applies it to account flows.
 
 | Decision                                  | Owning step and effect                                                                                            |
 | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Minimal page/root/asset configuration API | STEP-01; prefer native Craft destinations and avoid a second routing registry unless a concrete gap requires one. |
+| Minimal page/root/asset configuration API | Settled in STEP-01: native destinations, project controllers/pages/build and opt-in middleware with a configurable root view. |
 | Public projection extension conventions   | STEP-02; demonstrate distinct schemas before extracting shared field abstractions.                                |
 | Site and preview public context shape     | STEP-03; preserve native identity and expose only page-required context.                                          |
 | Supported native action contracts         | STEP-04 and STEP-05; inspect responses rather than duplicate validation.                                          |
 | Public SSR/cache policy configuration     | STEP-06; establish HTML/JSON variation, private isolation and invalidation.                                       |
 | Initial third-party support matrix        | STEP-07; product selection remains open and does not block the core first step.                                   |
+
+## STEP-01 integration contract
+
+`Robuust\CraftInertiaPoc\Http\HandleInertiaRequests` is selected explicitly on
+project GET/HEAD page routes. `inertia-poc.rootView` names the project Blade root
+(default `app`); the project's Vite manifest supplies asset versioning. The
+package registers no routes, page resolver, shared schema, preview targets or
+frontend assets. Intentional project shared props remain intact.
+
+Craft's configured native named/controller destinations and `CurrentElement`
+injection supply entries with Craft-owned site, publication and preview state.
+The project chooses page names and explicit projections. Dynamic project-config
+view routes retain Craft alpha.20 precedence on identical route signatures;
+projects keep those signatures disjoint from Inertia page routes. See the
+[installation and route policy](../README.md).

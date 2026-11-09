@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import type { Page } from "@playwright/test";
+import type { APIResponse, Page } from "@playwright/test";
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
@@ -9,11 +9,16 @@ const fixtures = JSON.parse(readFileSync(`${runtime}/fixtures.json`, "utf8"));
 const credentials = JSON.parse(
   readFileSync(`${runtime}/credentials.json`, "utf8"),
 );
-const configPath = `${runtime}/playground/config/inertia-poc.php`;
+const configPath = `${runtime}/playground/config/site-content.php`;
 const originalConfig = readFileSync(configPath, "utf8");
-const entryUrl = (id: number) => `/inertia-poc/entries/${id}`;
-const previewUrl = (fixture: { id: number; token: string }) =>
-  `${entryUrl(fixture.id)}?token=${encodeURIComponent(fixture.token)}`;
+const inertiaHeaders = {
+  "X-Inertia": "true",
+  "X-Requested-With": "XMLHttpRequest",
+  "X-Inertia-Version": fixtureCommand("asset-version").version,
+};
+const pathOf = (url: string) => new URL(url).pathname;
+const previewUrl = (fixture: { url: string; token: string }) =>
+  `${fixture.url}?token=${encodeURIComponent(fixture.token)}`;
 
 function fixtureCommand(...args: string[]) {
   const output = execFileSync(
@@ -26,6 +31,33 @@ function fixtureCommand(...args: string[]) {
     },
   );
   return JSON.parse(output.split("POC_FIXTURES_JSON=").at(-1)!);
+}
+
+function changeSchema(
+  section: string,
+  summaryField = "summary",
+  bodyField = "body",
+  projects = "projects",
+  locationField = "location",
+) {
+  writeFileSync(
+    configPath,
+    `<?php return [
+    'articles' => ['section' => '${section}', 'summaryField' => '${summaryField}', 'bodyField' => '${bodyField}'],
+    'projects' => ['section' => '${projects}', 'locationField' => '${locationField}'],
+  ];\n`,
+  );
+}
+
+async function initialPage(page: Page) {
+  return JSON.parse(
+    (await page.locator("script[data-page=app]").textContent())!,
+  );
+}
+
+function expectPrivate(response: APIResponse) {
+  expect(response.headers()["cache-control"]).toContain("private");
+  expect(response.headers()["cache-control"]).toContain("no-store");
 }
 
 async function login(page: Page) {
@@ -53,47 +85,153 @@ test.afterEach(async ({ page }, testInfo) => {
   expect.soft(errors, "No unhandled browser JavaScript errors").toEqual([]);
 });
 
-test("overview shows the latest 20 live entries in date order", async ({
+test("homepage single renders at the native root URL", async ({
   page,
+  request,
 }) => {
-  const response = await page.goto("/inertia-poc");
+  const response = await page.goto("/");
   expect(response?.status()).toBe(200);
   await expect(
-    page.getByRole("heading", { name: "Entries", exact: true }),
+    page.getByRole("heading", { name: "E2E homepage" }),
   ).toBeVisible();
-  await expect(page.locator("main .entries li")).toHaveCount(20);
-  await expect(page.locator("main .entries h2")).toHaveText(
+  await expect(page.locator("main")).toContainText(
+    "A project-owned public frontend.",
+  );
+  expect((await initialPage(page)).component).toBe("Site/Home");
+  const visit = await request.get("/", { headers: inertiaHeaders });
+  expect((await visit.json()).component).toBe("Site/Home");
+  expect((await visit.json()).props.entry.url).toBe(fixtures.home.url);
+});
+
+test("overview shows 20 live entries and links to their native Craft URLs", async ({
+  page,
+}) => {
+  const response = await page.goto("/articles");
+  expect(response?.status()).toBe(200);
+  await expect(
+    page.getByRole("heading", { name: "Articles", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("main li")).toHaveCount(20);
+  await expect(page.locator("main h2")).toHaveText(
     fixtures.published
       .slice(-20)
       .reverse()
       .map((entry: { title: string }) => entry.title),
   );
+  await expect(
+    page.getByRole("link", { name: fixtures.published.at(-1).title }),
+  ).toHaveAttribute("href", fixtures.published.at(-1).url);
 });
 
-test("direct entry visit renders title, summary, multiline body and date", async ({
+test("native named destination agrees on direct and Inertia representations", async ({
   page,
+  request,
 }) => {
   const entry = fixtures.published.at(-1);
-  const response = await page.goto(entryUrl(entry.id));
+  const response = await page.goto(entry.url);
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: entry.title })).toBeVisible();
   await expect(
     page.getByText(`Summary for ${entry.title}`, { exact: true }),
   ).toBeVisible();
-  await expect(page.locator(".entry-body")).toHaveText(
+  await expect(page.locator("main article .whitespace-pre-wrap")).toHaveText(
     `Published body for ${entry.title}\nSecond paragraph.`,
   );
   await expect(page.locator("time")).toHaveAttribute("datetime", "2020-01-23");
-  await expect(page).toHaveTitle(
-    `${entry.title} · Craft 6 Inertia proof of concept`,
-  );
+  const direct = await initialPage(page);
+  const visit = await request.get(entry.url, { headers: inertiaHeaders });
+  expect(visit.headers()["x-inertia"]).toBe("true");
+  const json = await visit.json();
+  expect(json.component).toBe("Site/Articles/Show");
+  expect(json.props).toEqual(direct.props);
+  expect(json.props.entry.url).toBe(entry.url);
 });
 
-test("Inertia navigation and browser Back preserve the JavaScript document", async ({
+test("controller destination uses a different project page and field projection", async ({
+  page,
+  request,
+}) => {
+  await page.goto(fixtures.project.url);
+  await expect(
+    page.getByRole("heading", { name: fixtures.project.title }),
+  ).toBeVisible();
+  await expect(page.locator("main")).toContainText("Location: Utrecht");
+  const direct = await initialPage(page);
+  const visit = await request.get(fixtures.project.url, {
+    headers: inertiaHeaders,
+  });
+  const json = await visit.json();
+  expect(json.component).toBe("Site/Projects/Show");
+  expect(json.props).toEqual(direct.props);
+  expect(Object.keys(json.props.entry).sort()).toEqual([
+    "id",
+    "location",
+    "title",
+    "url",
+  ]);
+});
+
+for (const kind of ["nativeNamed", "nativeController"] as const) {
+  test(`${kind} matching destination retains its registered middleware pipeline`, async ({
+    request,
+  }) => {
+    const response = await request.get(fixtures[kind].url);
+    expect(response.status()).toBe(200);
+    expect(response.headers()["x-e2e-route-middleware"]).toBe("applied");
+    expect(await response.json()).toEqual({ title: fixtures[kind].title });
+  });
+}
+
+for (const kind of [
+  "namedUri",
+  "namedDomain",
+  "namedMethod",
+  "controllerUri",
+  "controllerDomain",
+  "controllerMethod",
+] as const) {
+  test(`${kind} mismatch cannot dispatch its native destination`, async ({
+    request,
+  }) => {
+    const fixture = fixtures.routingMismatches[kind];
+    const response = await request.get(fixture.url, {
+      headers: { Accept: "application/json" },
+    });
+    expect(response.status()).toBe(500);
+    const json = await response.json();
+    expect(json.message).toContain("does not match the entry URL");
+    expect(json).not.toHaveProperty("title");
+    expect(await response.text()).not.toContain(fixture.title);
+  });
+}
+
+test("project configuration supports another schema without package changes", async ({
+  page,
+  request,
+}) => {
+  changeSchema("journal", "teaser", "copy", "caseStudies", "city");
+  await page.goto("/articles");
+  await expect(page.locator("main h2")).toHaveText(["E2E journal entry"]);
+  await page.getByRole("link", { name: "E2E journal entry" }).click();
+  await expect(
+    page.getByText("An alternate teaser", { exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("main article .whitespace-pre-wrap")).toHaveText(
+    "An alternate copy field",
+  );
+  const visit = await request.get(fixtures.alternateProject.url, {
+    headers: inertiaHeaders,
+  });
+  expect((await visit.json()).props.entry.location).toBe("Amsterdam");
+  await page.goto(fixtures.alternateProject.url);
+  await expect(page.locator("main")).toContainText("Location: Amsterdam");
+});
+
+test("Inertia navigation and browser Back preserve the document", async ({
   page,
 }) => {
-  await page.goto("/inertia-poc");
   const entry = fixtures.published.at(-1);
+  await page.goto("/articles");
   await expect(page.getByRole("link", { name: entry.title })).toBeVisible();
   await page.evaluate(() => {
     (window as unknown as Record<string, unknown>).__pocNavigation =
@@ -101,24 +239,16 @@ test("Inertia navigation and browser Back preserve the JavaScript document", asy
   });
   const responsePromise = page.waitForResponse(
     (response) =>
-      new URL(response.url()).pathname === entryUrl(entry.id) &&
+      new URL(response.url()).pathname === pathOf(entry.url) &&
       response.request().headers()["x-inertia"] === "true",
   );
   await page.getByRole("link", { name: entry.title }).click();
   const response = await responsePromise;
-  expect(response.headers()["x-inertia"]).toBe("true");
-  expect((await response.json()).component).toBe(
-    "CraftInertiaPoc/Entries/Show",
-  );
+  expect((await response.json()).component).toBe("Site/Articles/Show");
   await expect(page.getByRole("heading", { name: entry.title })).toBeVisible();
-  expect(
-    await page.evaluate(
-      () => (window as unknown as Record<string, unknown>).__pocNavigation,
-    ),
-  ).toBe("same-document");
   await page.goBack();
   await expect(
-    page.getByRole("heading", { name: "Entries", exact: true }),
+    page.getByRole("heading", { name: "Articles", exact: true }),
   ).toBeVisible();
   expect(
     await page.evaluate(
@@ -127,45 +257,51 @@ test("Inertia navigation and browser Back preserve the JavaScript document", asy
   ).toBe("same-document");
 });
 
-for (const kind of [
-  "disabled",
-  "future",
-  "expired",
-  "otherSection",
-  "unpublished",
-] as const) {
-  test(`${kind} entry stays unavailable publicly`, async ({ page }) => {
-    const id =
-      kind === "unpublished" ? fixtures.unpublished.id : fixtures[kind];
-    const response = await page.goto(entryUrl(id));
+for (const kind of ["disabled", "future", "expired", "unpublished"] as const) {
+  test(`${kind} entry remains unavailable on native URLs in both representations`, async ({
+    page,
+    request,
+  }) => {
+    const response = await page.goto(fixtures[kind].url);
     expect(response?.status()).toBe(404);
-    await expect(
-      page.getByRole("heading", { name: "Entry not found" }),
-    ).toBeVisible();
-    await expect(page.locator("main")).not.toContainText("secret");
+    await expect(page.locator("body")).not.toContainText(fixtures[kind].title);
+    const visit = await request.get(fixtures[kind].url, {
+      headers: inertiaHeaders,
+    });
+    expect(visit.status()).toBe(404);
+    expect(await visit.text()).not.toContain(fixtures[kind].title);
   });
 }
 
-test("unknown numeric entry returns the plugin 404 page", async ({ page }) => {
-  const response = await page.goto(entryUrl(99999999));
-  expect(response?.status()).toBe(404);
-  await expect(
-    page.getByRole("heading", { name: "Entry not found" }),
-  ).toBeVisible();
+test("unknown native URL and removed numeric demo URL return 404", async ({
+  request,
+}) => {
+  for (const url of [
+    "/articles/does-not-exist",
+    "/inertia-poc",
+    "/inertia-poc/entries/99999999",
+  ]) {
+    const response = await request.get(url);
+    expect(response.status()).toBe(404);
+  }
 });
 
-test("missing optional fields render without errors", async ({ page }) => {
-  await page.goto(entryUrl(fixtures.minimal));
+test("missing optional project fields render without errors", async ({
+  page,
+}) => {
+  await page.goto(fixtures.minimal.url);
   await expect(
     page.getByRole("heading", { name: "E2E minimal entry" }),
   ).toBeVisible();
-  await expect(page.locator(".entry-body")).toHaveCount(0);
+  await expect(page.locator("main article .whitespace-pre-wrap")).toHaveCount(
+    0,
+  );
 });
 
-test("title, summary and body are escaped rather than executed", async ({
+test("project Vue text rendering escapes title and field values", async ({
   page,
 }) => {
-  await page.goto(entryUrl(fixtures.xss));
+  await page.goto(fixtures.xss.url);
   await expect(
     page.getByRole("heading", {
       name: '<img src=x onerror="window.__pocXss=1">',
@@ -174,7 +310,7 @@ test("title, summary and body are escaped rather than executed", async ({
   await expect(page.locator("main")).toContainText(
     "<script>window.__pocXss=2</script>",
   );
-  await expect(page.locator(".entry-body")).toHaveText(
+  await expect(page.locator("main article .whitespace-pre-wrap")).toHaveText(
     '<img src=x onerror="window.__pocXss=3">',
   );
   await expect(page.locator("main img, main script")).toHaveCount(0);
@@ -187,60 +323,80 @@ test("title, summary and body are escaped rather than executed", async ({
 
 for (const [section, message] of [
   ["pocEmpty", "No published entries yet."],
-  ["pocMissing", "Create a Craft section with handle"],
+  ["pocMissing", "The article section has not been configured."],
 ] as const) {
-  test(`${section} section has an actionable empty state`, async ({ page }) => {
-    writeFileSync(
-      configPath,
-      `<?php return ['section' => '${section}', 'summaryField' => 'summary', 'bodyField' => 'body'];\n`,
-    );
-    const response = await page.goto("/inertia-poc");
-    expect(response?.status()).toBe(200);
-    await expect(page.getByRole("status")).toContainText(message);
-    await expect(page.locator(".entries li")).toHaveCount(0);
+  test(`${section} renders its project empty state`, async ({ page }) => {
+    changeSchema(section);
+    await page.goto("/articles");
+    await expect(page.getByRole("status")).toHaveText(message);
+    await expect(page.locator("main li")).toHaveCount(0);
   });
 }
 
-test("responses are non-cacheable and excluded from indexing", async ({
+test("configured dynamic view route wins an identical GET and HEAD signature", async ({
   page,
+  request,
 }) => {
-  const response = await page.goto(entryUrl(fixtures.published.at(-1).id));
-  expect(response?.headers()["cache-control"]).toContain("private");
-  expect(response?.headers()["cache-control"]).toContain("no-store");
-  expect(response?.headers()["x-robots-tag"]).toBe("noindex, nofollow");
-  await expect(page.locator("meta[name=robots]")).toHaveAttribute(
-    "content",
-    "noindex, nofollow",
-  );
+  fixtureCommand("dynamic-route", "on");
+  try {
+    const response = await page.goto("/articles");
+    expect(response?.status()).toBe(200);
+    await expect(
+      page.getByRole("heading", { name: "Craft dynamic route wins" }),
+    ).toBeVisible();
+    expect(response?.headers()["x-inertia"]).toBeUndefined();
+    await expect(page.locator("script[data-page=app]")).toHaveCount(0);
+    const head = await request.head("/articles");
+    expect(head.status()).toBe(200);
+    expect(head.headers()["x-inertia"]).toBeUndefined();
+  } finally {
+    fixtureCommand("dynamic-route", "off");
+  }
+  await page.goto("/articles");
+  await expect(
+    page.getByRole("heading", { name: "Articles", exact: true }),
+  ).toBeVisible();
 });
 
-test("named draft preview uses a real Craft token and leaves public content intact", async ({
+test("public and preview HTML and Inertia JSON remain private and non-cacheable", async ({
+  request,
+}) => {
+  for (const url of [
+    fixtures.published.at(-1).url,
+    previewUrl(fixtures.namedDraft),
+  ]) {
+    const html = await request.get(url);
+    expect(html.status()).toBe(200);
+    expectPrivate(html);
+    const json = await request.get(url, { headers: inertiaHeaders });
+    expect(json.status()).toBe(200);
+    expectPrivate(json);
+    expect(json.headers()["x-inertia"]).toBe("true");
+  }
+});
+
+test("native named preview uses Craft authorization and preserves canonical public content", async ({
   page,
-  browser,
+  request,
 }) => {
   await page.goto(previewUrl(fixtures.namedDraft));
   await expect(
     page.getByRole("heading", { name: "E2E named draft secret" }),
   ).toBeVisible();
   await expect(page.getByRole("status")).toContainText("Live Preview");
-  await expect(page.locator(".entry-body")).toHaveText(
+  await expect(page.locator("main article .whitespace-pre-wrap")).toHaveText(
     "Named draft body secret",
   );
-  const publicContext = await browser.newContext();
-  const publicPage = await publicContext.newPage();
-  await publicPage.goto(
-    `http://127.0.0.1:18766${entryUrl(fixtures.namedDraft.id)}`,
+  const publicVisit = await request.get(fixtures.namedDraft.url, {
+    headers: inertiaHeaders,
+  });
+  expect((await publicVisit.json()).props.entry.title).toBe(
+    "E2E named draft published",
   );
-  await expect(
-    publicPage.getByRole("heading", { name: "E2E named draft published" }),
-  ).toBeVisible();
-  await expect(publicPage.locator("main")).not.toContainText("secret");
-  await publicContext.close();
+  expect(await publicVisit.text()).not.toContain("secret");
 });
 
-test("unpublished draft is previewable with a valid Craft token", async ({
-  page,
-}) => {
+test("unpublished native preview requires a valid token", async ({ page }) => {
   const response = await page.goto(previewUrl(fixtures.unpublished));
   expect(response?.status()).toBe(200);
   await expect(
@@ -261,7 +417,7 @@ for (const [name, parameters] of [
   ],
 ] as const) {
   test(`${name} cannot expose named draft content`, async ({ page }) => {
-    await page.goto(`${entryUrl(fixtures.namedDraft.id)}?${parameters}`);
+    await page.goto(`${fixtures.namedDraft.url}?${parameters}`);
     await expect(
       page.getByRole("heading", { name: "E2E named draft published" }),
     ).toBeVisible();
@@ -270,36 +426,35 @@ for (const [name, parameters] of [
   });
 }
 
-test("a token for one entry does not grant access to another unpublished draft", async ({
-  page,
+test("unrelated token grants no access to another unpublished native URL", async ({
+  request,
 }) => {
-  const response = await page.goto(
-    `${entryUrl(fixtures.unpublished.id)}?token=${encodeURIComponent(fixtures.namedDraft.token)}`,
+  const response = await request.get(
+    `${fixtures.unpublished.url}?token=${encodeURIComponent(fixtures.namedDraft.token)}`,
+    { headers: inertiaHeaders },
   );
-  expect(response?.status()).toBe(404);
-  await expect(
-    page.getByRole("heading", { name: "Entry not found" }),
-  ).toBeVisible();
+  expect(response.status()).toBe(404);
+  expect(await response.text()).not.toContain("Unpublished body secret");
 });
 
-test("the overview never renders draft placeholders", async ({ page }) => {
+test("overview excludes preview placeholders", async ({ page }) => {
   await page.goto(
-    `/inertia-poc?token=${encodeURIComponent(fixtures.namedDraft.token)}`,
+    `/articles?token=${encodeURIComponent(fixtures.namedDraft.token)}`,
   );
   await expect(
-    page.getByRole("heading", { name: "Entries", exact: true }),
+    page.getByRole("heading", { name: "Articles", exact: true }),
   ).toBeVisible();
   await expect(page.locator("main")).not.toContainText("secret");
-  await expect(page.locator(".entries li")).toHaveCount(20);
+  await expect(page.locator("main li")).toHaveCount(20);
 });
 
-test("mobile viewport remains readable without horizontal scrolling", async ({
+test("mobile overview and detail stay within the viewport", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto("/inertia-poc");
+  await page.goto("/articles");
   await expect(
-    page.getByRole("heading", { name: "Entries", exact: true }),
+    page.getByRole("heading", { name: "Articles", exact: true }),
   ).toBeVisible();
   expect(
     await page.evaluate(
@@ -319,53 +474,71 @@ test("mobile viewport remains readable without horizontal scrolling", async ({
   ).toBe(true);
 });
 
-test("authenticated frontend props do not inherit host auth or control panel data", async ({
+test("public shell keeps project shares and excludes CP data while CP retains its shell", async ({
   page,
 }) => {
   await login(page);
-  await page.goto("/inertia-poc");
+  await page.goto("/articles");
   await expect(
-    page.getByRole("heading", { name: "Entries", exact: true }),
+    page.getByRole("heading", { name: "Articles", exact: true }),
   ).toBeVisible();
-  const initial = await page.locator("script[data-page=app]").textContent();
-  const props = JSON.parse(initial!).props;
-  expect(Object.keys(props).sort()).toEqual([
-    "entries",
-    "indexUrl",
-    "section",
-    "site",
-  ]);
-  expect(initial).not.toContain(credentials.email);
+  const initial = await initialPage(page);
+  expect(initial.props).not.toHaveProperty("craft");
+  expect(initial.props.auth.user.email).toBe(credentials.email);
   const scripts = await page
     .locator("script[src]")
     .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("src")));
-  expect(
-    scripts.some((src) =>
-      src?.includes("/vendor/robuust/craft-inertia-poc/build/"),
-    ),
-  ).toBe(true);
+  expect(scripts.some((src) => src?.includes("/build/assets/"))).toBe(true);
   expect(scripts.some((src) => src?.includes("/vendor/craft/build/"))).toBe(
     false,
   );
+  expect(
+    scripts.some((src) => src?.includes("/vendor/robuust/craft-inertia-poc/")),
+  ).toBe(false);
   await page.goto("/admin/dashboard");
   await expect(
     page.getByRole("heading", { name: "Dashboard", exact: true }),
   ).toBeVisible();
+  expect((await initialPage(page)).component).not.toMatch(/^Site\//);
 });
 
-test("host SSR keeps working while plugin pages use their own client bundle", async ({
+test("assets, native actions and GraphQL keep their own response handling", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/articles");
+  const asset = await page.locator("script[src]").first().getAttribute("src");
+  const assetResponse = await request.get(asset!);
+  expect(assetResponse.status()).toBe(200);
+  expect(assetResponse.headers()["content-type"]).toMatch(/javascript/);
+  expect(assetResponse.headers()["x-inertia"]).toBeUndefined();
+  const action = await request.get("/actions/does-not-exist", {
+    headers: { Accept: "application/json" },
+  });
+  expect(action.status()).toBe(404);
+  expect(action.headers()["x-inertia"]).toBeUndefined();
+  expect(await action.text()).not.toContain('"component":"Site/');
+  const graphql = await request.get(
+    "/actions/graphql/api?query=%7B__typename%7D",
+    { headers: { Accept: "application/json" } },
+  );
+  expect(graphql.headers()["content-type"]).toContain("application/json");
+  expect(graphql.headers()["x-inertia"]).toBeUndefined();
+  expect(graphql.status()).toBe(400);
+  expect((await graphql.json()).message).toBe("Missing Authorization header");
+});
+
+test("host SSR remains separate from opt-in public client rendering", async ({
   page,
 }) => {
-  const hostResponse = await page.goto("/login");
-  expect(hostResponse?.status()).toBe(200);
+  await page.goto("/login");
   await expect(page.locator("#app")).toHaveAttribute(
     "data-server-rendered",
     "true",
   );
-  const pluginResponse = await page.goto("/inertia-poc");
-  expect(pluginResponse?.status()).toBe(200);
+  await page.goto("/articles");
   await expect(
-    page.getByRole("heading", { name: "Entries", exact: true }),
+    page.getByRole("heading", { name: "Articles", exact: true }),
   ).toBeVisible();
   expect(
     await page.locator("#app").getAttribute("data-server-rendered"),
@@ -377,86 +550,11 @@ test("host SSR keeps working while plugin pages use their own client bundle", as
   );
 });
 
-test("Craft editor opens the plugin preview target for a named draft", async ({
+test("publishing a named draft updates its native public URL", async ({
   page,
 }) => {
   const fixture = fixtureCommand("create-publish-case");
-  await login(page);
-  await page.goto(fixture.draftEditUrl);
-  await expect(page.locator("input[name=title]")).toHaveValue(fixture.after);
-  const popupPromise = page.waitForEvent("popup");
-  await page
-    .getByRole("link", { name: /^Inertia \+ Vue proof of concept/ })
-    .click();
-  const preview = await popupPromise;
-  await expect(
-    preview.getByRole("heading", { name: fixture.after }),
-  ).toBeVisible();
-  await expect(preview.getByRole("status")).toContainText("Live Preview");
-  await expect(preview.locator(".entry-body")).toHaveText(
-    "Published from named draft",
-  );
-  await preview.close();
-  await page.goto(entryUrl(fixture.id));
-  await expect(
-    page.getByRole("heading", { name: fixture.before }),
-  ).toBeVisible();
-});
-
-test("Live Preview automatically refreshes draft title, summary and body without publishing", async ({
-  page,
-  browser,
-}) => {
-  test.setTimeout(90_000);
-  const fixture = fixtureCommand("create-preview-case");
-  await login(page);
-  const idSlug = new URL(fixture.editUrl).pathname.split("/").at(-1);
-  const response = await page.goto(`/admin/preview/${idSlug}`);
-  expect(response?.status()).toBe(200);
-  await page.getByText("Primary entry page", { exact: true }).click();
-  await page
-    .getByText("Inertia + Vue proof of concept", { exact: true })
-    .click();
-  const frame = page.frameLocator("iframe");
-  await expect(
-    frame.getByRole("heading", { name: fixture.before }),
-  ).toBeVisible();
-  await page.locator('input[name$="[title]"]').fill(fixture.after);
-  await page
-    .locator('textarea[name$="[fields][summary]"]')
-    .fill("Live preview summary change");
-  await page
-    .locator('textarea[name$="[fields][body]"]')
-    .fill("Live preview body change");
-  await page.locator('textarea[name$="[fields][body]"]').press("Tab");
-  await expect(frame.getByRole("heading", { name: fixture.after })).toBeVisible(
-    { timeout: 30_000 },
-  );
-  await expect(
-    frame.getByText("Live preview summary change", { exact: true }),
-  ).toBeVisible();
-  await expect(frame.locator(".entry-body")).toHaveText(
-    "Live preview body change",
-  );
-  await expect(frame.getByRole("status")).toContainText("Live Preview");
-  const publicContext = await browser.newContext();
-  try {
-    const publicPage = await publicContext.newPage();
-    await publicPage.goto(`http://127.0.0.1:18766${entryUrl(fixture.id)}`);
-    await expect(
-      publicPage.getByRole("heading", { name: fixture.before }),
-    ).toBeVisible();
-    await expect(publicPage.locator("main")).not.toContainText(
-      "Live preview body change",
-    );
-  } finally {
-    await publicContext.close();
-  }
-});
-
-test("publishing a named draft updates the public entry", async ({ page }) => {
-  const fixture = fixtureCommand("create-publish-case");
-  await page.goto(entryUrl(fixture.id));
+  await page.goto(fixture.url);
   await expect(
     page.getByRole("heading", { name: fixture.before }),
   ).toBeVisible();
@@ -465,7 +563,7 @@ test("publishing a named draft updates the public entry", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: fixture.after }),
   ).toBeVisible();
-  await expect(page.locator(".entry-body")).toHaveText(
+  await expect(page.locator("main article .whitespace-pre-wrap")).toHaveText(
     "Published from named draft",
   );
   await expect(page.getByRole("status")).toHaveCount(0);

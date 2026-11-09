@@ -5,12 +5,12 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const runtime = `${root}/tests/e2e/.runtime`;
-const templatePath = `${runtime}/playground/resources/views/e2e/unused-canonical-template.twig`;
+const templatePath = `${runtime}/playground/resources/views/e2e/canonical.twig`;
 mkdirSync(`${runtime}/playground/resources/views/e2e`, { recursive: true });
 copyFileSync(`${root}/tests/e2e/fixtures/canonical.twig`, templatePath);
 const output = execFileSync(
   "php",
-  [`${root}/tests/e2e/fixtures.php`, "create-preview-case"],
+  [`${root}/tests/e2e/fixtures.php`, "create-native-preview-case"],
   {
     cwd: `${runtime}/playground`,
     encoding: "utf8",
@@ -26,12 +26,18 @@ try {
   const page = await context.newPage();
   const errors = [];
   const pluginRequests = [];
+  const projectBundleRequests = [];
   page.on("pageerror", (error) =>
     errors.push({ message: error.message, stack: error.stack }),
   );
   context.on("request", (request) => {
     if (request.url().includes("/vendor/robuust/craft-inertia-poc/"))
       pluginRequests.push(request.url());
+    if (
+      request.frame().parentFrame() &&
+      new URL(request.url()).pathname.startsWith("/build/assets/")
+    )
+      projectBundleRequests.push(request.url());
   });
   await page.goto("http://127.0.0.1:18766/admin/login");
   await page.locator("input[name=username]").fill(credentials.username);
@@ -52,18 +58,20 @@ try {
     { timeout: 30_000 },
   );
   await page.screenshot({
-    path: `${root}/reports/e2e/evidence/native-craft-baseline.png`,
+    path: `${root}/reports/e2e/step01/native-craft-baseline.png`,
     fullPage: true,
   });
   const result = {
     httpStatus: response.status(),
-    primaryTarget: "Native Twig template; plugin target was not selected",
+    primaryTarget: "Native Twig template in an unmapped section",
+    projectRequestScope: "Preview iframe only",
     autoRefreshWorked: true,
     pluginRequests,
+    projectBundleRequests,
     errors,
   };
   writeFileSync(
-    `${root}/reports/e2e/evidence/native-craft-baseline.json`,
+    `${root}/reports/e2e/step01/native-craft-baseline.json`,
     JSON.stringify(result, null, 2),
   );
   console.log(JSON.stringify(result, null, 2));

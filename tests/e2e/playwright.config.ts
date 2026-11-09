@@ -2,22 +2,26 @@ import { defineConfig } from "@playwright/test";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
+const evidence = process.env.POC_E2E_REPORT_DIR ?? `${root}/reports/e2e/step01`;
 
 export default defineConfig({
   testDir: ".",
-  testMatch: "**/*.spec.ts",
+  projects: [
+    { name: "step01", testMatch: "plugin.spec.ts" },
+    { name: "editor-preview", testMatch: "editor-preview.spec.ts" },
+  ],
   fullyParallel: false,
   workers: 1,
   retries: 0,
   forbidOnly: true,
   timeout: 30_000,
   expect: { timeout: 7_000 },
-  outputDir: `${root}/reports/e2e/results`,
+  outputDir: `${evidence}/results`,
   reporter: [
     ["list"],
-    ["html", { outputFolder: `${root}/reports/e2e/playwright`, open: "never" }],
-    ["json", { outputFile: `${root}/reports/e2e/results.json` }],
-    ["junit", { outputFile: `${root}/reports/e2e/junit.xml` }],
+    ["html", { outputFolder: `${evidence}/playwright`, open: "never" }],
+    ["json", { outputFile: `${evidence}/results.json` }],
+    ["junit", { outputFile: `${evidence}/junit.xml` }],
   ],
   use: {
     channel: "chrome",
