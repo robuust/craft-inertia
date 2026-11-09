@@ -234,6 +234,22 @@ if ($mode === 'publish') {
     exit;
 }
 
+if ($mode === 'create-site-preview-case') {
+    $site = Sites::getSiteByHandle($argv[2] ?? 'default');
+    if ($site === null) {
+        throw new RuntimeException('Unknown test site.');
+    }
+    CraftCms\Cms\Cms::config()->baseCpUrl = config('app.url');
+    Sites::setCurrentSite($site);
+    $suffix = Str::random(8);
+    $entry = createEntry(Sections::getSectionByHandle('articles'), EntryTypes::getEntryTypeByHandle('pocArticle'), 'Preview before '.$suffix);
+    $data = [...entryData($entry), 'before' => $entry->title, 'after' => 'Preview after '.$suffix,
+        'editUrl' => $entry->getCpEditUrl(), 'handle' => $site->handle, 'siteId' => $site->id];
+    $app->terminate();
+    echo 'POC_FIXTURES_JSON='.json_encode($data, JSON_THROW_ON_ERROR)."\n";
+    exit;
+}
+
 if (in_array($mode, ['create-publish-case', 'create-preview-case', 'create-native-preview-case'], true)) {
     $suffix = Str::random(8);
     $sectionHandle = $mode === 'create-native-preview-case' ? 'pocNative' : 'articles';
@@ -266,6 +282,8 @@ if (is_file($runtime.'/fixtures.json')) {
     echo 'POC_FIXTURES_JSON='.file_get_contents($runtime.'/fixtures.json')."\n";
     exit;
 }
+
+CraftCms\Cms\Edition::set(CraftCms\Cms\Edition::Pro);
 
 $type = createType('pocArticle', ['summary', 'body']);
 $minimalType = createType('pocMinimal');

@@ -157,23 +157,27 @@ Fields, relation targets, globals and Matrix propagation/translation remain
 native schema decisions. Same language does not mean shared translation values.
 
 Craft's `HandleTokenRequest` validates tokens and prepares native placeholder
-elements, including drafts, user provisional drafts and revisions. It removes
-preview markers from the prepared query before page dispatch. The project reads
-`#[CurrentElement] Entry` and `$entry->previewing`, which survive this preparation.
-`Request::isPreview()` can be false at that point; marker presence, absence or a
-draft/revision ID is not a replacement authority check. `status(null)` belongs
-only in Craft's authorized preview preparation, never in a public page query.
-The package has no token checker or draft storage.
+elements, including drafts, user provisional drafts and revisions. In the tested
+official 6.x commit it removes the token query key but preserves preview markers;
+the released alpha.20 removed both. The project reads `#[CurrentElement] Entry`
+and `$entry->previewing` in either case. Marker presence, absence or a draft/revision
+ID is never a replacement authority check. `status(null)` belongs only in Craft's
+authorized preview preparation, never in a public page query. The package has no
+token checker or draft storage.
 
 Both initial HTML and Inertia JSON retain the middleware's `private, no-store`
 policy. The native token may remain in Inertia's returned browser URL even when
 it was removed from the prepared query; those are separate contracts.
 
-In pinned alpha.20, the ordinary Vue editor's **View** control opens a native
-site preview in a popup; it does not expose an embedded Live Preview control.
-The separate native `/admin/preview/...` legacy editor refreshes the project Vue
-iframe after autosave. Its strict browser-error check still fails: native code
-runs an author-selector initializer whose sidebar markup was not inserted.
-Functional iframe refresh is verified separately from that failure. No vendor
-patch, exception suppression or expected-failure classification is included.
-See [STEP-03 evidence and acceptance blocker](../reports/e2e/STEP03.md).
+The approved official 6.x baseline supplies a native **Preview** control in the
+ordinary Vue editor and a standalone Vue preview screen. Both use the existing
+editor form and autosave queue. Successful saves replace the preview iframe at
+the element's native site URL; no project polling or second persistence path is
+needed. **View** remains a separate popup control. The native mechanism supports
+cross-origin preview without copying CP cookies to the site origin.
+
+Released alpha.20's legacy standalone preview has the historical author-sidebar
+initializer/WeakMap failure, and its ordinary editor exposed only **View**. The
+pinned official source replaces that implementation rather than patching it.
+See the [tested baseline and exact limits](../README.md#tested-craft-baselines)
+and [STEP-03 validation record](../reports/e2e/STEP03.md).

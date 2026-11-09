@@ -5,6 +5,16 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const runtime = `${root}/tests/e2e/.runtime`;
+// Historical released-alpha.20 reproducer. Current Vue Preview acceptance lives
+// in editor-preview.spec.ts, including the unmapped native Twig control.
+const cmsPackage = JSON.parse(
+  readFileSync(`${runtime}/playground/composer.lock`, "utf8"),
+).packages.find((entry) => entry.name === "craftcms/cms");
+if (cmsPackage?.version !== "6.0.0-alpha.20") {
+  throw new Error(
+    "This diagnostic requires the released alpha.20 runtime. Use the current editor-preview project for the pinned official 6.x baseline.",
+  );
+}
 const evidence = process.env.POC_E2E_REPORT_DIR ?? `${root}/reports/e2e/step01`;
 mkdirSync(evidence, { recursive: true });
 const templatePath = `${runtime}/playground/resources/views/e2e/canonical.twig`;

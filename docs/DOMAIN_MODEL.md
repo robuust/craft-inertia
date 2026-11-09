@@ -108,9 +108,10 @@ plugin consumes the resolved version; it must not duplicate those transitions.
 | Autosave                                         | The existing Craft preview refresh mechanism updates the Vue page.                                 |
 | Publish                                          | Subsequent ordinary visits use the newly public content and affected cached output is invalidated. |
 
-Preview markers can be removed during Craft's internal request preparation.
-Consume the server-resolved element and context rather than relying on query
-markers. STEP-01 exercises basic canonical URL token/privacy boundaries;
+Native request preparation removes the token query key. Released alpha.20
+also removed preview markers; the approved pinned official 6.x source preserves
+them. Consume the server-resolved element and context rather than relying on
+marker presence. STEP-01 exercises basic canonical URL token/privacy boundaries;
 complete editor preview, revisions and multisite acceptance remain STEP-03.
 The original saved E2E run covers the numeric demonstration.
 

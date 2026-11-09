@@ -6,8 +6,9 @@ URLs, editorial workflows, sessions and permissions. Each project supplies its
 Vue presentation and chooses the data it exposes.
 
 **Current execution:** STEP-01 and STEP-02 are merged. STEP-03 adds project-owned
-native site context and preview/multisite evidence; complete editorial acceptance
-remains blocked by the reproduced alpha.20 legacy CP error. Execution, scoped
+native site context and preview/multisite evidence. Approved official 6.x source
+`0506c32` plus matching assets `1797325` passes current scoped preview acceptance;
+the historical released-alpha.20 CP failure is retained separately. Execution, scoped
 tests and plugin PR publication are authorized by the subsequent roadmap request;
 Playground work must remain local and uncommitted. The initialization authority
 and inspected baseline below are historical. See [STEP-03](../reports/e2e/STEP03.md).
@@ -126,8 +127,7 @@ be demonstrated rather than inferred from a working HTML preview.
 At initialization, STEP-01 was **technically READY** against pinned alpha.20. Later steps have named
 dependencies; their readiness and acceptance criteria are in `FRONTEND.md`.
 Readiness does not grant execution authority. Subsequent authorized roadmap execution delivered STEP-01/02. STEP-03 now
-records its bounded implementation and the unresolved native CP acceptance
-blocker; see the current execution note above.
+records its bounded implementation and approved development-baseline acceptance; see the current execution note above.
 
 ## Evidence and operational limits
 

@@ -2,7 +2,7 @@ import { defineConfig } from "@playwright/test";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const evidence = process.env.POC_E2E_REPORT_DIR ?? `${root}/reports/e2e/step01`;
+const evidence = process.env.POC_E2E_REPORT_DIR ?? `${root}/reports/e2e/step03`;
 
 export default defineConfig({
   testDir: ".",

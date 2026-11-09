@@ -158,14 +158,36 @@ and leaves its existing authenticated app SSR and Craft CP policy intact. The
 package does not replace the host SSR gateway or supply an SSR bundle.
 
 Craft authorizes and resolves preview elements. Project pages consume the native
-matched element and `previewing` state, including when Craft removes query
-markers during request preparation. Site IDs, translated URLs, domains and
+matched element and `previewing` state. Site IDs, translated URLs, domains and
 subdirectory roots stay with Craft. See the [site and preview integration](docs/CONTENT.md#native-sites-and-preview).
 
-STEP-03 verifies ordinary editor View launch, native version/token isolation and
-multisite content. The separate legacy autosave editor still raises a native
-Craft `WeakMap` exception after functional refresh. That strict case remains
-failed and blocks complete editorial acceptance; see [STEP-03](reports/e2e/STEP03.md).
+## Tested Craft baselines
+
+STEP-03's approved development baseline is the exact official source/assets pair:
+
+| Package | Official commit |
+| --- | --- |
+| `craftcms/cms` | `0506c32b44efbe3e7f5fded46a7c1d39de699d5b` |
+| `craftcms/cms-assets` | `17973259d5727a1e50a1fc85dd90566b889407af` |
+
+The [test metadata](tests/e2e/official-craft.json) comes from those fixed manifests,
+with exact source and dist references. The consuming root requires both packages
+as `6.x-dev as 6.0.0-alpha.20` and uses those package repositories ahead of Packagist.
+The alias only satisfies the existing plugin constraint and CMS `self.version`
+asset constraint. It does not make this a released alpha.20 environment. The
+pinned CMS still reports an alpha.20 version constant, so the UI version string
+alone is insufficient evidence. Root and runtime locks plus installed source and
+published asset hashes identify the actual tested environment.
+
+A plugin dependency hash alone is not a reproducible root pin; Composer also
+[reads metadata from the branch when using commit references](https://getcomposer.org/doc/04-schema.md#require).
+The harness checks both package refs/manifests and all native published CP asset
+bytes before seeding. It does not build Craft's private icon assets locally.
+
+The official source has the new ordinary-editor and standalone Vue Live Preview.
+Released alpha.20 retains the recorded legacy WeakMap failure and is not accepted
+for the complete editorial criterion. This is a tested development-commit claim,
+not a blanket support claim for released Craft 6. See [STEP-03 evidence](reports/e2e/STEP03.md).
 
 ## Development and acceptance
 
@@ -180,11 +202,15 @@ the consuming application, using its existing tooling.
 `npm run test:e2e:prepare -- --fresh --working-tree` snapshots the sibling Playground's tracked
 and untracked, non-ignored working files into `tests/e2e/.runtime`, installs it
 with this package, creates an isolated database and seeds test-only content. It
-does not commit the source or use the original app database. The script records
+does not commit the source or use the original app database. The copied older
+project-config YAML is retained as evidence and omitted only in the fresh test
+snapshot, so the pinned installer initializes its native schema; this does not
+verify an upgrade of the original database/configuration. The script records
 source hashes so local, uncommitted examples remain traceable. Follow its output
 for PHP/SSR servers, then run `npm run test:e2e`. The `step03` project depends on the STEP-01/02
 projects and seeds additional isolated sites only after those checks. Use a fresh
-snapshot for the complete suite; its strict editor-preview case currently fails. STEP-01 outputs live under the
+snapshot for the complete suite. Current output defaults to `reports/e2e/step03/`;
+historical alpha.20 output remains separate. STEP-01 outputs live under the
 ignored `reports/e2e/step01/`; the original 26 passed / 1 failed evidence is
 preserved separately.
 
@@ -194,3 +220,8 @@ Projects own explicit content projections, native Craft queries and Vue presenta
 See [the content convention](docs/CONTENT.md) for native Markdown, nested Matrix,
 relations, globals, taxonomy, responsive assets and URL-based pagination across
 two schemas, and [STEP-02 evidence](reports/e2e/STEP02.md) for scope and limits.
+
+The legacy `diagnose-live-preview.mjs` script is retained only for the released
+alpha.20 reproduction (original revision `2c670fe`); it rejects the current dev
+runtime before writing historical output. The official baseline's native Twig
+control is part of the strict `editor-preview` project.

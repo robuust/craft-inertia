@@ -18,6 +18,25 @@ const runtime = path.join(root, "tests/e2e/.runtime");
 const playground = path.join(runtime, "playground");
 const source =
   process.env.POC_PLAYGROUND_PATH ?? path.resolve(root, "../craft6-playground");
+const officialBaseline = JSON.parse(
+  readFileSync(new URL("./official-craft.json", import.meta.url), "utf8"),
+);
+function assertPinnedCraft(lock) {
+  for (const pin of officialBaseline.pins) {
+    const dependency = lock.packages.find((entry) => entry.name === pin.name);
+    if (
+      dependency?.source?.reference !== pin.reference ||
+      dependency?.dist?.reference !== pin.reference
+    ) {
+      throw new Error(
+        `The root lock must pin ${pin.name} source and dist to ${pin.reference}; see the official STEP-03 baseline documentation.`,
+      );
+    }
+  }
+}
+assertPinnedCraft(
+  JSON.parse(readFileSync(path.join(source, "composer.lock"), "utf8")),
+);
 const compose = [
   "compose",
   "-f",
@@ -26,7 +45,7 @@ const compose = [
   "craft-inertia-poc-e2e",
 ];
 const evidence =
-  process.env.POC_E2E_REPORT_DIR ?? path.join(root, "reports/e2e/step01");
+  process.env.POC_E2E_REPORT_DIR ?? path.join(root, "reports/e2e/step03");
 const logs = path.join(evidence, "logs");
 const fresh = process.argv.includes("--fresh");
 const workingTree = process.argv.includes("--working-tree");
@@ -130,6 +149,16 @@ writeFileSync(
   webRoutes,
   `${readFileSync(webRoutes, "utf8")}\nrequire __DIR__.'/e2e.php';\n`,
 );
+
+// This is a fresh test database, not a migration of the source app's older
+// project-config schema. Let the pinned native installer create its own schema.
+const sourceProjectConfig = path.join(playground, "config/craft/project");
+if (existsSync(sourceProjectConfig)) {
+  cpSync(sourceProjectConfig, path.join(evidence, "source-project-config"), {
+    recursive: true,
+  });
+  rmSync(sourceProjectConfig, { recursive: true });
+}
 
 copyFileSync(
   path.join(root, "tests/e2e/fixtures/ContentQueryTest.php"),
@@ -293,6 +322,123 @@ run("craft-assets", "php", [
 ]);
 run("host-dependencies", "corepack", ["yarn", "install", "--immutable"]);
 run("host-build", "corepack", ["yarn", "build"]);
+const resolvedLock = JSON.parse(
+  readFileSync(path.join(playground, "composer.lock"), "utf8"),
+);
+assertPinnedCraft(resolvedLock);
+function fileManifest(directory) {
+  const result = {};
+  function visit(current, prefix = "") {
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const relative = path.join(prefix, entry.name);
+      const absolute = path.join(current, entry.name);
+      if (entry.isDirectory()) visit(absolute, relative);
+      else if (entry.isFile())
+        result[relative] = createHash("sha256")
+          .update(readFileSync(absolute))
+          .digest("hex");
+    }
+  }
+  visit(directory);
+  return Object.fromEntries(
+    Object.entries(result).sort(([a], [b]) => a.localeCompare(b, "en")),
+  );
+}
+const dependencyFiles = {};
+for (const pin of officialBaseline.pins) {
+  const directory = path.join(playground, "vendor", pin.name);
+  const manifestHash = createHash("sha256")
+    .update(readFileSync(path.join(directory, "composer.json")))
+    .digest("hex");
+  if (manifestHash !== pin.manifestSha256)
+    throw new Error(
+      `Installed ${pin.name} manifest differs from the pinned official source.`,
+    );
+  dependencyFiles[pin.name] = fileManifest(directory);
+}
+const publishedAssets = fileManifest(
+  path.join(playground, "public/vendor/craft"),
+);
+const nativePublishMap = JSON.parse(
+  run("native-asset-publish-map", "php", [
+    "artisan",
+    "tinker",
+    '--execute=echo json_encode(\\Illuminate\\Support\\ServiceProvider::pathsToPublish(null, "craftcms-assets"), JSON_THROW_ON_ERROR);',
+  ]),
+);
+const expectedPublishedAssets = {};
+for (const [from, to] of Object.entries(nativePublishMap)) {
+  const prefix = path.relative(
+    path.join(playground, "public/vendor/craft"),
+    to,
+  );
+  if (prefix.startsWith(".."))
+    throw new Error("Unexpected native CP publication destination.");
+  for (const [relative, hash] of Object.entries(fileManifest(from)))
+    expectedPublishedAssets[path.join(prefix, relative)] = hash;
+}
+const orderedExpectedAssets = Object.fromEntries(
+  Object.entries(expectedPublishedAssets).sort(([a], [b]) =>
+    a.localeCompare(b, "en"),
+  ),
+);
+if (JSON.stringify(publishedAssets) !== JSON.stringify(orderedExpectedAssets)) {
+  throw new Error(
+    "Published CP assets differ from the pinned package's native publication map.",
+  );
+}
+const identity = {
+  pins: officialBaseline.pins,
+  nodeVersion: process.version,
+  nativePublishMap,
+  lockSha256: createHash("sha256")
+    .update(readFileSync(path.join(playground, "composer.lock")))
+    .digest("hex"),
+  sourceLockSha256: createHash("sha256")
+    .update(readFileSync(path.join(source, "composer.lock")))
+    .digest("hex"),
+  sourceComposerSha256: createHash("sha256")
+    .update(readFileSync(path.join(source, "composer.json")))
+    .digest("hex"),
+  packages: resolvedLock.packages.map(({ name, version, source, dist }) => ({
+    name,
+    version,
+    source,
+    dist,
+  })),
+  dependencyTreeSha256: Object.fromEntries(
+    Object.entries(dependencyFiles).map(([name, files]) => [
+      name,
+      createHash("sha256").update(JSON.stringify(files)).digest("hex"),
+    ]),
+  ),
+  publishedAssetTreeSha256: createHash("sha256")
+    .update(JSON.stringify(publishedAssets))
+    .digest("hex"),
+  cpManifestSha256:
+    publishedAssets["build/manifest.json"] ??
+    publishedAssets["build/.vite/manifest.json"],
+};
+writeFileSync(
+  path.join(evidence, "dependency-identity.json"),
+  JSON.stringify(identity, null, 2),
+);
+writeFileSync(
+  path.join(evidence, "dependency-files.json"),
+  JSON.stringify({ ...dependencyFiles, publishedAssets }, null, 2),
+);
+copyFileSync(
+  path.join(playground, "composer.lock"),
+  path.join(evidence, "runtime-composer.lock"),
+);
+copyFileSync(
+  path.join(source, "composer.lock"),
+  path.join(evidence, "source-composer.lock"),
+);
+copyFileSync(
+  path.join(source, "composer.json"),
+  path.join(evidence, "source-composer.json"),
+);
 run("fixture-seed", "php", [path.join(root, "tests/e2e/fixtures.php"), "seed"]);
 if (!existsSync(path.join(runtime, "fixtures.json")))
   throw new Error("Fixture metadata was not written.");

@@ -157,7 +157,7 @@ for (const handle of ["dutch", "dutchDomain"]) {
     expect(errors).toEqual([]);
   });
 
-  test(`${handle}: authorized draft survives native marker removal in HTML and JSON`, async ({
+  test(`${handle}: authorized draft uses prepared native context in HTML and JSON`, async ({
     page,
     request,
   }) => {
@@ -175,7 +175,7 @@ for (const handle of ["dutch", "dutchDomain"]) {
         expect(JSON.parse(response.headers()["x-e2e-preview-markers"])).toEqual(
           {
             token: false,
-            marker: false,
+            marker: true,
             requestIsPreview: false,
           },
         );
