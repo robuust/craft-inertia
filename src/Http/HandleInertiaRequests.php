@@ -7,38 +7,32 @@ namespace Robuust\CraftInertiaPoc\Http;
 use Closure;
 use CraftCms\Cms\Http\ResponseHeaders;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\Vite;
 use Inertia\Middleware;
 use Override;
-use Robuust\CraftInertiaPoc\Plugin;
 use Symfony\Component\HttpFoundation\Response;
 
-final class HandleInertiaRequests extends Middleware
+class HandleInertiaRequests extends Middleware
 {
     #[Override]
-    protected $rootView = 'inertia-poc::app';
-
-    #[Override]
-    protected $withoutSsr = ['inertia-poc', 'inertia-poc/*'];
+    public function rootView(Request $request): string
+    {
+        return config('inertia-poc.rootView', 'app');
+    }
 
     #[Override]
     public function version(Request $request): ?string
     {
-        return Plugin::getInstance()->vite()->manifestHash();
-    }
-
-    /** @return array<string, mixed> */
-    #[Override]
-    public function share(Request $request): array
-    {
-        return [];
+        return Vite::manifestHash();
     }
 
     #[Override]
     public function handle(Request $request, Closure $next): Response
     {
-        /** The host may already have shared application data through its web middleware. */
-        Inertia::flushShared();
+        if (!$request->isSiteRequest() || $request->isActionRequest()) {
+            return $next($request);
+        }
+
         app(ResponseHeaders::class)->noCache();
 
         $response = parent::handle($request, $next);

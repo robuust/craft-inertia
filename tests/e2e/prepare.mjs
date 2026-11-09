@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
 import {
   copyFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -24,8 +25,11 @@ const compose = [
   "-p",
   "craft-inertia-poc-e2e",
 ];
-const logs = path.join(root, "reports/e2e/logs");
+const evidence =
+  process.env.POC_E2E_REPORT_DIR ?? path.join(root, "reports/e2e/step01");
+const logs = path.join(evidence, "logs");
 const fresh = process.argv.includes("--fresh");
+const workingTree = process.argv.includes("--working-tree");
 mkdirSync(logs, { recursive: true });
 
 function run(name, command, args, options = {}) {
@@ -44,20 +48,19 @@ function run(name, command, args, options = {}) {
       path.join(logs, `${name}.log`),
       `${error.stdout ?? ""}\n${error.stderr ?? ""}`,
     );
-    throw new Error(`${name} failed; see reports/e2e/logs/${name}.log`, {
+    throw new Error(`${name} failed; see ${path.join(logs, `${name}.log`)}`, {
       cause: error,
     });
   }
 }
 
-if (
-  execFileSync("git", ["status", "--porcelain"], {
-    cwd: source,
-    encoding: "utf8",
-  }).trim()
-) {
+const localChanges = execFileSync("git", ["status", "--porcelain"], {
+  cwd: source,
+  encoding: "utf8",
+}).trim();
+if (localChanges && !workingTree) {
   throw new Error(
-    "The source Playground has local changes; inspect them before creating a snapshot.",
+    "The source Playground has local changes. Inspect them, then pass --working-tree to snapshot the current files without committing them.",
   );
 }
 if (existsSync(runtime) && !fresh) {
@@ -72,12 +75,33 @@ if (fresh) {
   rmSync(runtime, { recursive: true, force: true });
 }
 mkdirSync(playground, { recursive: true });
-const archive = path.join(runtime, "playground.tar");
-execFileSync("git", ["archive", "--format=tar", "-o", archive, "HEAD"], {
-  cwd: source,
-});
-execFileSync("tar", ["-xf", archive, "-C", playground]);
-rmSync(archive);
+const projectHashes = {};
+if (workingTree) {
+  const files = execFileSync(
+    "git",
+    ["ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+    { cwd: source, encoding: "utf8" },
+  )
+    .split("\0")
+    .filter(Boolean);
+  for (const relative of new Set(files)) {
+    const current = path.join(source, relative);
+    if (!existsSync(current)) continue;
+    const target = path.join(playground, relative);
+    mkdirSync(path.dirname(target), { recursive: true });
+    cpSync(current, target);
+    projectHashes[relative] = createHash("sha256")
+      .update(readFileSync(current))
+      .digest("hex");
+  }
+} else {
+  const archive = path.join(runtime, "playground.tar");
+  execFileSync("git", ["archive", "--format=tar", "-o", archive, "HEAD"], {
+    cwd: source,
+  });
+  execFileSync("tar", ["-xf", archive, "-C", playground]);
+  rmSync(archive);
+}
 for (const folder of [
   "storage/framework/cache/data",
   "storage/framework/sessions",
@@ -91,11 +115,25 @@ for (const folder of [
 mkdirSync(path.join(playground, "resources/views/e2e"), { recursive: true });
 copyFileSync(
   path.join(root, "tests/e2e/fixtures/canonical.twig"),
-  path.join(playground, "resources/views/e2e/unused-canonical-template.twig"),
+  path.join(playground, "resources/views/e2e/canonical.twig"),
+);
+copyFileSync(
+  path.join(root, "tests/e2e/fixtures/collision.blade.php"),
+  path.join(playground, "resources/views/e2e/collision.blade.php"),
+);
+copyFileSync(
+  path.join(root, "tests/e2e/fixtures/routing.php"),
+  path.join(playground, "routes/e2e.php"),
+);
+const webRoutes = path.join(playground, "routes/web.php");
+writeFileSync(
+  webRoutes,
+  `${readFileSync(webRoutes, "utf8")}\nrequire __DIR__.'/e2e.php';\n`,
 );
 
 const hashes = {};
 function hashFiles(directory) {
+  if (!existsSync(path.join(root, directory))) return;
   for (const entry of readdirSync(path.join(root, directory), {
     withFileTypes: true,
   })) {
@@ -114,7 +152,7 @@ writeFileSync(
   JSON.stringify(hashes, null, 2),
 );
 writeFileSync(
-  path.join(root, "reports/e2e/source-manifest.json"),
+  path.join(evidence, "source-manifest.json"),
   JSON.stringify(hashes, null, 2),
 );
 const commit = execFileSync("git", ["rev-parse", "HEAD"], {
@@ -123,7 +161,11 @@ const commit = execFileSync("git", ["rev-parse", "HEAD"], {
 }).trim();
 writeFileSync(
   path.join(runtime, "playground-source.json"),
-  JSON.stringify({ source, commit }, null, 2),
+  JSON.stringify(
+    { source, commit, workingTree, localChanges, hashes: projectHashes },
+    null,
+    2,
+  ),
 );
 
 run("database-start", "docker", [...compose, "up", "-d", "--wait"], {
@@ -185,7 +227,11 @@ writeFileSync(
 const composerPath = path.join(playground, "composer.json");
 const composer = JSON.parse(readFileSync(composerPath, "utf8"));
 composer.repositories ??= [];
-composer.repositories.push({
+composer.repositories = composer.repositories.filter(
+  (repository) =>
+    repository.type !== "path" || !repository.url.includes("craft-inertia"),
+);
+composer.repositories.unshift({
   type: "path",
   url: root,
   options: {
@@ -196,7 +242,6 @@ composer.repositories.push({
 composer.require["robuust/craft-inertia-poc"] = "0.1.0";
 writeFileSync(composerPath, JSON.stringify(composer, null, 4));
 
-run("plugin-build", "npm", ["run", "build"], { cwd: root });
 run("composer-install", "composer", [
   "update",
   "robuust/craft-inertia-poc",
@@ -231,13 +276,6 @@ run("plugin-install", "php", [
   "inertia-poc",
   "--no-interaction",
 ]);
-run("plugin-assets", "php", [
-  "artisan",
-  "vendor:publish",
-  "--tag=inertia-poc",
-  "--force",
-  "--no-interaction",
-]);
 run("plugin-config", "php", [
   "artisan",
   "vendor:publish",
@@ -258,7 +296,7 @@ run("cache-clear", "php", ["artisan", "optimize:clear", "--no-interaction"]);
 run("routes", "php", [
   "artisan",
   "route:list",
-  "--path=inertia-poc",
+  "--name=site",
   "-v",
   "--no-interaction",
 ]);

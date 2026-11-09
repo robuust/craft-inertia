@@ -9,23 +9,15 @@
   "scripts": {
     "test:e2e": "playwright test --config=tests/e2e/playwright.config.ts",
     "test:e2e:prepare": "node tests/e2e/prepare.mjs",
-    "test:e2e:report": "playwright show-report reports/e2e/playwright",
-    "build": "vue-tsc --noEmit && vite build",
-    "typecheck": "vue-tsc --noEmit",
-    "format": "prettier --write resources/js resources/css vite.config.ts tsconfig.json package.json",
-    "format:check": "prettier --check resources/js resources/css vite.config.ts tsconfig.json package.json"
-  },
-  "dependencies": {
-    "@inertiajs/vue3": "^3.11.0",
-    "vue": "^3.5.45"
+    "test:e2e:report": "playwright show-report reports/e2e/step01/playwright",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write tests/e2e/*.ts tests/e2e/*.mjs tsconfig.json package.json",
+    "format:check": "prettier --check tests/e2e/*.ts tests/e2e/*.mjs tsconfig.json package.json"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
     "@types/node": "^24.0.0",
-    "@vitejs/plugin-vue": "^6.0.10",
     "prettier": "^3.9.10",
-    "typescript": "~6.0.3",
-    "vite": "^8.3.7",
-    "vue-tsc": "^3.3.14"
+    "typescript": "~6.0.3"
   }
 }
