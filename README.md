@@ -10,6 +10,11 @@ frontends**, with project-owned Vue pages and Craft-owned backend behavior. The
 and the steps beyond this demonstration. Those capabilities are not yet
 implemented by this proof of concept.
 
+Start with the [project initialization](docs/PROJECT.md) for sources, current
+coverage and readiness. The [glossary](CONTEXT.md) and
+[domain and response contracts](docs/DOMAIN_MODEL.md) define the shared terms
+and ownership used by the roadmap.
+
 This is an integration proof of concept, not a production plugin. Its first
 integration target is `robuust/craft6-playground`, currently locked to Craft
 `6.0.0-alpha.20`, `inertiajs/inertia-laravel` `3.7.0`, and Laravel `13.40.0`.

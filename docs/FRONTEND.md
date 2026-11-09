@@ -9,7 +9,9 @@ This is the agreed product direction following the initial proof of concept.
 The capabilities below are delivery requirements, not claims about the current
 package. The current implementation still serves a fixed article demonstration
 under `/inertia-poc`; its existing [E2E report](../reports/e2e/REPORT.md) covers
-that demonstration only.
+that demonstration only. [PROJECT.md](PROJECT.md) records the inspected sources,
+coverage and decisions; [DOMAIN_MODEL.md](DOMAIN_MODEL.md) defines the data and
+response boundaries. This file owns the requirements and draft roadmap.
 
 ## Ownership
 
@@ -32,21 +34,27 @@ not translate existing templates automatically.
 
 ## Required capabilities
 
-| Capability               | Required observable behavior                                                                                                                                                                                   | Current proof of concept                                                                         |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Native element URLs      | A section's normal entry URL opens the configured Vue page. Craft still resolves the element and applies publication rules. Homepage entries, singles, structures and nested URLs work.                        | Separate numeric demo URLs only.                                                                 |
-| Other site routes        | Overview, search and other project pages can use named Laravel routes and Craft dynamic route configuration. Static pages, feeds and non-HTML endpoints keep their appropriate response type.                  | One fixed overview.                                                                              |
-| Content                  | Explicit public props support core field values, relations, globals, taxonomy, rich text and nested Matrix content. Project or plugin field types have a supported extension point.                            | Title, date and two optional plain text fields.                                                  |
-| Assets                   | Craft generates asset URLs, transforms and responsive image data. Authorized uploads and downloads retain native validation and access rules.                                                                  | No asset integration.                                                                            |
-| Queries                  | Search, filters, sorting and pagination use Craft queries and shareable URLs. Projects choose query scope and public projections.                                                                              | Latest 20 live entries.                                                                          |
-| Multisite                | Language, domain, subdirectory, site identity and translated URLs follow Craft's current site. Cross-site navigation uses the appropriate URL and full-page navigation when required.                          | One site at the origin root.                                                                     |
-| Preview                  | Native draft, revision and provisional-draft preview displays the authorized element at its site URL, refreshes after autosave and remains separate from public visits.                                        | Demo preview works functionally; one native Craft CP JavaScript error remains in the E2E result. |
-| Forms and actions        | Mutations preserve CSRF, validation errors, old input, error bags, flash messages, redirects and upload behavior through the normal Inertia form flow.                                                         | Not implemented.                                                                                 |
-| Accounts and permissions | Login, logout, registration, activation, password reset, protected pages and applicable account challenges use Craft's existing authentication and authorization. Public props expose only intended user data. | Host authentication is excluded from demo props.                                                 |
-| Errors and redirects     | Missing or unavailable content, authorization errors, expired sessions and maintenance have correct HTTP status and Vue presentation where appropriate. Existing redirects keep their destination and status.  | A demo entry 404 page.                                                                           |
-| SEO and rendering        | Projects can render initial HTML through SSR and supply titles, metadata, canonical URLs, hreflang and structured data. Public pages are indexable according to site policy.                                   | Client rendering; all demo responses are noindex.                                                |
-| Cache and deployment     | HTML and Inertia JSON have correct variation and asset versions. Preview and private responses cannot enter public caches. Public caching and invalidation respect Craft dependencies and publication changes. | All demo responses are private/no-store.                                                         |
-| Other plugins            | Documented integrations reuse the owning plugin's APIs, actions and permissions. Compatibility names the plugin, version and supported features.                                                               | No integrations validated.                                                                       |
+REQ-01 through REQ-13 preserve the previously agreed capability scope. Their
+acceptance criteria are owned by the delivery steps below; a supporting earlier
+step does not by itself complete the full requirement. Product authority is the
+user's reusable-frontend decision (PROJECT source S01), informed by source and
+E2E observations S02-S05. Third-party product selection remains open.
+
+| Requirement | Capability               | Required observable behavior                                                                                                                                                                                   | Current proof of concept                                                                         | Owning step |
+| ----------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------- |
+| REQ-01      | Native element URLs      | A section's normal entry URL opens the configured Vue page. Craft still resolves the element and applies publication rules. Homepage entries, singles, structures and nested URLs work.                        | Separate numeric demo URLs only.                                                                 | STEP-01     |
+| REQ-02      | Other site routes        | Overview, search and other project pages can use named Laravel routes and Craft dynamic route configuration. Static pages, feeds and non-HTML endpoints keep their appropriate response type.                  | One fixed overview.                                                                              | STEP-01     |
+| REQ-03      | Content                  | Explicit public props support core field values, relations, globals, taxonomy, rich text and nested Matrix content. Project or plugin field types have a supported extension point.                            | Title, date and two optional plain text fields.                                                  | STEP-02     |
+| REQ-04      | Assets                   | Craft generates asset URLs, transforms and responsive image data. Authorized uploads and downloads retain native validation and access rules.                                                                  | No asset integration.                                                                            | STEP-04     |
+| REQ-05      | Queries                  | Search, filters, sorting and pagination use Craft queries and shareable URLs. Projects choose query scope and public projections.                                                                              | Latest 20 live entries.                                                                          | STEP-02     |
+| REQ-06      | Multisite                | Language, domain, subdirectory, site identity and translated URLs follow Craft's current site. Cross-site navigation uses the appropriate URL and full-page navigation when required.                          | One site at the origin root.                                                                     | STEP-03     |
+| REQ-07      | Preview                  | Native draft, revision and provisional-draft preview displays the authorized element at its site URL, refreshes after autosave and remains separate from public visits.                                        | Demo preview works functionally; one native Craft CP JavaScript error remains in the E2E result. | STEP-03     |
+| REQ-08      | Forms and actions        | Mutations preserve CSRF, validation errors, old input, error bags, flash messages, redirects and upload behavior through the normal Inertia form flow.                                                         | Not implemented.                                                                                 | STEP-04     |
+| REQ-09      | Accounts and permissions | Login, logout, registration, activation, password reset, protected pages and applicable account challenges use Craft's existing authentication and authorization. Public props expose only intended user data. | Host authentication is excluded from demo props.                                                 | STEP-05     |
+| REQ-10      | Errors and redirects     | Missing or unavailable content, authorization errors, expired sessions and maintenance have correct HTTP status and Vue presentation where appropriate. Existing redirects keep their destination and status.  | A demo entry 404 page.                                                                           | STEP-06     |
+| REQ-11      | SEO and rendering        | Projects can render initial HTML through SSR and supply titles, metadata, canonical URLs, hreflang and structured data. Public pages are indexable according to site policy.                                   | Client rendering; all demo responses are noindex.                                                | STEP-06     |
+| REQ-12      | Cache and deployment     | HTML and Inertia JSON have correct variation and asset versions. Preview and private responses cannot enter public caches. Public caching and invalidation respect Craft dependencies and publication changes. | All demo responses are private/no-store.                                                         | STEP-06     |
+| REQ-13      | Other plugins            | Documented integrations reuse the owning plugin's APIs, actions and permissions. Compatibility names the plugin, version and supported features.                                                               | No integrations validated.                                                                       | STEP-07     |
 
 The core target includes all of these capability groups. Commerce, form builders
 and SEO plugins require separate compatibility work for each selected product;
@@ -61,13 +69,21 @@ elements use which project pages and data providers. A mapped entry should move
 from its Twig response to an Inertia response at the same URL, including the
 correct current site and any server-authorized preview element.
 
-Craft `6.0.0-alpha.20` exposes the [`SetRoute` event](https://github.com/craftcms/cms/blob/6.0.0-alpha.20/src/Element/Events/SetRoute.php)
-and [`ControllerRoute`](https://github.com/craftcms/cms/blob/6.0.0-alpha.20/src/Route/ControllerRoute.php).
-These provide a concrete starting point for mapped element responses. Native
-controller or named-route configuration is also available in Craft's
-[`ElementRoute`](https://github.com/craftcms/cms/blob/6.0.0-alpha.20/src/Route/ElementRoute.php).
-The first slice must establish route precedence, including explicit project
-routes and homepage handling, before choosing the final configuration API.
+Craft `6.0.0-alpha.20` already has native section/Matrix destinations for named
+Laravel routes and controllers, with [`CurrentElement`](https://github.com/craftcms/cms/blob/6.0.0-alpha.20/src/Route/CurrentElement.php)
+injection. Prefer composing that configuration before adding a parallel mapping
+registry. Named destinations must match the URI, domain and method; native
+[`ElementRoute`](https://github.com/craftcms/cms/blob/6.0.0-alpha.20/src/Route/ElementRoute.php)
+checks these constraints. The [`SetRoute` event](https://github.com/craftcms/cms/blob/6.0.0-alpha.20/src/Element/Events/SetRoute.php)
+is another seam, but can bypass native entry guards if used indiscriminately and
+does not participate in every registered-destination matching path.
+
+STEP-01 must establish route precedence, including native homepage resolution,
+the Playground's current `/` redirect and project-config dynamic view routes.
+Identical method/domain/URI registrations can replace one another; do not assume
+every explicit route always wins. Controller fallback also needs deliberate
+method/middleware handling. These are source-inspected constraints, not new
+runtime acceptance evidence (PROJECT S04/S07).
 
 Use the official [Inertia Laravel adapter](https://inertiajs.com/docs/v3/installation/server-side-setup)
 for response negotiation, redirects, shared data and asset versioning. A Vue
@@ -103,84 +119,180 @@ Each slice adds a complete observable capability to the Playground and records
 its support status. Tests need the user's explicit authorization; the acceptance
 criteria below do not grant permission to write or run them.
 
-### 1 Native URLs and project pages
+Planning basis: 2026-11-09, the revisions and source register in PROJECT.md.
+All product steps are **not started**. Implementation, independent review,
+publication, merge, deployment and runtime acceptance must be recorded
+separately; the prior PoC commit does not complete any target step.
 
-Introduce opt-in element-to-page configuration and explicit PHP data providers.
+| Step                                            | Owning requirements                           | Prerequisites                                                                            | Affected repositories                            | Technical readiness                                                                                                       |
+| ----------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| STEP-01 Native URLs and project pages           | REQ-01, REQ-02                                | Existing Craft destinations and the agreed ownership model                               | Plugin + Playground                              | READY; no unresolved product decision prevents the bounded slice.                                                         |
+| STEP-02 Content and queries                     | REQ-03, REQ-05; supports REQ-04               | STEP-01 page/data contract                                                               | Plugin + Playground                              | NOT_READY until STEP-01 is delivered.                                                                                     |
+| STEP-03 Native preview and multisite            | REQ-06, REQ-07                                | STEP-01/02 mapped pages and content                                                      | Plugin + Playground                              | NOT_READY until predecessors are delivered.                                                                               |
+| STEP-04 Forms and file operations               | REQ-04, REQ-08                                | STEP-01 public middleware, STEP-02 assets, STEP-03 site/preview context                  | Plugin + Playground                              | NOT_READY until predecessors are delivered.                                                                               |
+| STEP-05 Accounts and access                     | REQ-09                                        | STEP-04 action/flash/error contract                                                      | Plugin + Playground                              | NOT_READY until STEP-04 is delivered.                                                                                     |
+| STEP-06 Rendering and response policies         | REQ-10, REQ-11, REQ-12                        | STEP-02/03 content/site dependencies and STEP-05 private-session behavior                | Plugin + Playground                              | NOT_READY until predecessors are delivered.                                                                               |
+| STEP-07 Reusable installation and compatibility | REQ-13; release evidence for all requirements | STEP-01 through STEP-06; named third-party products/versions for advertised integrations | Plugin + Playground; selected integration owners | PARTLY_READY for product selection/release decisions; implementation and compatibility acceptance depend on predecessors. |
+
+Current authority covers initialization only. All step owners must read the
+project/model and relevant pinned sources before implementation. If a step is
+published through PRs, its required PRs must merge before dependent roadmap work
+starts; no PRs are currently assigned by this draft. Each handoff reports exact
+scope, criterion-level evidence and remaining findings, source revision/local
+changes, relevant PRs and live merge state, plus deployment/acceptance limits.
+No step may imply permission to create chats, publish issues or change upstream.
+
+### STEP-01 Native URLs and project pages
+
+**Owner and contracts:** one implementation owner coordinates plugin and
+Playground changes. REQ-01/02; DOMAIN_MODEL target request contract; PROJECT
+S02-S04/S07/S08. The first task selects the minimal native destination/public
+middleware/root/page/build configuration from concrete examples.
+
+Introduce opt-in project-page configuration and explicit PHP data providers.
 Use the project's public root view, page resolver and asset build. Keep unmapped
 requests under their existing route handling. Extract the article demonstration
 from the reusable runtime once the project integration can replace it.
 
-Acceptance: two sections with different fields render different project Vue
+**AC-01:** two sections with different fields render different project Vue
 pages at their Craft URLs; a homepage single and an overview work without the
 demo prefix; direct and Inertia visits agree; unavailable entries remain
 unavailable; explicit route precedence is documented; CP, actions, assets and
 GraphQL retain their existing handling. A second example configuration uses
 different section and field handles without modifying package source.
 
-### 2 Content and queries
+**Evidence and scope:** inspect native destination/method/middleware behavior;
+format/static/build checks plus authorized integration/browser checks must show
+the above outcomes and response headers on both HTML and JSON. Preserve preview
+privacy immediately; complete multisite/preview acceptance belongs to STEP-03.
+Forms, new field serializers, full SSR/SEO and public caching are outside this
+slice. Existing E2E counts cover neither this routing nor the new shell.
+
+### STEP-02 Content and queries
+
+**Owner and contracts:** one content/query owner across plugin and examples;
+REQ-03/05, supporting asset projections for REQ-04. Depends on STEP-01's page and
+data contract; DOMAIN_MODEL public projection rules; PROJECT S03/S04.
 
 Provide the smallest shared conventions needed for public content and asset
 projections. Add Playground examples for relations, rich text, nested Matrix,
 globals, taxonomy, transforms, search, sorting and pagination. Keep schema and
 query choices in the project.
 
-Acceptance: the same package supports two distinct content schemas; query
+**AC-02:** the same package supports two distinct content schemas; query
 parameters survive navigation and browser history; nested content and missing
 optional fields render correctly without exposing internal element data.
 
-### 3 Native preview and multisite
+**Evidence and scope:** compare projected output with Craft query/field/transform
+results, check relation loading, links and pagination through authorized
+integration checks. Uploads and protected downloads complete in STEP-04;
+third-party field support needs a named compatibility integration.
+
+### STEP-03 Native preview and multisite
+
+**Owner and contracts:** one editorial/site-context owner; REQ-06/07. Depends on
+STEP-01/02; DOMAIN_MODEL preview lifecycle and PROJECT S04/S05.
 
 Integrate preview with the mapped canonical pages. Carry Craft's current site
 through routing, props, links and response policies. Cover published, named and
 provisional drafts, unpublished entries and revisions as supported by Craft.
 
-Acceptance: autosave updates the native preview while an independent public
+**AC-03:** autosave updates the native preview while an independent public
 visit sees published content; invalid or unrelated tokens reveal no draft data;
 language, domain and subdirectory sites resolve correctly. Track the existing
 native CP error separately from the plugin's preview behavior.
 
-### 4 Forms and file operations
+**Evidence and scope:** authorized real-editor/browser checks include ordinary
+editor preview launch, saved/provisional/unpublished versions, revisions,
+cross-site navigation and HTML/JSON cache headers. Preserve the existing failing
+native baseline result until resolved; an upstream CP fix is not silently added
+to this plugin scope. No parallel token or draft-persistence system.
+
+### STEP-04 Forms and file operations
+
+**Owner and contracts:** one public-action integration owner; REQ-04/08. Depends
+on STEP-01/02/03 and native action/flash/file APIs; DOMAIN_MODEL mutations and
+failures; PROJECT S04/S08.
 
 Connect native and project actions to Inertia forms. Define error, flash,
 redirect and JSON-action handling from actual Craft contracts. Include uploads
 and protected downloads.
 
-Acceptance: valid and invalid submissions, CSRF failures, multiple error bags,
+**AC-04:** valid and invalid submissions, CSRF failures, multiple error bags,
 file validation and post-submit redirects work without duplicate validation or
-client-side copies of server state.
+client-side copies of server state. Message-only failures cannot appear as
+success; authorized/private file access remains enforced by its owner.
 
-### 5 Accounts and access
+**Evidence and scope:** inventory native response types/field names, then use
+authorized success/failure/CSRF/upload/download checks. Do not globally rewrite
+JSON responses. Native account lifecycle integration follows in STEP-05;
+third-party form builders are separate STEP-07 compatibility work.
+
+### STEP-05 Accounts and access
+
+**Owner and contracts:** one authentication integration owner; REQ-09. Depends
+on STEP-04's action/error/flash contract; DOMAIN_MODEL actors/authority and
+PROJECT S04. Inspect native authentication views and challenges instead of
+treating the Playground login example as complete native behavior.
 
 Provide integration examples for native account flows and protected pages.
 Share a deliberate public user projection and preserve Craft's session guard,
 authorization and redirect behavior.
 
-Acceptance: login, logout, registration, activation, password reset, expired
+**AC-05:** login, logout, registration, activation, password reset, expired
 sessions and applicable account challenges work through the Vue frontend;
 guests and unauthorized users cannot access protected props or operations.
 
-### 6 Rendering and response policies
+**Evidence and scope:** authorized session/account checks cover success,
+failures, redirects, native rate limiting and applicable 2FA/confirmation steps.
+Preserve native names such as `loginName` and `rememberMe` when consuming native
+login actions. Project auth GET pages must use its public Vue shell. External
+identity providers and custom account policy are not added without a concrete
+project requirement or selected compatibility integration.
+
+### STEP-06 Rendering and response policies
+
+**Owner and contracts:** one rendering/HTTP-policy owner; REQ-10/11/12. Depends
+on STEP-02/03 data/site lifecycle and STEP-05 private-session behavior;
+DOMAIN_MODEL target response contract and PROJECT S04/S08.
 
 Add public SSR, metadata, canonical and alternate links, error pages, maintenance
 behavior, cache variation and invalidation. Separate public, authenticated and
 preview response policies. Support deploy-time asset version changes.
 
-Acceptance: an initial public request contains meaningful HTML and metadata;
+**AC-06:** an initial public request contains meaningful HTML and metadata;
 direct visits and Inertia navigation preserve status and redirect behavior;
 caches distinguish HTML from page JSON and never mix sites, users or previews;
 publishing or changing content invalidates affected output.
 
-### 7 Reusable installation and plugin compatibility
+**Evidence and scope:** build client/SSR artifacts; authorized HTTP/browser
+checks cover hydration, metadata, errors/maintenance, asset version transitions,
+cache variation and invalidation. No production deployment or performance claim
+follows from successful local builds.
+
+### STEP-07 Reusable installation and plugin compatibility
+
+**Owner and contracts:** package/release owner with each selected integration's
+domain owner. REQ-13 and release evidence for all requirements; depends on
+STEP-01 through STEP-06 and explicit plugin/version selections. PROJECT S07/S09
+provide reference implementations, not blanket compatibility.
 
 Document a clean installation, project configuration, local development,
 production builds, SSR deployment, upgrade requirements and migration from
 Twig. Select third-party integrations explicitly and publish a versioned
 capability matrix for them.
 
-Acceptance: the package installs in a clean supported Craft application and
+**AC-07:** the package installs in a clean supported Craft application and
 the Playground without package source changes; no demo schema or UI is
 required; disabling it restores the project's configured native handling;
 each advertised third-party integration has its own acceptance evidence.
+
+**Evidence and scope:** establish permanent Composer/namespace/handle migration,
+license and distribution choices; verify clean install, upgrade and disabling
+behavior under separately authorized checks. Release docs retain exact
+supported versions and deployment requirements. Publishing, changing repository
+visibility, contacting maintainers and production deployment each retain their
+own authorization boundary.
 
 ## Completion criteria
 
