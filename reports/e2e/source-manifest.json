@@ -1,0 +1,15 @@
+{
+  "src/Http/EntriesController.php": "718874bc7a578258d077bea11ac567e314d820acc86a05ca15bed49b345a2aea",
+  "src/Http/HandleInertiaRequests.php": "1f5e518a9d3613834616e8738c9510ce7caa5c2ba92ff4090f8b7e026e16a82e",
+  "src/Plugin.php": "a40f9c343e6d7f06501b63faa3f36a3cde3744fe670c290c7d89bbcad52687f6",
+  "routes/web.php": "6293fc6d5e12dc12fcfc95ab37694d2cf6b1b59255396dca221a51ff9d8fa3ba",
+  "config/inertia-poc.php": "3e9176efc23b371ea28ea3cf0a7940c981ab744ea085305eabc98acfa10a6216",
+  "resources/css/app.css": "f78566d2cb9b04d54aa75a60599b1ef4857fb8086889328be2589d4cdc94669f",
+  "resources/js/app.ts": "463defe58ffdf9c7f4cb914c7b86f6e5b228cc04f43f20e9486ac9ff784cfb28",
+  "resources/js/layouts/PocLayout.vue": "451b189edb7384b7ca7ed711a121088bef2191e021168b5eaee0fb41522958de",
+  "resources/js/pages/CraftInertiaPoc/Entries/Index.vue": "02e2ea196a04539eaafc1319316f865dc3ca99e749777774e802dc34e5f4e38c",
+  "resources/js/pages/CraftInertiaPoc/Entries/Show.vue": "985e8e960e94ab3e79ede6b382067669ebec1aeda3015c61641b4d670337aa55",
+  "resources/js/pages/CraftInertiaPoc/NotFound.vue": "39c476455a01bf7b1895d3500360a26f10c33c0098079885cd82d2cdc0ed21c3",
+  "resources/js/types.ts": "8f1bdaeef101cfe41aa4e0ad65e666ebee99b5214c6829fea9698de92b2bb1f6",
+  "resources/views/app.blade.php": "e1db13dd64c875ce9d7f5c531f443cd558c4dfc19cb27fd376cee4e17ec1e05a"
+}

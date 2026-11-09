@@ -1,0 +1,244 @@
+<testsuites id="" name="" tests="27" failures="1" skipped="0" errors="0" time="18.722007">
+<testsuite name="plugin.spec.ts" timestamp="2026-11-09T11:19:11.537Z" hostname="" tests="27" failures="1" skipped="0" time="16.775" errors="0">
+<testcase name="overview shows the latest 20 live entries in date order" classname="plugin.spec.ts" time="0.398">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-overview-shows-the--2e2b5--live-entries-in-date-order/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="direct entry visit renders title, summary, multiline body and date" classname="plugin.spec.ts" time="0.284">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-direct-entry-visit--1235b-ary-multiline-body-and-date/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Inertia navigation and browser Back preserve the JavaScript document" classname="plugin.spec.ts" time="0.405">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-Inertia-navigation--e6dcf-rve-the-JavaScript-document/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="disabled entry stays unavailable publicly" classname="plugin.spec.ts" time="0.28">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-disabled-entry-stays-unavailable-publicly/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="future entry stays unavailable publicly" classname="plugin.spec.ts" time="0.252">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-future-entry-stays-unavailable-publicly/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="expired entry stays unavailable publicly" classname="plugin.spec.ts" time="0.259">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-expired-entry-stays-unavailable-publicly/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="otherSection entry stays unavailable publicly" classname="plugin.spec.ts" time="0.261">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-otherSection-entry-stays-unavailable-publicly/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="unpublished entry stays unavailable publicly" classname="plugin.spec.ts" time="0.265">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-unpublished-entry-stays-unavailable-publicly/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="unknown numeric entry returns the plugin 404 page" classname="plugin.spec.ts" time="0.248">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-unknown-numeric-entry-returns-the-plugin-404-page/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="missing optional fields render without errors" classname="plugin.spec.ts" time="0.266">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-missing-optional-fields-render-without-errors/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="title, summary and body are escaped rather than executed" classname="plugin.spec.ts" time="0.297">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-title-summary-and-b-17498-scaped-rather-than-executed/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="pocEmpty section has an actionable empty state" classname="plugin.spec.ts" time="0.265">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-pocEmpty-section-has-an-actionable-empty-state/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="pocMissing section has an actionable empty state" classname="plugin.spec.ts" time="0.248">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-pocMissing-section-has-an-actionable-empty-state/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="responses are non-cacheable and excluded from indexing" classname="plugin.spec.ts" time="0.264">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-responses-are-non-c-a6a88--and-excluded-from-indexing/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="named draft preview uses a real Craft token and leaves public content intact" classname="plugin.spec.ts" time="0.547">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-named-draft-preview-2fe52-eaves-public-content-intact/test-finished-1.png]]
+
+[[ATTACHMENT|results/plugin-named-draft-preview-2fe52-eaves-public-content-intact/test-finished-2.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="unpublished draft is previewable with a valid Craft token" classname="plugin.spec.ts" time="0.284">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-unpublished-draft-i-3a852-le-with-a-valid-Craft-token/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="invalid token cannot expose named draft content" classname="plugin.spec.ts" time="0.265">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-invalid-token-cannot-expose-named-draft-content/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="forged markers cannot expose named draft content" classname="plugin.spec.ts" time="0.266">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-forged-markers-cannot-expose-named-draft-content/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="expired token cannot expose named draft content" classname="plugin.spec.ts" time="0.265">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-expired-token-cannot-expose-named-draft-content/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="a token for one entry does not grant access to another unpublished draft" classname="plugin.spec.ts" time="0.278">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-a-token-for-one-ent-4a68d-o-another-unpublished-draft/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="the overview never renders draft placeholders" classname="plugin.spec.ts" time="0.284">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-the-overview-never-renders-draft-placeholders/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="mobile viewport remains readable without horizontal scrolling" classname="plugin.spec.ts" time="0.31">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-mobile-viewport-rem-4800b-ithout-horizontal-scrolling/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="authenticated frontend props do not inherit host auth or control panel data" classname="plugin.spec.ts" time="1.415">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-authenticated-front-6114e--auth-or-control-panel-data/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="host SSR keeps working while plugin pages use their own client bundle" classname="plugin.spec.ts" time="0.703">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-host-SSR-keeps-work-15451-use-their-own-client-bundle/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Craft editor opens the plugin preview target for a named draft" classname="plugin.spec.ts" time="2.737">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-Craft-editor-opens--eb501-ew-target-for-a-named-draft/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Live Preview automatically refreshes draft title, summary and body without publishing" classname="plugin.spec.ts" time="3.891">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/test-finished-1.png]]
+
+[[ATTACHMENT|results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/test-failed-2.png]]
+
+[[ATTACHMENT|results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/error-context.md]]
+
+[[ATTACHMENT|results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/trace.zip]]
+]]>
+</system-out>
+<failure message="No unhandled browser JavaScript errors" type="expect.toEqual">
+<![CDATA[  plugin.spec.ts:406:1 › Live Preview automatically refreshes draft title, summary and body without publishing 
+
+    Error: No unhandled browser JavaScript errors
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Invalid value used as weak map key",
+    + ]
+
+      51 |     contentType: "application/json",
+      52 |   });
+    > 53 |   expect.soft(errors, "No unhandled browser JavaScript errors").toEqual([]);
+         |                                                                 ^
+      54 | });
+      55 |
+      56 | test("overview shows the latest 20 live entries in date order", async ({
+        at /Users/joostwaaijer/Documents/workspace/craft-inertia-poc/tests/e2e/plugin.spec.ts:53:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../reports/e2e/results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/test-finished-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../reports/e2e/results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../reports/e2e/results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../reports/e2e/results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/trace.zip
+    Usage:
+
+        npx playwright show-trace ../../reports/e2e/results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+</testcase>
+<testcase name="publishing a named draft updates the public entry" classname="plugin.spec.ts" time="1.538">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|results/plugin-publishing-a-named-draft-updates-the-public-entry/test-finished-1.png]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

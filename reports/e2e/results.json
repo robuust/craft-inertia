@@ -1,0 +1,1390 @@
+{
+  "config": {
+    "argv": [
+      "/Users/joostwaaijer/.nvm/versions/node/v24.15.0/bin/node",
+      "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/node_modules/.bin/playwright",
+      "test",
+      "--config=tests/e2e/playwright.config.ts"
+    ],
+    "configFile": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/tests/e2e/playwright.config.ts",
+    "rootDir": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": true,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/tests/e2e",
+        "snapshotDir": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/tests/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.spec.ts",
+        "timeout": 30000,
+        "use": {
+          "channel": "chrome",
+          "baseURL": "http://127.0.0.1:18766",
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "screenshot": "on",
+          "trace": "retain-on-failure",
+          "actionTimeout": 10000
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc//reports/e2e/playwright",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc//reports/e2e/results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc//reports/e2e/junit.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "plugin.spec.ts",
+      "file": "plugin.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "overview shows the latest 20 live entries in date order",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 398,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:11.753Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-overview-shows-the--2e2b5--live-entries-in-date-order/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-b6904ce2d06ca4b52059",
+          "file": "plugin.spec.ts",
+          "line": 56,
+          "column": 1
+        },
+        {
+          "title": "direct entry visit renders title, summary, multiline body and date",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 284,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:12.497Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-direct-entry-visit--1235b-ary-multiline-body-and-date/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-d8fc0164ddd266b9ac58",
+          "file": "plugin.spec.ts",
+          "line": 73,
+          "column": 1
+        },
+        {
+          "title": "Inertia navigation and browser Back preserve the JavaScript document",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 405,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:12.792Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-Inertia-navigation--e6dcf-rve-the-JavaScript-document/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-85f63a277576e6d9f613",
+          "file": "plugin.spec.ts",
+          "line": 92,
+          "column": 1
+        },
+        {
+          "title": "disabled entry stays unavailable publicly",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 280,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:13.205Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-disabled-entry-stays-unavailable-publicly/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-e04faa18bc3d752398ee",
+          "file": "plugin.spec.ts",
+          "line": 137,
+          "column": 3
+        },
+        {
+          "title": "future entry stays unavailable publicly",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 252,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:13.492Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-future-entry-stays-unavailable-publicly/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-81627732589a7797dad4",
+          "file": "plugin.spec.ts",
+          "line": 137,
+          "column": 3
+        },
+        {
+          "title": "expired entry stays unavailable publicly",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 259,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:13.751Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-expired-entry-stays-unavailable-publicly/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-db993a5e9b35ca09b82b",
+          "file": "plugin.spec.ts",
+          "line": 137,
+          "column": 3
+        },
+        {
+          "title": "otherSection entry stays unavailable publicly",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 261,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:14.021Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-otherSection-entry-stays-unavailable-publicly/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-e38cea7deb84e3799dd0",
+          "file": "plugin.spec.ts",
+          "line": 137,
+          "column": 3
+        },
+        {
+          "title": "unpublished entry stays unavailable publicly",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 265,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:14.290Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-unpublished-entry-stays-unavailable-publicly/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-b596c3d6b9078510c0f4",
+          "file": "plugin.spec.ts",
+          "line": 137,
+          "column": 3
+        },
+        {
+          "title": "unknown numeric entry returns the plugin 404 page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 248,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:14.562Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-unknown-numeric-entry-returns-the-plugin-404-page/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-3481abd30f78a93753fa",
+          "file": "plugin.spec.ts",
+          "line": 149,
+          "column": 1
+        },
+        {
+          "title": "missing optional fields render without errors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 266,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:14.818Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-missing-optional-fields-render-without-errors/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-be302e49c0e0f00afc97",
+          "file": "plugin.spec.ts",
+          "line": 157,
+          "column": 1
+        },
+        {
+          "title": "title, summary and body are escaped rather than executed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 297,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:15.092Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-title-summary-and-b-17498-scaped-rather-than-executed/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-47c24ce243d4972502ce",
+          "file": "plugin.spec.ts",
+          "line": 165,
+          "column": 1
+        },
+        {
+          "title": "pocEmpty section has an actionable empty state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 265,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:15.395Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-pocEmpty-section-has-an-actionable-empty-state/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-1f4013aac2e28d4f99b9",
+          "file": "plugin.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "pocMissing section has an actionable empty state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 248,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:15.666Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-pocMissing-section-has-an-actionable-empty-state/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-1dcb47780d94d8ccd018",
+          "file": "plugin.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "responses are non-cacheable and excluded from indexing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 264,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:15.924Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-responses-are-non-c-a6a88--and-excluded-from-indexing/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-94f37b24e46c9a4101e7",
+          "file": "plugin.spec.ts",
+          "line": 204,
+          "column": 1
+        },
+        {
+          "title": "named draft preview uses a real Craft token and leaves public content intact",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 547,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:16.194Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-named-draft-preview-2fe52-eaves-public-content-intact/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-named-draft-preview-2fe52-eaves-public-content-intact/test-finished-2.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-222196de068b7d45ee50",
+          "file": "plugin.spec.ts",
+          "line": 217,
+          "column": 1
+        },
+        {
+          "title": "unpublished draft is previewable with a valid Craft token",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 284,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:16.748Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-unpublished-draft-i-3a852-le-with-a-valid-Craft-token/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-f498cc8a24a386ed19fb",
+          "file": "plugin.spec.ts",
+          "line": 241,
+          "column": 1
+        },
+        {
+          "title": "invalid token cannot expose named draft content",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 265,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:17.037Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-invalid-token-cannot-expose-named-draft-content/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-6e6808cd3991e87eb8a4",
+          "file": "plugin.spec.ts",
+          "line": 263,
+          "column": 3
+        },
+        {
+          "title": "forged markers cannot expose named draft content",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 266,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:17.308Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-forged-markers-cannot-expose-named-draft-content/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-9aa24e7e48d7c27f093b",
+          "file": "plugin.spec.ts",
+          "line": 263,
+          "column": 3
+        },
+        {
+          "title": "expired token cannot expose named draft content",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 265,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:17.580Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-expired-token-cannot-expose-named-draft-content/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-3b35a498fc30fdede3f6",
+          "file": "plugin.spec.ts",
+          "line": 263,
+          "column": 3
+        },
+        {
+          "title": "a token for one entry does not grant access to another unpublished draft",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 278,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:17.851Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-a-token-for-one-ent-4a68d-o-another-unpublished-draft/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-0bebb326fe1d804a4e48",
+          "file": "plugin.spec.ts",
+          "line": 273,
+          "column": 1
+        },
+        {
+          "title": "the overview never renders draft placeholders",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 284,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:18.136Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-the-overview-never-renders-draft-placeholders/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-045ce21a205da63b2c77",
+          "file": "plugin.spec.ts",
+          "line": 285,
+          "column": 1
+        },
+        {
+          "title": "mobile viewport remains readable without horizontal scrolling",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 310,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:18.427Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-mobile-viewport-rem-4800b-ithout-horizontal-scrolling/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-643be136fdc68942f48f",
+          "file": "plugin.spec.ts",
+          "line": 296,
+          "column": 1
+        },
+        {
+          "title": "authenticated frontend props do not inherit host auth or control panel data",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1415,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:18.743Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-authenticated-front-6114e--auth-or-control-panel-data/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-0b3550738acd9837a559",
+          "file": "plugin.spec.ts",
+          "line": 322,
+          "column": 1
+        },
+        {
+          "title": "host SSR keeps working while plugin pages use their own client bundle",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 703,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:20.166Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-host-SSR-keeps-work-15451-use-their-own-client-bundle/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-55eafb50d8b71c0a3147",
+          "file": "plugin.spec.ts",
+          "line": 356,
+          "column": 1
+        },
+        {
+          "title": "Craft editor opens the plugin preview target for a named draft",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2737,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:20.879Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-Craft-editor-opens--eb501-ew-target-for-a-named-draft/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-7da9c7079b77ef877126",
+          "file": "plugin.spec.ts",
+          "line": 380,
+          "column": 1
+        },
+        {
+          "title": "Live Preview automatically refreshes draft title, summary and body without publishing",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3891,
+                  "error": {
+                    "message": "Error: No unhandled browser JavaScript errors\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Invalid value used as weak map key\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: No unhandled browser JavaScript errors\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Invalid value used as weak map key\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at /Users/joostwaaijer/Documents/workspace/craft-inertia-poc/tests/e2e/plugin.spec.ts:53:65",
+                    "location": {
+                      "file": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/tests/e2e/plugin.spec.ts",
+                      "column": 65,
+                      "line": 53
+                    },
+                    "snippet": " \u001b[90m 51 |\u001b[39m     contentType\u001b[33m:\u001b[39m \u001b[32m\"application/json\"\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 52 |\u001b[39m   })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 53 |\u001b[39m   expect\u001b[33m.\u001b[39msoft(errors\u001b[33m,\u001b[39m \u001b[32m\"No unhandled browser JavaScript errors\"\u001b[39m)\u001b[33m.\u001b[39mtoEqual([])\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 54 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 55 |\u001b[39m\n \u001b[90m 56 |\u001b[39m test(\u001b[32m\"overview shows the latest 20 live entries in date order\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/tests/e2e/plugin.spec.ts",
+                        "column": 65,
+                        "line": 53
+                      },
+                      "message": "Error: No unhandled browser JavaScript errors\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Invalid value used as weak map key\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  51 |     contentType: \"application/json\",\n  52 |   });\n> 53 |   expect.soft(errors, \"No unhandled browser JavaScript errors\").toEqual([]);\n     |                                                                 ^\n  54 | });\n  55 |\n  56 | test(\"overview shows the latest 20 live entries in date order\", async ({\n    at /Users/joostwaaijer/Documents/workspace/craft-inertia-poc/tests/e2e/plugin.spec.ts:53:65"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:23.624Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "WwogICJJbnZhbGlkIHZhbHVlIHVzZWQgYXMgd2VhayBtYXAga2V5Igpd"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/test-failed-2.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-Live-Preview-automa-506ba-and-body-without-publishing/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/tests/e2e/plugin.spec.ts",
+                    "column": 65,
+                    "line": 53
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-9746da4d9379982d2a43",
+          "file": "plugin.spec.ts",
+          "line": 406,
+          "column": 1
+        },
+        {
+          "title": "publishing a named draft updates the public entry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1538,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T11:19:27.969Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/joostwaaijer/Documents/workspace/craft-inertia-poc/reports/e2e/results/plugin-publishing-a-named-draft-updates-the-public-entry/test-finished-1.png"
+                    },
+                    {
+                      "name": "javascript-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4dd859635662cea12a40-528d62c3c48873b07940",
+          "file": "plugin.spec.ts",
+          "line": 457,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-09T11:19:11.119Z",
+    "duration": 18722.007,
+    "expected": 26,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

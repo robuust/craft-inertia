@@ -1,0 +1,18 @@
+{
+  "time": 14482.31,
+  "error": {
+    "error": {
+      "error": {
+        "message": "Invalid value used as weak map key",
+        "stack": "TypeError: Invalid value used as weak map key\n    at WeakMap.set (<anonymous>)\n    at e.init (http://127.0.0.1:18766/vendor/craft/build/assets/ui-CCfBrd3B.js:66:46856)\n    at new e (http://127.0.0.1:18766/vendor/craft/build/assets/ui-CCfBrd3B.js:66:46152)\n    at <anonymous>:29:1",
+        "name": "TypeError"
+      }
+    },
+    "location": {
+      "url": "http://127.0.0.1:18766/vendor/craft/build/assets/ui-CCfBrd3B.js",
+      "line": 65,
+      "column": 46855
+    }
+  },
+  "pageId": "page@cf685d8544e4cc64b7b41d4e0dfa73c8"
+}

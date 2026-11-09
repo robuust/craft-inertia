@@ -1,0 +1,26 @@
+{
+    "name": "robuust/craft-inertia-poc",
+    "description": "A small Craft CMS 6, Inertia 3 and Vue 3 proof of concept.",
+    "type": "craft-plugin",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.5",
+        "craftcms/cms": "^6.0.0-alpha.20",
+        "inertiajs/inertia-laravel": "^3.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Robuust\\CraftInertiaPoc\\": "src/"
+        }
+    },
+    "extra": {
+        "class": "Robuust\\CraftInertiaPoc\\Plugin",
+        "handle": "inertia-poc",
+        "name": "Inertia Proof of Concept",
+        "developer": "Robuust",
+        "schemaVersion": "1.0.0"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
