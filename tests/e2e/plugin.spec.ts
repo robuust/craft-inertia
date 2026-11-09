@@ -164,9 +164,14 @@ test("controller destination uses a different project page and field projection"
   expect(json.component).toBe("Site/Projects/Show");
   expect(json.props).toEqual(direct.props);
   expect(Object.keys(json.props.entry).sort()).toEqual([
+    "blocks",
     "id",
+    "image",
     "location",
+    "related",
+    "richText",
     "title",
+    "topics",
     "url",
   ]);
 });
@@ -322,7 +327,7 @@ test("project Vue text rendering escapes title and field values", async ({
 });
 
 for (const [section, message] of [
-  ["pocEmpty", "No published entries yet."],
+  ["pocEmpty", "No published entries match your filters."],
   ["pocMissing", "The article section has not been configured."],
 ] as const) {
   test(`${section} renders its project empty state`, async ({ page }) => {

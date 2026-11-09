@@ -132,7 +132,7 @@ transport contract; STEP-05 applies it to account flows.
 | Decision                                  | Owning step and effect                                                                                            |
 | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | Minimal page/root/asset configuration API | Settled in STEP-01: native destinations, project controllers/pages/build and opt-in middleware with a configurable root view. |
-| Public projection extension conventions   | STEP-02; demonstrate distinct schemas before extracting shared field abstractions.                                |
+| Public projection extension conventions   | Settled in STEP-02: project-owned typed PHP methods, explicit arrays and native query/field APIs; see CONTENT.md.                                |
 | Site and preview public context shape     | STEP-03; preserve native identity and expose only page-required context.                                          |
 | Supported native action contracts         | STEP-04 and STEP-05; inspect responses rather than duplicate validation.                                          |
 | Public SSR/cache policy configuration     | STEP-06; establish HTML/JSON variation, private isolation and invalidation.                                       |
@@ -152,3 +152,10 @@ The project chooses page names and explicit projections. Dynamic project-config
 view routes retain Craft alpha.20 precedence on identical route signatures;
 projects keep those signatures disjoint from Inertia page routes. See the
 [installation and route policy](../README.md).
+
+## STEP-02 content contract
+
+The [content convention](CONTENT.md) retains STEP-01 field names and adds explicit
+optional content, globals, filter and pagination values in the consuming project.
+The package remains schema-free. Native Markdown is the covered rich-text variant;
+native singles and Entries relations supply alpha.20 globals and taxonomy.

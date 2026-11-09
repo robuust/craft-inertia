@@ -8,8 +8,9 @@ Vue presentation and chooses the data it exposes.
 **Initialized:** 2026-11-09. This is research and documentation, with a draft
 execution roadmap. Product implementation, new test work and publication are
 separate actions. This initialization records the original bounded article PoC.
-STEP-01 now replaces its fixed runtime with opt-in public middleware and
-project-owned pages; see the [current integration](../README.md). The source
+STEP-01 replaces its fixed runtime with opt-in public middleware and
+project-owned pages; STEP-02 documents project-owned native content and queries
+in [CONTENT.md](CONTENT.md); see the [current integration](../README.md). The source
 register and original E2E findings below retain their historical meaning.
 
 ## Project entrypoints
