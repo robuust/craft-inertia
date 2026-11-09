@@ -108,9 +108,10 @@ plugin consumes the resolved version; it must not duplicate those transitions.
 | Autosave                                         | The existing Craft preview refresh mechanism updates the Vue page.                                 |
 | Publish                                          | Subsequent ordinary visits use the newly public content and affected cached output is invalidated. |
 
-Preview markers can be removed during Craft's internal request preparation.
-Consume the server-resolved element and context rather than relying on query
-markers. STEP-01 exercises basic canonical URL token/privacy boundaries;
+Native request preparation removes the token query key. Released alpha.20
+also removed preview markers; the approved pinned official 6.x source preserves
+them. Consume the server-resolved element and context rather than relying on
+marker presence. STEP-01 exercises basic canonical URL token/privacy boundaries;
 complete editor preview, revisions and multisite acceptance remain STEP-03.
 The original saved E2E run covers the numeric demonstration.
 
@@ -133,7 +134,7 @@ transport contract; STEP-05 applies it to account flows.
 | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | Minimal page/root/asset configuration API | Settled in STEP-01: native destinations, project controllers/pages/build and opt-in middleware with a configurable root view. |
 | Public projection extension conventions   | Settled in STEP-02: project-owned typed PHP methods, explicit arrays and native query/field APIs; see CONTENT.md.                                |
-| Site and preview public context shape     | STEP-03; preserve native identity and expose only page-required context.                                          |
+| Site and preview public context shape     | STEP-03: project-owned site identity, native URLs and public translation links; matched element `previewing` supplies version context. See CONTENT.md. |
 | Supported native action contracts         | STEP-04 and STEP-05; inspect responses rather than duplicate validation.                                          |
 | Public SSR/cache policy configuration     | STEP-06; establish HTML/JSON variation, private isolation and invalidation.                                       |
 | Initial third-party support matrix        | STEP-07; product selection remains open and does not block the core first step.                                   |

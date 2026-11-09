@@ -65,3 +65,26 @@ Route::middleware(['craft', DestinationMiddleware::class])->group(function (): v
     Route::domain('destination.invalid')->get('/route-tests/controller-domain/{slug}', [NativeDestinationController::class, 'wrongDomain']);
     Route::post('/route-tests/controller-method/{slug}', [NativeDestinationController::class, 'wrongMethod']);
 });
+
+if (!class_exists(ObserveSiteRequest::class)) {
+    final class ObserveSiteRequest
+    {
+        public function handle(Request $request, Closure $next): Response
+        {
+            $response = $next($request);
+            $response->headers->set('X-E2E-Preview-Markers', json_encode([
+                'token' => $request->query('token') !== null,
+                'marker' => $request->query('x-craft-preview') !== null,
+                'requestIsPreview' => $request->isPreview(),
+            ], JSON_THROW_ON_ERROR));
+
+            return $response;
+        }
+    }
+}
+
+foreach (Route::getRoutes() as $route) {
+    if (in_array(\Robuust\CraftInertiaPoc\Http\HandleInertiaRequests::class, (array) $route->getAction('middleware'), true)) {
+        $route->middleware(ObserveSiteRequest::class);
+    }
+}

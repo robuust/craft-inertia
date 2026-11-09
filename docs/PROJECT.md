@@ -5,6 +5,14 @@ complete public frontend with Inertia and Vue. Craft keeps ownership of content,
 URLs, editorial workflows, sessions and permissions. Each project supplies its
 Vue presentation and chooses the data it exposes.
 
+**Current execution:** STEP-01 and STEP-02 are merged. STEP-03 adds project-owned
+native site context and preview/multisite evidence. Approved official 6.x source
+`0506c32` plus matching assets `1797325` passes current scoped preview acceptance;
+the historical released-alpha.20 CP failure is retained separately. Execution, scoped
+tests and plugin PR publication are authorized by the subsequent roadmap request;
+Playground work must remain local and uncommitted. The initialization authority
+and inspected baseline below are historical. See [STEP-03](../reports/e2e/STEP03.md).
+
 **Initialized:** 2026-11-09. This is research and documentation, with a draft
 execution roadmap. Product implementation, new test work and publication are
 separate actions. This initialization records the original bounded article PoC.
@@ -116,11 +124,10 @@ be demonstrated rather than inferred from a working HTML preview.
 | Permanent package name, license and distribution channel                     | Open release decisions; preserve current identifiers until intentionally migrated in STEP-07. Private GitHub hosting does not decide future distribution.                                                  |
 | Test and publication authority                                               | Init authorizes research/docs. It does not authorize new test work, product edits, commits, pushes, issue/PR publication, merge or deployment. Earlier E2E/commit work was completed within its own scope. |
 
-STEP-01 is **technically READY** against pinned alpha.20. Later steps have named
+At initialization, STEP-01 was **technically READY** against pinned alpha.20. Later steps have named
 dependencies; their readiness and acceptance criteria are in `FRONTEND.md`.
-Readiness does not grant execution authority. The next product action is to
-implement STEP-01 in the plugin and Playground under an implementation request,
-with test authorization established separately.
+Readiness does not grant execution authority. Subsequent authorized roadmap execution delivered STEP-01/02. STEP-03 now
+records its bounded implementation and approved development-baseline acceptance; see the current execution note above.
 
 ## Evidence and operational limits
 

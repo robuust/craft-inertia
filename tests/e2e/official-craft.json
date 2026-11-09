@@ -1,0 +1,199 @@
+{
+  "description": "Official STEP03 test baseline, exact metadata from fixed upstream manifests; development alias is only for the existing plugin Composer constraint.",
+  "pins": [
+    {
+      "name": "craftcms/cms",
+      "reference": "0506c32b44efbe3e7f5fded46a7c1d39de699d5b",
+      "manifestSha256": "b807c81f4a7198eab11b5f4a5b90d3041244f8a46f49c40cd0d2dd9b36cbacbd"
+    },
+    {
+      "name": "craftcms/cms-assets",
+      "reference": "17973259d5727a1e50a1fc85dd90566b889407af",
+      "manifestSha256": "3010fdff22bbc7d92b0a15b02a00db921ef7de78a636779c35dbf4495a4d7e95"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "package",
+      "package": {
+        "name": "craftcms/cms",
+        "description": "Craft CMS",
+        "license": "proprietary",
+        "authors": [
+          {
+            "name": "Pixel & Tonic",
+            "homepage": "https://pixelandtonic.com/"
+          }
+        ],
+        "support": {
+          "email": "support@craftcms.com",
+          "issues": "https://github.com/craftcms/cms/issues?state=open",
+          "forum": "https://craftcms.stackexchange.com/",
+          "source": "https://github.com/craftcms/cms",
+          "docs": "https://craftcms.com/docs/5.x/",
+          "rss": "https://github.com/craftcms/cms/releases.atom"
+        },
+        "require": {
+          "php": "^8.5",
+          "ext-bcmath": "*",
+          "ext-curl": "*",
+          "ext-dom": "*",
+          "ext-intl": "*",
+          "ext-json": "*",
+          "ext-mbstring": "*",
+          "ext-openssl": "*",
+          "ext-pcre": "*",
+          "ext-pdo": "*",
+          "ext-zip": "*",
+          "bacon/bacon-qr-code": "^3.0",
+          "commerceguys/addressing": "^2.3.0",
+          "composer/semver": "^3.3.2",
+          "craftcms/cms-assets": "self.version",
+          "craftcms/laravel-aliases": "^2.0",
+          "craftcms/laravel-dependency-aware-cache": "^1.2.3",
+          "craftcms/laravel-ruleset-validation": "^1.1",
+          "craftcms/plugin-installer": "~1.6.0",
+          "craftcms/server-check": "~6.0.0",
+          "craftcms/url-validator": "^1.0",
+          "elvanto/litemoji": "^5.2.0",
+          "enshrined/svg-sanitize": "^1.0.0",
+          "guzzlehttp/guzzle": "^7.2.0",
+          "inertiajs/inertia-laravel": "^3.0",
+          "intervention/image": "^4.2",
+          "laravel/ai": "^1.2",
+          "laravel/framework": "^13.38",
+          "laravel/passport": "^13.0",
+          "laravel/wayfinder": "^0.1.23",
+          "league/commonmark": "^2.8",
+          "league/flysystem-path-prefixing": "^3.31",
+          "league/uri": "^7.0",
+          "mcp/sdk": "0.8.1",
+          "moneyphp/money": "^4.0",
+          "phpoffice/phpspreadsheet": "^5.3",
+          "pragmarx/google2fa": "^9.0",
+          "pragmarx/recovery": "^0.2.1",
+          "symfony/css-selector": "^7.0|^8.0",
+          "symfony/dom-crawler": "^7.0|^8.0",
+          "symfony/filesystem": "^7.0|^8.0",
+          "symfony/html-sanitizer": "^7.0|^8.0",
+          "symfony/psr-http-message-bridge": "^7.4|^8.0",
+          "symfony/serializer": "^6.4|^7.0|^8.0",
+          "symfony/yaml": "^7.0|^8.0",
+          "theiconic/name-parser": "^1.2",
+          "tpetry/laravel-query-expressions": "^1.5",
+          "twig/twig": "~3.30.0",
+          "voku/portable-ascii": "^2.0",
+          "web-auth/webauthn-lib": "~5.3.9",
+          "webonyx/graphql-php": "~15.33.1",
+          "yiisoft/arrays": "^3.2",
+          "yiisoft/html": "^4.1",
+          "yiisoft/translator": "^3.2",
+          "yiisoft/translator-message-php": "^1.1"
+        },
+        "suggest": {
+          "ext-exif": "Adds support for parsing image EXIF data.",
+          "ext-imagick": "Adds support for more image processing formats and options.",
+          "intervention/image-driver-vips": "Adds support for image processing with libvips (requires ext-ffi and libvips).",
+          "ext-iconv": "Adds support for more character encodings than PHP\u2019s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",
+          "laravel/socialite": "Adds OAuth login support for providers configured with `GeneralConfig::oauthProviders()`."
+        },
+        "autoload": {
+          "psr-4": {
+            "CraftCms\\Cms\\": "src/"
+          },
+          "files": ["src/helpers.php"]
+        },
+        "extra": {
+          "laravel": {
+            "providers": ["CraftCms\\Cms\\Providers\\CraftServiceProvider"],
+            "aliases": {
+              "Activities": "CraftCms\\Cms\\Support\\Facades\\Activities",
+              "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
+              "Ai": "CraftCms\\Cms\\Support\\Facades\\Ai",
+              "Anchors": "CraftCms\\Cms\\Support\\Facades\\Anchors",
+              "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
+              "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
+              "AuthMethods": "CraftCms\\Cms\\Support\\Facades\\AuthMethods",
+              "BulkOps": "CraftCms\\Cms\\Support\\Facades\\BulkOps",
+              "Conditions": "CraftCms\\Cms\\Support\\Facades\\Conditions",
+              "DeltaRegistry": "CraftCms\\Cms\\Support\\Facades\\DeltaRegistry",
+              "Deprecator": "CraftCms\\Cms\\Support\\Facades\\Deprecator",
+              "Drafts": "CraftCms\\Cms\\Support\\Facades\\Drafts",
+              "ElementActions": "CraftCms\\Cms\\Support\\Facades\\ElementActions",
+              "ElementActivity": "CraftCms\\Cms\\Support\\Facades\\ElementActivity",
+              "ElementCaches": "CraftCms\\Cms\\Support\\Facades\\ElementCaches",
+              "ElementExporters": "CraftCms\\Cms\\Support\\Facades\\ElementExporters",
+              "ElementSources": "CraftCms\\Cms\\Support\\Facades\\ElementSources",
+              "Elements": "CraftCms\\Cms\\Support\\Facades\\Elements",
+              "Entries": "CraftCms\\Cms\\Support\\Facades\\Entries",
+              "EntryTypes": "CraftCms\\Cms\\Support\\Facades\\EntryTypes",
+              "Fields": "CraftCms\\Cms\\Support\\Facades\\Fields",
+              "Folders": "CraftCms\\Cms\\Support\\Facades\\Folders",
+              "Gql": "CraftCms\\Cms\\Support\\Facades\\Gql",
+              "HtmlSanitizers": "CraftCms\\Cms\\Support\\Facades\\HtmlSanitizers",
+              "HtmlStack": "CraftCms\\Cms\\Support\\Facades\\HtmlStack",
+              "I18N": "CraftCms\\Cms\\Support\\Facades\\I18N",
+              "ImageTransforms": "CraftCms\\Cms\\Support\\Facades\\ImageTransforms",
+              "Images": "CraftCms\\Cms\\Support\\Facades\\Images",
+              "InputNamespace": "CraftCms\\Cms\\Support\\Facades\\InputNamespace",
+              "JobProgress": "CraftCms\\Cms\\Support\\Facades\\JobProgress",
+              "Markdown": "CraftCms\\Cms\\Support\\Facades\\Markdown",
+              "OAuth": "CraftCms\\Cms\\Support\\Facades\\OAuth",
+              "Path": "CraftCms\\Cms\\Support\\Facades\\Path",
+              "Plugins": "CraftCms\\Cms\\Support\\Facades\\Plugins",
+              "ProjectConfig": "CraftCms\\Cms\\Support\\Facades\\ProjectConfig",
+              "ResponseHeaders": "CraftCms\\Cms\\Support\\Facades\\ResponseHeaders",
+              "Revisions": "CraftCms\\Cms\\Support\\Facades\\Revisions",
+              "Search": "CraftCms\\Cms\\Support\\Facades\\Search",
+              "Sections": "CraftCms\\Cms\\Support\\Facades\\Sections",
+              "Security": "CraftCms\\Cms\\Support\\Facades\\Security",
+              "SiteGroups": "CraftCms\\Cms\\Support\\Facades\\SiteGroups",
+              "Sites": "CraftCms\\Cms\\Support\\Facades\\Sites",
+              "Structures": "CraftCms\\Cms\\Support\\Facades\\Structures",
+              "Template": "CraftCms\\Cms\\Support\\Facades\\Template",
+              "TemplateHooks": "CraftCms\\Cms\\Support\\Facades\\TemplateHooks",
+              "Twig": "CraftCms\\Cms\\Support\\Facades\\Twig",
+              "Updates": "CraftCms\\Cms\\Support\\Facades\\Updates",
+              "UserGroups": "CraftCms\\Cms\\Support\\Facades\\UserGroups",
+              "UserPermissions": "CraftCms\\Cms\\Support\\Facades\\UserPermissions",
+              "Users": "CraftCms\\Cms\\Support\\Facades\\Users",
+              "Volumes": "CraftCms\\Cms\\Support\\Facades\\Volumes",
+              "Workflows": "CraftCms\\Cms\\Support\\Facades\\Workflows"
+            }
+          }
+        },
+        "version": "6.x-dev",
+        "source": {
+          "type": "git",
+          "url": "https://github.com/craftcms/cms.git",
+          "reference": "0506c32b44efbe3e7f5fded46a7c1d39de699d5b"
+        },
+        "dist": {
+          "type": "zip",
+          "url": "https://api.github.com/repos/craftcms/cms/zipball/0506c32b44efbe3e7f5fded46a7c1d39de699d5b",
+          "reference": "0506c32b44efbe3e7f5fded46a7c1d39de699d5b"
+        }
+      }
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "craftcms/cms-assets",
+        "description": "Built assets for Craft CMS.",
+        "license": "proprietary",
+        "type": "library",
+        "version": "6.x-dev",
+        "source": {
+          "type": "git",
+          "url": "https://github.com/craftcms/cms-assets.git",
+          "reference": "17973259d5727a1e50a1fc85dd90566b889407af"
+        },
+        "dist": {
+          "type": "zip",
+          "url": "https://api.github.com/repos/craftcms/cms-assets/zipball/17973259d5727a1e50a1fc85dd90566b889407af",
+          "reference": "17973259d5727a1e50a1fc85dd90566b889407af"
+        }
+      }
+    }
+  ]
+}

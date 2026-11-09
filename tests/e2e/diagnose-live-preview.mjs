@@ -5,6 +5,18 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const runtime = `${root}/tests/e2e/.runtime`;
+// Historical released-alpha.20 reproducer. Current Vue Preview acceptance lives
+// in editor-preview.spec.ts, including the unmapped native Twig control.
+const cmsPackage = JSON.parse(
+  readFileSync(`${runtime}/playground/composer.lock`, "utf8"),
+).packages.find((entry) => entry.name === "craftcms/cms");
+if (cmsPackage?.version !== "6.0.0-alpha.20") {
+  throw new Error(
+    "This diagnostic requires the released alpha.20 runtime. Use the current editor-preview project for the pinned official 6.x baseline.",
+  );
+}
+const evidence = process.env.POC_E2E_REPORT_DIR ?? `${root}/reports/e2e/step01`;
+mkdirSync(evidence, { recursive: true });
 const templatePath = `${runtime}/playground/resources/views/e2e/canonical.twig`;
 mkdirSync(`${runtime}/playground/resources/views/e2e`, { recursive: true });
 copyFileSync(`${root}/tests/e2e/fixtures/canonical.twig`, templatePath);
@@ -25,6 +37,25 @@ try {
   const context = await browser.newContext();
   const page = await context.newPage();
   const errors = [];
+  const editorResponses = [];
+  const responseReads = [];
+  page.on("response", (response) => {
+    if (new URL(response.url()).pathname.endsWith("/actions/elements/edit")) {
+      responseReads.push(
+        response.json().then((data) => {
+          for (const match of (data.bodyHtml ?? "").matchAll(
+            /Craft\.BaseElementSelectInput\(\{"id":"([^"]+)"/g,
+          )) {
+            editorResponses.push({
+              id: match[1],
+              inContent: (data.content ?? "").includes(`id="${match[1]}"`),
+              inSidebar: (data.sidebar ?? "").includes(`id="${match[1]}"`),
+            });
+          }
+        }),
+      );
+    }
+  });
   const pluginRequests = [];
   const projectBundleRequests = [];
   page.on("pageerror", (error) =>
@@ -58,9 +89,10 @@ try {
     { timeout: 30_000 },
   );
   await page.screenshot({
-    path: `${root}/reports/e2e/step01/native-craft-baseline.png`,
+    path: `${evidence}/native-craft-baseline.png`,
     fullPage: true,
   });
+  await Promise.all(responseReads);
   const result = {
     httpStatus: response.status(),
     primaryTarget: "Native Twig template in an unmapped section",
@@ -69,9 +101,10 @@ try {
     pluginRequests,
     projectBundleRequests,
     errors,
+    editorResponses,
   };
   writeFileSync(
-    `${root}/reports/e2e/step01/native-craft-baseline.json`,
+    `${evidence}/native-craft-baseline.json`,
     JSON.stringify(result, null, 2),
   );
   console.log(JSON.stringify(result, null, 2));

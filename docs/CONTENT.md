@@ -121,3 +121,63 @@ The implementation was checked against the installed alpha.20 source, including
 Inertia's [v3 Form](https://inertiajs.com/docs/v3/the-basics/forms) and
 [history](https://inertiajs.com/docs/v3/data-props/remembering-state) contracts
 supply navigation behavior; the project adds no custom history implementation.
+
+## Native sites and preview
+
+A site is identified by Craft ID/UID/handle, with its language and native base
+URL. Two sites may share a language and still have different content, domains
+or subdirectory roots. Read `Sites::getCurrentSite()` after Craft's middleware;
+never choose a site from the language or a public draft/preview query parameter.
+
+The project registers ordinary GET/HEAD Laravel routes for each configured site.
+The Playground's `site-content.routes` is project configuration for these route
+groups: `domain`, `prefix`, route-name prefix `name`, and the `articles` and
+`projects` paths. Domain-specific groups precede unrestricted groups. Section
+site settings use the matching native named destination, URI and site. No
+package site registry or fallback dispatcher is added. For example, a Dutch
+site can register `/nl/artikelen/{slug}` with destination
+`dutch.site.articles.show`; another Dutch site can use its own domain and the
+same translated path with a different route name.
+
+Use `Url::siteUrl()` for homepage and overview links and the matched element's
+`getUrl()` for detail links. These native helpers retain the selected site's
+base path and domain. Native pagination starts from the requested overview URL
+and retains its filters. Keep the project's asset URL request-relative (or use
+an intentionally configured CDN with appropriate origin support); a hardcoded
+single-site asset host can prevent JavaScript modules loading on another domain.
+
+The example adds `site.{id,uid,handle,baseUrl,links}` to the existing `name` and
+`language`. `site.links` contains only public translations of the current
+canonical entry, or the other sites' overview URLs on the overview. Translation
+queries select canonical ID plus site ID, keep normal live status, and use
+`ignorePlaceholders()`. A missing/unavailable translation is omitted. The project
+removes preview/query parameters from those public destination URLs and uses
+ordinary anchors for site changes, so cross-origin navigation loads a document.
+Fields, relation targets, globals and Matrix propagation/translation remain
+native schema decisions. Same language does not mean shared translation values.
+
+Craft's `HandleTokenRequest` validates tokens and prepares native placeholder
+elements, including drafts, user provisional drafts and revisions. In the tested
+official 6.x commit it removes the token query key but preserves preview markers;
+the released alpha.20 removed both. The project reads `#[CurrentElement] Entry`
+and `$entry->previewing` in either case. Marker presence, absence or a draft/revision
+ID is never a replacement authority check. `status(null)` belongs only in Craft's
+authorized preview preparation, never in a public page query. The package has no
+token checker or draft storage.
+
+Both initial HTML and Inertia JSON retain the middleware's `private, no-store`
+policy. The native token may remain in Inertia's returned browser URL even when
+it was removed from the prepared query; those are separate contracts.
+
+The approved official 6.x baseline supplies a native **Preview** control in the
+ordinary Vue editor and a standalone Vue preview screen. Both use the existing
+editor form and autosave queue. Successful saves replace the preview iframe at
+the element's native site URL; no project polling or second persistence path is
+needed. **View** remains a separate popup control. The native mechanism supports
+cross-origin preview without copying CP cookies to the site origin.
+
+Released alpha.20's legacy standalone preview has the historical author-sidebar
+initializer/WeakMap failure, and its ordinary editor exposed only **View**. The
+pinned official source replaces that implementation rather than patching it.
+See the [tested baseline and exact limits](../README.md#tested-craft-baselines)
+and [STEP-03 validation record](../reports/e2e/STEP03.md).
