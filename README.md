@@ -157,13 +157,15 @@ The project owns SSR policy. Playground keeps these example routes client-side
 and leaves its existing authenticated app SSR and Craft CP policy intact. The
 package does not replace the host SSR gateway or supply an SSR bundle.
 
-Craft authorizes and resolves preview elements. No query marker is treated as
-permission, and no extra numeric preview target is added. Basic native URL/token
-privacy belongs to STEP-01 checks; full revisions, multisite and editor preview
-acceptance remain STEP-03. The historical editor Live Preview test failed with a
-native Craft `WeakMap` error also reproduced in a Twig control with zero plugin
-bundle requests. That failure remains unresolved; see the
-[original report](reports/e2e/REPORT.md).
+Craft authorizes and resolves preview elements. Project pages consume the native
+matched element and `previewing` state, including when Craft removes query
+markers during request preparation. Site IDs, translated URLs, domains and
+subdirectory roots stay with Craft. See the [site and preview integration](docs/CONTENT.md#native-sites-and-preview).
+
+STEP-03 verifies ordinary editor View launch, native version/token isolation and
+multisite content. The separate legacy autosave editor still raises a native
+Craft `WeakMap` exception after functional refresh. That strict case remains
+failed and blocks complete editorial acceptance; see [STEP-03](reports/e2e/STEP03.md).
 
 ## Development and acceptance
 
@@ -180,7 +182,9 @@ and untracked, non-ignored working files into `tests/e2e/.runtime`, installs it
 with this package, creates an isolated database and seeds test-only content. It
 does not commit the source or use the original app database. The script records
 source hashes so local, uncommitted examples remain traceable. Follow its output
-for PHP/SSR servers, then run `npm run test:e2e`. STEP-01 outputs live under the
+for PHP/SSR servers, then run `npm run test:e2e`. The `step03` project depends on the STEP-01/02
+projects and seeds additional isolated sites only after those checks. Use a fresh
+snapshot for the complete suite; its strict editor-preview case currently fails. STEP-01 outputs live under the
 ignored `reports/e2e/step01/`; the original 26 passed / 1 failed evidence is
 preserved separately.
 

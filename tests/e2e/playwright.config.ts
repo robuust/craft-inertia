@@ -9,7 +9,16 @@ export default defineConfig({
   projects: [
     { name: "step01", testMatch: "plugin.spec.ts" },
     { name: "step02", testMatch: "content.spec.ts" },
-    { name: "editor-preview", testMatch: "editor-preview.spec.ts" },
+    {
+      name: "step03",
+      testMatch: "sites.spec.ts",
+      dependencies: ["step01", "step02"],
+    },
+    {
+      name: "editor-preview",
+      testMatch: "editor-preview.spec.ts",
+      dependencies: ["step03"],
+    },
   ],
   fullyParallel: false,
   workers: 1,
@@ -31,5 +40,11 @@ export default defineConfig({
     screenshot: "on",
     trace: "retain-on-failure",
     actionTimeout: 10_000,
+    launchOptions: {
+      args: [
+        "--host-resolver-rules=MAP nl.craft.test 127.0.0.1",
+        "--no-proxy-server",
+      ],
+    },
   },
 });

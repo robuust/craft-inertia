@@ -195,8 +195,18 @@ function previewToken(Entry $entry, bool $expired = false): string
 }
 
 require_once __DIR__.'/content-fixtures.php';
+require_once __DIR__.'/site-fixtures.php';
 
 $mode = $argv[1] ?? 'seed';
+
+if ($mode === 'seed-sites') {
+    $fixtures = json_decode(file_get_contents($runtime.'/fixtures.json'), true, flags: JSON_THROW_ON_ERROR);
+    $sites = seedSiteFixtures($fixtures);
+    file_put_contents($runtime.'/sites.json', json_encode($sites, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+    $app->terminate();
+    echo 'POC_FIXTURES_JSON='.json_encode($sites, JSON_THROW_ON_ERROR)."\n";
+    exit;
+}
 
 if ($mode === 'asset-version') {
     echo 'POC_FIXTURES_JSON='.json_encode(['version' => Vite::manifestHash()], JSON_THROW_ON_ERROR)."\n";

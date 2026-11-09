@@ -198,7 +198,6 @@ const environment = {
   APP_DEBUG: "true",
   APP_KEY: `base64:${randomBytes(32).toString("base64")}`,
   APP_URL: "http://127.0.0.1:18766",
-  ASSET_URL: "http://127.0.0.1:18766",
   DEFAULT_SITE_URL: "http://127.0.0.1:18766",
   APP_LOCALE: "en",
   APP_FALLBACK_LOCALE: "en",

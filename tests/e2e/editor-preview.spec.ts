@@ -110,3 +110,60 @@ test("native Live Preview refreshes title and fields without publishing or brows
     "No unhandled browser JavaScript errors; native Craft baseline remains tracked separately",
   ).toEqual([]);
 });
+
+for (const handle of ["dutch", "dutchDomain"]) {
+  test(`${handle}: legacy autosave refreshes the native site preview without browser errors`, async ({
+    page,
+    browser,
+  }, testInfo) => {
+    test.setTimeout(90_000);
+    const site = JSON.parse(readFileSync(`${runtime}/sites.json`, "utf8"))
+      .sites[handle];
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await login(page);
+    const slug = new URL(site.article.url).pathname.split("/").at(-1);
+    await page.goto(`/admin/preview/${site.article.id}-${slug}?site=${handle}`);
+    const frame = page.frameLocator("iframe");
+    await expect(
+      frame.getByRole("heading", { name: site.article.title }),
+    ).toBeVisible();
+    const changedTitle = `${site.label} autosave secret`;
+    await page.locator('input[name$="[title]"]').fill(changedTitle);
+    await page
+      .locator('textarea[name$="[fields][summary]"]')
+      .fill(`${site.label} autosave summary`);
+    await page
+      .locator('textarea[name$="[fields][body]"]')
+      .fill(`${site.label} autosave body`);
+    await page.locator('textarea[name$="[fields][body]"]').press("Tab");
+    await expect(
+      frame.getByRole("heading", { name: changedTitle }),
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(
+      frame.getByText(`${site.label} autosave summary`, { exact: true }),
+    ).toBeVisible();
+    await expect(frame.locator("main article .whitespace-pre-wrap")).toHaveText(
+      `${site.label} autosave body`,
+    );
+    await expect(frame.getByRole("status")).toContainText("Live Preview");
+    const visitor = await browser.newContext();
+    try {
+      const publicPage = await visitor.newPage();
+      await publicPage.goto(site.article.url);
+      await expect(
+        publicPage.getByRole("heading", { name: site.article.title }),
+      ).toBeVisible();
+      await expect(publicPage.locator("main")).not.toContainText(
+        `${site.label} autosave body`,
+      );
+    } finally {
+      await visitor.close();
+    }
+    await testInfo.attach("javascript-errors", {
+      body: JSON.stringify(errors),
+      contentType: "application/json",
+    });
+    expect(errors, "No unhandled browser JavaScript errors").toEqual([]);
+  });
+}
