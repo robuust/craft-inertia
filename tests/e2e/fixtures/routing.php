@@ -12,42 +12,46 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
 
-final class NativeDestinationController
-{
-    public function named(#[CurrentElement] Entry $entry): JsonResponse
+if (!class_exists(NativeDestinationController::class)) {
+    final class NativeDestinationController
     {
-        return response()->json(['title' => $entry->title]);
-    }
+        public function named(#[CurrentElement] Entry $entry): JsonResponse
+        {
+            return response()->json(['title' => $entry->title]);
+        }
 
-    public function controller(#[CurrentElement] Entry $entry): JsonResponse
-    {
-        return response()->json(['title' => $entry->title]);
-    }
+        public function controller(#[CurrentElement] Entry $entry): JsonResponse
+        {
+            return response()->json(['title' => $entry->title]);
+        }
 
-    public function wrongUri(#[CurrentElement] Entry $entry): JsonResponse
-    {
-        return response()->json(['title' => $entry->title]);
-    }
+        public function wrongUri(#[CurrentElement] Entry $entry): JsonResponse
+        {
+            return response()->json(['title' => $entry->title]);
+        }
 
-    public function wrongDomain(#[CurrentElement] Entry $entry): JsonResponse
-    {
-        return response()->json(['title' => $entry->title]);
-    }
+        public function wrongDomain(#[CurrentElement] Entry $entry): JsonResponse
+        {
+            return response()->json(['title' => $entry->title]);
+        }
 
-    public function wrongMethod(#[CurrentElement] Entry $entry): JsonResponse
-    {
-        return response()->json(['title' => $entry->title]);
+        public function wrongMethod(#[CurrentElement] Entry $entry): JsonResponse
+        {
+            return response()->json(['title' => $entry->title]);
+        }
     }
 }
 
-final class DestinationMiddleware
-{
-    public function handle(Request $request, Closure $next): Response
+if (!class_exists(DestinationMiddleware::class)) {
+    final class DestinationMiddleware
     {
-        $response = $next($request);
-        $response->headers->set('X-E2E-Route-Middleware', 'applied');
+        public function handle(Request $request, Closure $next): Response
+        {
+            $response = $next($request);
+            $response->headers->set('X-E2E-Route-Middleware', 'applied');
 
-        return $response;
+            return $response;
+        }
     }
 }
 

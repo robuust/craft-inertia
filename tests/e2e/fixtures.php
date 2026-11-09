@@ -39,13 +39,13 @@ set_exception_handler(static function (Throwable $exception): never {
     exit(1);
 });
 
-if (! $app->environment('e2e') || DB::selectOne('select current_database() as name')->name !== 'inertia_poc_e2e') {
+if (!$app->environment('e2e') || DB::selectOne('select current_database() as name')->name !== 'inertia_poc_e2e') {
     throw new RuntimeException('Fixtures may only run against the isolated E2E database.');
 }
 
 function save(object $model, bool $saved): void
 {
-    if (! $saved) {
+    if (!$saved) {
         throw new RuntimeException($model::class.': '.json_encode($model->errors()->getMessages(), JSON_THROW_ON_ERROR));
     }
 }
@@ -110,7 +110,7 @@ function createSection(string $handle, array $types, ?string $route = 'site.arti
 }
 
 /** @param array<string, mixed> $attributes
- *  @param array<string, string> $fields
+ * @param array<string, string> $fields
  */
 function createEntry(Section $section, EntryType $type, string $title, array $attributes = [], array $fields = []): Entry
 {
@@ -143,15 +143,15 @@ function nativeRoutingFixtures(): array
 {
     $type = createType('pocMinimal');
     $nativeNamed = routingEntry(createSection('nativeNamed', [$type], 'e2e.named', 'route-tests/named/{slug}'), $type, 'Native named destination');
-    $nativeController = routingEntry(createSection('nativeController', [$type], 'CraftInertiaE2E\\NativeDestinationController@controller', 'route-tests/controller/{slug}'), $type, 'Native controller destination');
+    $nativeController = routingEntry(createSection('nativeController', [$type], 'CraftInertiaE2E\NativeDestinationController@controller', 'route-tests/controller/{slug}'), $type, 'Native controller destination');
     $routingMismatches = [];
     foreach ([
         'namedUri' => ['e2e.named.uri', 'route-tests/named-uri/{slug}'],
         'namedDomain' => ['e2e.named.domain', 'route-tests/named-domain/{slug}'],
         'namedMethod' => ['e2e.named.method', 'route-tests/named-method/{slug}'],
-        'controllerUri' => ['CraftInertiaE2E\\NativeDestinationController@wrongUri', 'route-tests/controller-uri/{slug}'],
-        'controllerDomain' => ['CraftInertiaE2E\\NativeDestinationController@wrongDomain', 'route-tests/controller-domain/{slug}'],
-        'controllerMethod' => ['CraftInertiaE2E\\NativeDestinationController@wrongMethod', 'route-tests/controller-method/{slug}'],
+        'controllerUri' => ['CraftInertiaE2E\NativeDestinationController@wrongUri', 'route-tests/controller-uri/{slug}'],
+        'controllerDomain' => ['CraftInertiaE2E\NativeDestinationController@wrongDomain', 'route-tests/controller-domain/{slug}'],
+        'controllerMethod' => ['CraftInertiaE2E\NativeDestinationController@wrongMethod', 'route-tests/controller-method/{slug}'],
     ] as $handle => [$destination, $uriFormat]) {
         $routingMismatches[$handle] = entryData(routingEntry(createSection($handle, [$type], $destination, $uriFormat), $type, 'Native '.$handle.' secret'));
     }
@@ -193,6 +193,8 @@ function previewToken(Entry $entry, bool $expired = false): string
 
     return $token;
 }
+
+require_once __DIR__.'/content-fixtures.php';
 
 $mode = $argv[1] ?? 'seed';
 
@@ -262,11 +264,11 @@ $homeType = createType('pocHome', ['introduction']);
 $journalType = createType('pocJournal', ['teaser', 'copy']);
 $caseType = createType('pocCaseStudy', ['city']);
 $section = createSection('articles', [$type, $minimalType]);
-$projects = createSection('projects', [$projectType], 'App\\Http\\Controllers\\SiteController@project');
+$projects = createSection('projects', [$projectType], 'App\Http\Controllers\SiteController@project');
 createSection('pocNative', [$type], null);
 createSection('pocEmpty', [$type]);
 $journal = createSection('journal', [$journalType], uriFormat: 'articles/{slug}');
-$caseStudies = createSection('caseStudies', [$caseType], 'App\\Http\\Controllers\\SiteController@project', 'projects/{slug}');
+$caseStudies = createSection('caseStudies', [$caseType], 'App\Http\Controllers\SiteController@project', 'projects/{slug}');
 $routingFixtures = nativeRoutingFixtures();
 $homeSection = createSection('homepage', [$homeType], 'home', '__home__', SectionType::Single);
 $home = Entry::find()->sectionId($homeSection->id)->status(null)->one();
@@ -276,7 +278,7 @@ $home->setFieldValues(['introduction' => 'A project-owned public frontend.']);
 save($home, Elements::saveElement($home));
 
 $published = [];
-for ($number = 1; $number <= 22; $number++) {
+for ($number = 1; $number <= 22; ++$number) {
     $title = sprintf('E2E article %02d', $number);
     $entry = createEntry($section, $type, $title, [
         'postDate' => Carbon::parse('2020-01-01T12:00:00Z')->addDays($number),
@@ -335,6 +337,8 @@ $fixtures = [
     ],
     'unpublished' => [...entryData($unpublished), 'token' => previewToken($unpublished)],
 ];
+
+$fixtures['content'] = seedContentFixtures($fixtures);
 
 file_put_contents($runtime.'/fixtures.json', json_encode($fixtures, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
 $app->terminate();

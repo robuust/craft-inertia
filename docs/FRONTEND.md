@@ -40,7 +40,7 @@ step does not by itself complete the full requirement. Product authority is the
 user's reusable-frontend decision (PROJECT source S01), informed by source and
 E2E observations S02-S05. Third-party product selection remains open.
 
-| Requirement | Capability               | Required observable behavior                                                                                                                                                                                   | Current proof of concept                                                                         | Owning step |
+| Requirement | Capability               | Required observable behavior                                                                                                                                                                                   | Historical proof of concept                                                                         | Owning step |
 | ----------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------- |
 | REQ-01      | Native element URLs      | A section's normal entry URL opens the configured Vue page. Craft still resolves the element and applies publication rules. Homepage entries, singles, structures and nested URLs work.                        | Separate numeric demo URLs only.                                                                 | STEP-01     |
 | REQ-02      | Other site routes        | Overview, search and other project pages can use named Laravel routes and Craft dynamic route configuration. Static pages, feeds and non-HTML endpoints keep their appropriate response type.                  | One fixed overview.                                                                              | STEP-01     |
@@ -93,9 +93,9 @@ returns strings and cannot by itself supply the complete Inertia protocol.
 
 The project owns one public Vue application and its Vite and SSR builds. The
 package must coexist with Craft's separate control-panel frontend. Public page
-middleware must not inherit CP props or a CP root view. The current blanket
-`flushShared()`, SSR exclusions and noindex/no-store policies are specific to
-the demonstration and must be replaced with deliberate public response policies.
+middleware must not inherit CP props or a CP root view. STEP-01 removed the demonstration's blanket `flushShared()` and package-owned
+frontend. Public routes retain a conservative private/no-store and noindex policy;
+production rendering and cache policy remain STEP-06.
 
 Data providers return explicit public props. Do not serialize entire elements,
 field layouts, users or queries into page data. Resolve related content and
@@ -120,24 +120,26 @@ its support status. Tests need the user's explicit authorization; the acceptance
 criteria below do not grant permission to write or run them.
 
 Planning basis: 2026-11-09, the revisions and source register in PROJECT.md.
-All product steps are **not started**. Implementation, independent review,
+STEP-01 is delivered and merged in [PR #1](https://github.com/joostwaaijer/craft-inertia/pull/1).
+STEP-02 implementation and evidence are recorded in [STEP02.md](../reports/e2e/STEP02.md).
+Later steps remain not started. Implementation, independent review,
 publication, merge, deployment and runtime acceptance must be recorded
 separately; the prior PoC commit does not complete any target step.
 
 | Step                                            | Owning requirements                           | Prerequisites                                                                            | Affected repositories                            | Technical readiness                                                                                                       |
 | ----------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
 | STEP-01 Native URLs and project pages           | REQ-01, REQ-02                                | Existing Craft destinations and the agreed ownership model                               | Plugin + Playground                              | READY; no unresolved product decision prevents the bounded slice.                                                         |
-| STEP-02 Content and queries                     | REQ-03, REQ-05; supports REQ-04               | STEP-01 page/data contract                                                               | Plugin + Playground                              | NOT_READY until STEP-01 is delivered.                                                                                     |
+| STEP-02 Content and queries                     | REQ-03, REQ-05; supports REQ-04               | STEP-01 page/data contract                                                               | Plugin + Playground                              | READY after merged STEP-01; see STEP-02 evidence.                                                                                     |
 | STEP-03 Native preview and multisite            | REQ-06, REQ-07                                | STEP-01/02 mapped pages and content                                                      | Plugin + Playground                              | NOT_READY until predecessors are delivered.                                                                               |
 | STEP-04 Forms and file operations               | REQ-04, REQ-08                                | STEP-01 public middleware, STEP-02 assets, STEP-03 site/preview context                  | Plugin + Playground                              | NOT_READY until predecessors are delivered.                                                                               |
 | STEP-05 Accounts and access                     | REQ-09                                        | STEP-04 action/flash/error contract                                                      | Plugin + Playground                              | NOT_READY until STEP-04 is delivered.                                                                                     |
 | STEP-06 Rendering and response policies         | REQ-10, REQ-11, REQ-12                        | STEP-02/03 content/site dependencies and STEP-05 private-session behavior                | Plugin + Playground                              | NOT_READY until predecessors are delivered.                                                                               |
 | STEP-07 Reusable installation and compatibility | REQ-13; release evidence for all requirements | STEP-01 through STEP-06; named third-party products/versions for advertised integrations | Plugin + Playground; selected integration owners | PARTLY_READY for product selection/release decisions; implementation and compatibility acceptance depend on predecessors. |
 
-Current authority covers initialization only. All step owners must read the
+The current execution follows the user-authorized roadmap with scoped tests and one fresh plugin PR per slice; Playground changes remain local and uncommitted. All step owners must read the
 project/model and relevant pinned sources before implementation. If a step is
 published through PRs, its required PRs must merge before dependent roadmap work
-starts; no PRs are currently assigned by this draft. Each handoff reports exact
+starts; each slice records its actual PR and merge state. Each handoff reports exact
 scope, criterion-level evidence and remaining findings, source revision/local
 changes, relevant PRs and live merge state, plus deployment/acceptance limits.
 No step may imply permission to create chats, publish issues or change upstream.

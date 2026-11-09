@@ -131,6 +131,11 @@ writeFileSync(
   `${readFileSync(webRoutes, "utf8")}\nrequire __DIR__.'/e2e.php';\n`,
 );
 
+copyFileSync(
+  path.join(root, "tests/e2e/fixtures/ContentQueryTest.php"),
+  path.join(playground, "tests/Feature/ContentQueryTest.php"),
+);
+
 const hashes = {};
 function hashFiles(directory) {
   if (!existsSync(path.join(root, directory))) return;

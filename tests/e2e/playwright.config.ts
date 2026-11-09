@@ -8,6 +8,7 @@ export default defineConfig({
   testDir: ".",
   projects: [
     { name: "step01", testMatch: "plugin.spec.ts" },
+    { name: "step02", testMatch: "content.spec.ts" },
     { name: "editor-preview", testMatch: "editor-preview.spec.ts" },
   ],
   fullyParallel: false,

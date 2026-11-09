@@ -183,3 +183,10 @@ source hashes so local, uncommitted examples remain traceable. Follow its output
 for PHP/SSR servers, then run `npm run test:e2e`. STEP-01 outputs live under the
 ignored `reports/e2e/step01/`; the original 26 passed / 1 failed evidence is
 preserved separately.
+
+## Content and queries
+
+Projects own explicit content projections, native Craft queries and Vue presentation.
+See [the content convention](docs/CONTENT.md) for native Markdown, nested Matrix,
+relations, globals, taxonomy, responsive assets and URL-based pagination across
+two schemas, and [STEP-02 evidence](reports/e2e/STEP02.md) for scope and limits.
