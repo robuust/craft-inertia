@@ -200,6 +200,17 @@ require_once __DIR__.'/file-fixtures.php';
 
 $mode = $argv[1] ?? 'seed';
 
+if ($mode === 'indexing-case') {
+    $payload = '</script><script>window.compromised=true</script><img src=x onerror="window.compromised=true"> & "quoted"';
+    $entry = createEntry(Sections::getSectionByHandle('articles'), EntryTypes::getEntryTypeByHandle('pocArticle'), $payload, fields: ['summary' => $payload]);
+    $data = [...entryData($entry), 'payload' => $payload,
+        'routeToken' => app(RouteTokens::class)->createToken('/articles'),
+        'siteToken' => Illuminate\Support\Facades\Crypt::encrypt(Sites::getCurrentSite()->id)];
+    $app->terminate();
+    echo 'POC_FIXTURES_JSON='.json_encode($data, JSON_THROW_ON_ERROR)."\n";
+    exit;
+}
+
 if (in_array($mode, ['invalidate-file-session', 'restore-file-session'], true)) {
     $credentials = json_decode(file_get_contents($runtime.'/credentials.json'), true, flags: JSON_THROW_ON_ERROR);
     $user = CraftCms\Cms\User\Elements\User::find()->username('file-invalidated')->status(null)->one();

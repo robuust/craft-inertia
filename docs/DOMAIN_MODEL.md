@@ -68,7 +68,7 @@ into a universal schema.
 The following responsibilities define the reusable integration;
 STEP-01 implements items 1–4 through native destinations, required
 `CurrentElement` parameters and opt-in public middleware. Item 5 currently uses
-a conservative private/no-store policy; STEP-06A adds guest SSR/errors/asset versions while production caching remains deferred:
+a conservative private/no-store policy; STEP-06A adds guest SSR/errors/asset versions and STEP-06B adds project indexing/structured data while production caching remains deferred:
 
 1. Craft resolves site context, normal session authority and any valid preview
    token before the public page consumes content.

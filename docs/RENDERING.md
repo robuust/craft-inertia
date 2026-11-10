@@ -1,6 +1,6 @@
 # Public rendering and response policies
 
-STEP-06A is the human-authorized independent part of STEP-06. STEP-05 remains
+STEP-06A and STEP-06B are human-authorized independent parts of STEP-06. STEP-05 remains
 open, including its native account blockers. This slice adds guest public SSR,
 project metadata, public errors/maintenance and asset-version evidence. It does
 not deliver account behavior, public caches or invalidation; full AC-06 remains
@@ -43,9 +43,63 @@ Metadata fields and content choices belong to this example, not the package.
 
 The public Blade root contains one Inertia head output and no competing static
 title. Guest SSR supplies meaningful body content and head tags in initial HTML;
-client rendering owns them after navigation or an SSR outage. This experiment
-retains `X-Robots-Tag: noindex, nofollow`; indexability and structured data policy
-are deferred. No third-party SEO integration is advertised.
+client rendering owns them after navigation or an SSR outage. STEP-06B adds the
+bounded indexing and structured-data policy below. No third-party SEO integration
+is advertised.
+
+## Project indexing and structured data
+
+The package's `indexingPolicy` defaults to `null` (deny). A project may supply a
+`callable(Request): bool`, for example:
+
+```php
+return [
+    'rootView' => 'frontend::app',
+    'indexingPolicy' => [App\Http\PublicRendering::class, 'allowsIndexing'],
+];
+```
+
+The callback must establish safe published guest eligibility from server-owned
+route, native token/preview, authentication and session state. It must be pure
+and safe to evaluate before the controller runs. A truthy string or a boolean
+config value does not opt in: only a callable returning `true` permits indexing.
+The Playground reuses `PublicRendering::allowsSsr()` and an explicit current-site
+handle allowlist (`site-content.indexableSites`, empty by default). This keeps
+unselected form/private routes, authenticated content, drafts/previews, native
+route tokens even after their query key is consumed, native site tokens and
+session form errors/messages non-indexable. A query-free URL or visitor marker
+is never sufficient proof of public eligibility. Projects own their actual
+crawler policy and selected content; no real site is enabled here.
+
+`HandleInertiaRequests::robots(Request)` supplies the same decision for the
+project's `seo.robots` metadata. Native `disallowRobots` overrides an opt-in.
+Craft may spell the equivalent deny header `none`; the rendered meta uses
+`noindex, nofollow`. Only final 200 page responses may use the allowed directive;
+redirects, version conflicts and error/maintenance responses retain deny headers.
+The middleware captures the decision before Inertia consumes flashdata, avoiding
+a more permissive header after rendering. The project also inspects the official
+current SSR page's flash field when deciding whether it may reach the SSR gateway.
+Exception calls to `protectResponse()` retain its deny default. Apply this public
+middleware only to page routes; native CP/actions/assets/API endpoints keep their
+own handlers and policy.
+
+The project extends its explicit `seo` projection with nullable `structuredData`:
+a JSON string produced by Laravel `Js::encode()` from the same canonical URL,
+title, description and site language. It is a small `WebPage` example; schema
+choice and facts belong to the project, and no package fields are required.
+Private/authorized preview or form-state responses omit the data. Public data
+may exist on a deliberately non-indexable public page; the indexing allowlist
+and structured-data projection serve different purposes.
+
+`PublicHead.vue` uses a native script vnode inside official Inertia `Head`, with
+`head-key="structured-data"` and `type="application/ld+json"`. Its text child is
+already safe JSON; avoid `Js::from()` (a JavaScript expression), unencoded content
+or a second client serializer. `Js::encode()` escapes HTML-sensitive characters,
+including closing script sequences, while retaining parseable JSON. Head owns
+SSR output, hydration, replacement/removal and history restoration. One keyed
+robots meta follows the same page projection. Error pages have their own keyed
+deny meta. No parallel head store, SEO dependency, robots.txt replacement or
+production crawler setting is introduced. See [STEP-06B evidence](../reports/e2e/STEP06B.md).
 
 ## Errors, maintenance and native isolation
 
