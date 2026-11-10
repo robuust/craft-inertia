@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Cache\FileStore;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
@@ -122,6 +123,20 @@ class ContactFormTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Mailer [smtp] is not defined.');
         Mail::mailer('smtp');
+    }
+
+    public function testCacheAndSessionUseOnlyTheFixtureFileStorageAfterBoot(): void
+    {
+        $this->assertSame(['file'], array_keys(config('cache.stores')));
+        $store = Cache::store()->getStore();
+        $this->assertInstanceOf(FileStore::class, $store);
+        $this->assertSame(base_path('storage/framework/cache/data'), $store->getDirectory());
+        $this->assertSame('file', config('cache.limiter'));
+        $this->assertInstanceOf(\Illuminate\Session\FileSessionHandler::class, app('session')->driver()->getHandler());
+        $this->assertSame(base_path('storage/framework/sessions'), config('session.files'));
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Cache store [redis] is not defined.');
+        Cache::store('redis');
     }
 
     /** @return array<string, string> */

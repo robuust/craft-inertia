@@ -7,7 +7,7 @@ Contact Form is **not installed or required by the core package**. Full STEP-07,
 account defects, release/distribution decisions and production acceptance remain
 open. See the [evidence and native limitation](../reports/e2e/STEP07B.md).
 
-## Exact capability matrix (2026-11-10, revision 1)
+## Exact capability matrix (2026-11-10, revision 2)
 
 The only evaluated combination is official `craftcms/contact-form` **4.x-dev** at
 `6f3b6deed57d909ab024190a53d93dedc206e13f`, Craft CMS
@@ -29,6 +29,7 @@ The separate upstream beta-only compatibility branch was not substituted.
 | Server-owned recipient and submitted reply-to | Exercised | Submitted `to`/`toEmail` cannot replace `config/craft/contact-form.php`; synthetic `.test` addresses only. |
 | Native system-message rendering and mail handoff | Local capture exercised | Real `contactform_submission` template, native sender/summary and `SystemMessageMailable` reach a Symfony transport. No mail fake, real email or deliverability claim. |
 | CSRF and configured per-IP throttling | Exercised | Native 419 for absent/invalid tokens without a trusted origin; native three-attempt limit and fourth-request 429. Laravel also accepts its native trusted same-origin protection. |
+| Fixture cache/session storage | Exercised | Before providers: fixed application storage root, one local file cache for resets/native limiter/locks, file sessions; inherited/cached external stores and paths cannot select another backend. |
 | Separate visitor sessions | Exercised | A second browser context receives neither the first visitor's input nor flash. |
 | Private/no-store/noindex | Exercised | Page HTML/JSON, action redirects, CSRF/throttle errors. No contact state goes to SSR, JSON-LD or public content-data caching. |
 | Attachments disabled | Exercised | Native `allowAttachments=false` rejects an uploaded file without mail. Enabling attachments, limits and delivery are unverified. |
@@ -105,7 +106,17 @@ npx playwright test --config=tests/e2e/contact-form.config.ts
 ```
 
 The existing generated database-target guard runs before providers on CLI,
-HTTP and test boots. The optional bootstrap additionally replaces the entire
+HTTP and test boots. The optional bootstrap fixes the application's storage root
+to this disposable runtime before configuration loads. After configuration, but
+before any provider, it replaces the entire cache map with one local file store
+and explicitly selects it for native throttling and session locks. File sessions
+use the same runtime's own storage directory; inherited Redis/session choices,
+cached external file paths and alternate named stores cannot redirect these
+operations. Tests may therefore reset only this fixture's local cache. Six
+console/HTTP probes stop before providers even when reproducing the previous
+unsafe configuration; the real native limiter is still exercised separately.
+
+The optional bootstrap also replaces the entire
 mail configuration with one local capture transport and forces synchronous
 handoff before providers. Inherited and cached SMTP URLs/config cannot select
 an external transport; a native project setting selecting an unknown mailer

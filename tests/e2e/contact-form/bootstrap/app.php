@@ -15,16 +15,33 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })
     ->create();
 
+$app->useStoragePath(dirname(__DIR__) . '/storage');
 $app->afterBootstrapping(LoadConfiguration::class, require __DIR__ . '/isolation.php');
 $app->afterBootstrapping(LoadConfiguration::class, function (Application $app): void {
+    $config = $app->make('config');
+    $cache = $app->storagePath('framework/cache/data');
+    // Cache resets, native throttling and session locks share only this local store.
+    $config->set('cache', [
+        'default' => 'file',
+        'limiter' => 'file',
+        'stores' => ['file' => ['driver' => 'file', 'path' => $cache, 'lock_path' => $cache]],
+        'prefix' => 'contact-form-fixture',
+    ]);
+    $config->set([
+        'session.driver' => 'file',
+        'session.files' => $app->storagePath('framework/sessions'),
+        'session.connection' => null,
+        'session.store' => null,
+        'session.block_store' => 'file',
+    ]);
     // A disposable fixture can only hand mail to its local capture transport.
     // Replace the whole map: inherited MAIL_URL, SMTP and failover cannot escape.
-    $app->make('config')->set('mail', [
+    $config->set('mail', [
         'default' => 'capture',
         'mailers' => ['capture' => ['transport' => 'capture']],
         'from' => ['address' => 'site@contact.test', 'name' => 'Contact fixture'],
     ]);
-    $app->make('config')->set('queue.default', 'sync');
+    $config->set('queue.default', 'sync');
 });
 
 return $app;
