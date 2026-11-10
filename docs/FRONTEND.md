@@ -136,6 +136,7 @@ separately; the prior PoC commit does not complete any target step.
 | STEP-05 Accounts and access                     | REQ-09                                        | STEP-04 action/flash/error contract                                                      | Plugin + Playground                              | OPEN: preserved, unaccepted account work is blocked by native account behavior; no correction was authorized.                                                                                     |
 | STEP-06 Rendering and response policies         | REQ-10, REQ-11, REQ-12                        | STEP-02/03 content/site dependencies and STEP-05 private-session behavior                | Plugin + Playground                              | PARTIAL: independent STEP-06A/06B/06C are authorized without STEP-05; HTTP output caching, account-dependent caching and full AC-06 remain deferred.                                                                               |
 | STEP-07A Independent clean installation and fallback | AC-07 installation/disable subset | Merged STEP-01/02/03/04 and independent STEP-06A/06B/06C | Plugin; isolated neutral application | Implemented; scoped evidence in STEP07A.md, independent review and merge tracked separately. Full STEP-07 remains incomplete. |
+| STEP-07B Optional native Contact Form | REQ-13; bounded AC-07 integration | Merged STEP-07A; human-selected Contact Form exact official commit | Plugin docs; isolated optional project fixture | Scalar flow exercised; native nested-message limitation remains failing. See CONTACT_FORM.md and STEP07B.md; independent review/merge tracked separately. |
 | STEP-07 Reusable installation and compatibility | REQ-13; release evidence for all requirements | STEP-01 through STEP-06; named third-party products/versions for advertised integrations | Plugin + Playground; selected integration owners | PARTLY_READY for product selection/release decisions; implementation and compatibility acceptance depend on predecessors. |
 
 The current execution follows the user-authorized roadmap with scoped tests and one fresh plugin PR per slice; Playground changes remain local and uncommitted. All step owners must read the
@@ -367,6 +368,25 @@ This does not complete full STEP-07/AC-07. Package identity/license/distribution
 upgrades, selected third-party integrations, account defects, public output
 caching, general release and production acceptance remain separate. The
 Playground remains local/uncommitted, and no native dependency is patched.
+
+### STEP-07B Optional native Contact Form integration
+
+The human selected `craftcms/contact-form` after merged STEP-07A. This independent
+bounded integration uses the official 4.x-dev commit
+`6f3b6deed57d909ab024190a53d93dedc206e13f` on the unchanged accepted Craft source
+and asset pins. The [versioned capability matrix](CONTACT_FORM.md) names exactly
+what is exercised and the [report](../reports/e2e/STEP07B.md) records evidence.
+A project-owned accessible Vue page submits scalar native fields through the
+official Inertia form; the owning plugin retains validation, settings, rate
+limits, CSRF/session, flash/redirect and real local mail rendering/handoff.
+
+Contact Form is optional in an isolated consumer, never a dependency of the core
+package or other suites. No original Playground activation, real email,
+framework/plugin patch, dependency bypass or upgrade is authorized. Nested fields,
+enabled attachments, custom events, JSON clients, CP/settings UI and production
+mail are not accepted by the scalar proof. A native nested-message 500 remains
+an explicitly failing regression; no criterion is waived to make it pass.
+Full STEP-07/AC-07 and the existing native account defects remain open.
 
 ## Completion criteria
 

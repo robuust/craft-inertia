@@ -18,6 +18,13 @@ integration stays local and uncommitted. See [rendering](RENDERING.md) and
 [STEP-06A evidence](../reports/e2e/STEP06A.md), [STEP-06B evidence](../reports/e2e/STEP06B.md)
 and [STEP-06C evidence](../reports/e2e/STEP06C.md).
 
+**STEP-07B addendum (2026-11-10):** the human-selected optional native
+`craftcms/contact-form` integration has a [versioned capability matrix](CONTACT_FORM.md)
+and [bounded evidence](../reports/e2e/STEP07B.md). Only the isolated optional
+consumer adds its exact official development pin. The scalar flow is exercised;
+an unsupported nested-message native regression remains failing. This adds no
+core dependency/runtime change and does not complete STEP-07 or native accounts.
+
 **Initialized:** 2026-11-09. This is research and documentation, with a draft
 execution roadmap. Product implementation, new test work and publication are
 separate actions. This initialization records the original bounded article PoC.
