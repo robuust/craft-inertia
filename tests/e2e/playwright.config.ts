@@ -19,6 +19,11 @@ export default defineConfig({
       testMatch: "editor-preview.spec.ts",
       dependencies: ["step03"],
     },
+    {
+      name: "step04",
+      testMatch: "forms.spec.ts",
+      dependencies: ["step03"],
+    },
   ],
   fullyParallel: false,
   workers: 1,

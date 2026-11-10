@@ -5,13 +5,13 @@ complete public frontend with Inertia and Vue. Craft keeps ownership of content,
 URLs, editorial workflows, sessions and permissions. Each project supplies its
 Vue presentation and chooses the data it exposes.
 
-**Current execution:** STEP-01 and STEP-02 are merged. STEP-03 adds project-owned
-native site context and preview/multisite evidence. Approved official 6.x source
-`0506c32` plus matching assets `1797325` passes current scoped preview acceptance;
-the historical released-alpha.20 CP failure is retained separately. Execution, scoped
-tests and plugin PR publication are authorized by the subsequent roadmap request;
-Playground work must remain local and uncommitted. The initialization authority
-and inspected baseline below are historical. See [STEP-03](../reports/e2e/STEP03.md).
+**Current execution:** STEP-01/02/03 are merged. STEP-04 adds native/project
+forms, flash/error integration and private file operations; the human resumed
+execution on 2026-11-10 after the STEP-03 pause. Approved official 6.x source
+`0506c32` plus matching assets `1797325` remains fixed. Scoped tests and plugin
+PR publication are authorized; Playground work remains local and uncommitted.
+See [STEP-04](../reports/e2e/STEP04.md) and [form contracts](FORMS.md). Historical
+initialization and released-alpha.20 evidence below retain their original meaning.
 
 **Initialized:** 2026-11-09. This is research and documentation, with a draft
 execution roadmap. Product implementation, new test work and publication are
