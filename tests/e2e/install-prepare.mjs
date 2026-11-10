@@ -13,8 +13,16 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
+// The optional profile never changes the default installation fixture or suites.
+const contactForm = process.env.POC_INSTALL_PROFILE === "contact-form";
+if (process.env.POC_INSTALL_PROFILE && !contactForm)
+  throw new Error("Unknown installation profile.");
+const profile = contactForm ? "contact-form" : "installation";
+const selected = contactForm
+  ? JSON.parse(readFileSync(new URL("./contact-form.json", import.meta.url)))
+  : null;
 const fixture = path.join(root, "tests/e2e/installation");
-const application = path.join(root, "tests/e2e/.runtime/installation");
+const application = path.join(root, "tests/e2e/.runtime", profile);
 const source =
   process.env.POC_PLAYGROUND_PATH ?? path.resolve(root, "../craft6-playground");
 const evidence = process.env.POC_INSTALL_REPORT_DIR;
@@ -50,6 +58,11 @@ function assertPins(lock) {
 assertPins(sourceLock);
 mkdirSync(path.join(evidence, "logs"), { recursive: true });
 cpSync(fixture, application, { recursive: true });
+if (contactForm) {
+  cpSync(path.join(root, "tests/e2e/contact-form"), application, {
+    recursive: true,
+  });
+}
 for (const directory of [
   "bootstrap/cache",
   "storage/framework/cache/data",
@@ -85,6 +98,8 @@ const composer = JSON.parse(readFileSync(path.join(source, "composer.json")));
 composer.name = "local/clean-inertia-installation";
 composer.description = "Isolated clean installation acceptance fixture";
 composer.scripts = {};
+if (selected)
+  composer.require[selected.package.name] = selected.package.version;
 composer.repositories = [
   {
     type: "path",
@@ -94,6 +109,7 @@ composer.repositories = [
       versions: { "robuust/craft-inertia-poc": "0.1.0" },
     },
   },
+  ...(selected ? [{ type: "package", package: selected.package }] : []),
   ...baseline.repositories,
 ];
 writeFileSync(
@@ -132,7 +148,7 @@ const compose = [
   "-f",
   composeFile,
   "-p",
-  "craft-inertia-installation",
+  `craft-inertia-${profile}`,
 ];
 run("database-start", "docker", [...compose, "up", "--wait", "-d"]);
 const tables = run("database-empty", "docker", [
@@ -164,8 +180,8 @@ const environment = {
   APP_ENV: "local",
   APP_DEBUG: "false",
   APP_KEY: `base64:${randomBytes(32).toString("base64")}`,
-  APP_URL: "http://127.0.0.1:18777",
-  DEFAULT_SITE_URL: "http://127.0.0.1:18777",
+  APP_URL: `http://127.0.0.1:${contactForm ? 18778 : 18777}`,
+  DEFAULT_SITE_URL: `http://127.0.0.1:${contactForm ? 18778 : 18777}`,
   DB_CONNECTION: "pgsql",
   DB_HOST: "127.0.0.1",
   DB_PORT: port,
@@ -177,7 +193,7 @@ const environment = {
   QUEUE_CONNECTION: "sync",
   MAIL_MAILER: "log",
   LOG_CHANNEL: "single",
-  FRONTEND_ENABLED: "false",
+  FRONTEND_ENABLED: contactForm ? "true" : "false",
   INERTIA_SSR_ENABLED: "true",
   INERTIA_SSR_URL: "http://127.0.0.1:13727",
   INERTIA_SSR_THROW_ON_ERROR: "true",
@@ -207,15 +223,28 @@ writeFileSync(
 run("composer-install", "composer", [
   "update",
   "robuust/craft-inertia-poc",
+  ...(selected ? [selected.package.name] : []),
   "--no-interaction",
   "--no-scripts",
   "--prefer-dist",
 ]);
 const lock = JSON.parse(readFileSync(path.join(application, "composer.lock")));
 assertPins(lock);
+if (selected) {
+  const installed = lock.packages.find(
+    ({ name }) => name === selected.package.name,
+  );
+  if (
+    installed?.source?.reference !== selected.package.source.reference ||
+    installed?.dist?.reference !== selected.package.dist.reference ||
+    installed?.version !== selected.package.version
+  )
+    throw new Error("The optional package source/dist/version changed.");
+}
 const withoutPlugin = (input) =>
   [...input.packages, ...input["packages-dev"]].filter(
-    ({ name }) => name !== "robuust/craft-inertia-poc",
+    ({ name }) =>
+      name !== "robuust/craft-inertia-poc" && name !== selected?.package.name,
   );
 if (
   JSON.stringify(withoutPlugin(lock)) !==
@@ -265,6 +294,14 @@ run("plugin-install", "php", [
   "inertia-poc",
   "--no-interaction",
 ]);
+if (selected) {
+  run("contact-form-install", "php", [
+    "artisan",
+    "craft:plugin:install",
+    "contact-form",
+    "--no-interaction",
+  ]);
+}
 run("plugin-config", "php", [
   "artisan",
   "vendor:publish",
@@ -333,6 +370,12 @@ if (
   )
 )
   throw new Error("Published native assets changed.");
+if (selected) {
+  const directory = path.join(application, "vendor", selected.package.name);
+  if (hash(path.join(directory, "composer.json")) !== selected.manifestSha256)
+    throw new Error("Optional package manifest changed.");
+  native[selected.package.name] = manifest(directory);
+}
 const plugin = {};
 for (const directory of ["src", "config"]) {
   plugin[directory] = manifest(
@@ -362,8 +405,15 @@ writeFileSync(
       lockSha256: hash(path.join(application, "composer.lock")),
       yarnLockSha256: hash(path.join(application, "yarn.lock")),
       fixture: manifest(fixture),
+      optionalFixture: contactForm
+        ? manifest(path.join(root, "tests/e2e/contact-form"))
+        : null,
       sourceMetadataOnly: true,
-      dependencyChanges: ["robuust/craft-inertia-poc"],
+      dependencyChanges: [
+        "robuust/craft-inertia-poc",
+        ...(selected ? [selected.package.name] : []),
+      ],
+      profile,
       packages: [...lock.packages, ...lock["packages-dev"]].map(
         ({ name, version, source: origin }) => ({
           name,
@@ -381,5 +431,5 @@ copyFileSync(
   path.join(evidence, "runtime-composer.lock"),
 );
 console.log(
-  `Clean installation ready at ${application}; project opt-in defaults off.`,
+  `Clean installation ready at ${application}; project opt-in defaults ${contactForm ? "on" : "off"}.`,
 );

@@ -254,3 +254,11 @@ flash and private uploads/downloads. The package bridges native session messages
 on opted-in pages; native JSON operations retain their own response contracts.
 The Playground examples and synthetic private-volume configuration stay local.
 See [STEP-04 evidence](reports/e2e/STEP04.md) for acceptance and limitations.
+
+## Optional Contact Form integration
+
+The human-selected [native Contact Form example and versioned capability matrix](docs/CONTACT_FORM.md)
+reuse native actions, validation, settings and mail. Only the isolated optional
+consumer installs its exact official development commit. Scalar forms have
+local acceptance evidence; a nested-message native failure remains open. This
+is not blanket plugin compatibility, a core dependency or production acceptance.
