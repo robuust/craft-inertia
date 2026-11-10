@@ -20,6 +20,11 @@ export default defineConfig({
       dependencies: ["step03"],
     },
     {
+      name: "step06a",
+      testMatch: "rendering.spec.ts",
+      dependencies: ["step03"],
+    },
+    {
       name: "step04",
       testMatch: "forms.spec.ts",
       dependencies: ["step03"],

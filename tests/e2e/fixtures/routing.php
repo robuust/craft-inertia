@@ -111,3 +111,30 @@ if (app()->environment('e2e')) {
             });
     }
 }
+
+if (app()->environment('e2e')) {
+    Route::middleware(['craft', \Robuust\CraftInertiaPoc\Http\HandleInertiaRequests::class])
+        ->prefix('e2e/rendering')->group(function (): void {
+            Route::get('error/{code}', function (int $code, Request $request): never {
+                config(['app.debug' => $request->boolean('debug')]);
+                if ($code === 500) {
+                    throw new \RuntimeException('Synthetic exception detail must not be projected');
+                }
+                abort($code, 'Synthetic exception detail must not be projected', ['Retry-After' => '120']);
+            });
+            Route::get('redirect', fn () => redirect('/articles', 307));
+            Route::get('page', function (Request $request) {
+                if ($request->boolean('fallback')) {
+                    config(['inertia.ssr.url' => 'http://127.0.0.1:1', 'inertia.ssr.throw_on_error' => false]);
+                }
+
+                return \Inertia\Inertia::render('Site/Home', [
+                    'entry' => ['title' => 'Public rendering fixture', 'introduction' => 'Published synthetic content'],
+                    'site' => ['name' => 'Fixture', 'language' => 'en'], 'homeUrl' => '/',
+                    'indexUrl' => '/e2e/rendering/error/404', 'isPreview' => false,
+                    'seo' => ['title' => 'Public rendering fixture', 'description' => 'Fixture description',
+                        'canonical' => url('/e2e/rendering/page'), 'alternates' => []],
+                ]);
+            })->metadata(['public.ssr' => true]);
+        });
+}

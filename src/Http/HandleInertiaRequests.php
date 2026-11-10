@@ -70,7 +70,14 @@ class HandleInertiaRequests extends Middleware
             Inertia::flash(Inertia::getFlashed($request) + $messages);
         }
 
-        $response = parent::handle($request, $next);
+        return $this->protectResponse(parent::handle($request, $next));
+    }
+
+    /** Apply the same policy to project-owned exception responses outside route middleware. */
+    public function protectResponse(Response $response): Response
+    {
+        app(ResponseHeaders::class)->noCache();
+        $response->setVary([...$response->getVary(), Header::INERTIA]);
         $response->headers->set('Cache-Control', 'private, no-store');
         $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
 

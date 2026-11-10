@@ -533,7 +533,7 @@ test("assets, native actions and GraphQL keep their own response handling", asyn
   expect((await graphql.json()).message).toBe("Missing Authorization header");
 });
 
-test("host SSR remains separate from opt-in public client rendering", async ({
+test("host SSR remains separate from explicitly enabled guest public SSR", async ({
   page,
 }) => {
   await page.goto("/login");
@@ -545,9 +545,9 @@ test("host SSR remains separate from opt-in public client rendering", async ({
   await expect(
     page.getByRole("heading", { name: "Articles", exact: true }),
   ).toBeVisible();
-  expect(
-    await page.locator("#app").getAttribute("data-server-rendered"),
-  ).not.toBe("true");
+  expect(await page.locator("#app").getAttribute("data-server-rendered")).toBe(
+    "true",
+  );
   await page.goto("/login");
   await expect(page.locator("#app")).toHaveAttribute(
     "data-server-rendered",
