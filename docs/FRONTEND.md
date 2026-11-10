@@ -7,9 +7,9 @@ permissions and preview authorization.
 
 This is the agreed product direction following the initial proof of concept.
 The capabilities below are delivery requirements, not claims about the current
-package. The current implementation still serves a fixed article demonstration
-under `/inertia-poc`; its existing [E2E report](../reports/e2e/REPORT.md) covers
-that demonstration only. [PROJECT.md](PROJECT.md) records the inspected sources,
+package. The historical [E2E report](../reports/e2e/REPORT.md) covers only the initial
+fixed article demonstration. STEP-01 through STEP-04 replace it with native
+destinations and project-owned pages; their slice reports record scoped evidence. [PROJECT.md](PROJECT.md) records the inspected sources,
 coverage and decisions; [DOMAIN_MODEL.md](DOMAIN_MODEL.md) defines the data and
 response boundaries. This file owns the requirements and draft roadmap.
 
@@ -122,7 +122,8 @@ criteria below do not grant permission to write or run them.
 Planning basis: 2026-11-09, the revisions and source register in PROJECT.md.
 STEP-01 is delivered and merged in [PR #1](https://github.com/joostwaaijer/craft-inertia/pull/1).
 STEP-02 implementation and evidence are recorded in [STEP02.md](../reports/e2e/STEP02.md).
-Later steps remain not started. Implementation, independent review,
+STEP-03/04 are also delivered and merged. STEP-05 remains open. STEP-06A is the
+human-authorized independent public subset described below. Implementation, independent review,
 publication, merge, deployment and runtime acceptance must be recorded
 separately; the prior PoC commit does not complete any target step.
 
@@ -132,8 +133,8 @@ separately; the prior PoC commit does not complete any target step.
 | STEP-02 Content and queries                     | REQ-03, REQ-05; supports REQ-04               | STEP-01 page/data contract                                                               | Plugin + Playground                              | READY after merged STEP-01; see STEP-02 evidence.                                                                                     |
 | STEP-03 Native preview and multisite            | REQ-06, REQ-07                                | STEP-01/02 mapped pages and content                                                      | Plugin + Playground                              | Implemented on the approved official 6.x baseline; see STEP-03 evidence. The pause was revoked by the human resume on 2026-11-10.                                                                               |
 | STEP-04 Forms and file operations               | REQ-04, REQ-08                                | STEP-01 public middleware, STEP-02 assets, STEP-03 site/preview context                  | Plugin + Playground                              | Implemented; see STEP-04 evidence and its current publication/merge state.                                                       |
-| STEP-05 Accounts and access                     | REQ-09                                        | STEP-04 action/flash/error contract                                                      | Plugin + Playground                              | NOT_READY until STEP-04 is delivered.                                                                                     |
-| STEP-06 Rendering and response policies         | REQ-10, REQ-11, REQ-12                        | STEP-02/03 content/site dependencies and STEP-05 private-session behavior                | Plugin + Playground                              | NOT_READY until predecessors are delivered.                                                                               |
+| STEP-05 Accounts and access                     | REQ-09                                        | STEP-04 action/flash/error contract                                                      | Plugin + Playground                              | OPEN: preserved, unaccepted account work is blocked by native account behavior; no correction was authorized.                                                                                     |
+| STEP-06 Rendering and response policies         | REQ-10, REQ-11, REQ-12                        | STEP-02/03 content/site dependencies and STEP-05 private-session behavior                | Plugin + Playground                              | PARTIAL: independent STEP-06A is authorized without STEP-05; account-dependent caching and full AC-06 remain deferred.                                                                               |
 | STEP-07 Reusable installation and compatibility | REQ-13; release evidence for all requirements | STEP-01 through STEP-06; named third-party products/versions for advertised integrations | Plugin + Playground; selected integration owners | PARTLY_READY for product selection/release decisions; implementation and compatibility acceptance depend on predecessors. |
 
 The current execution follows the user-authorized roadmap with scoped tests and one fresh plugin PR per slice; Playground changes remain local and uncommitted. All step owners must read the
@@ -271,6 +272,18 @@ publishing or changing content invalidates affected output.
 checks cover hydration, metadata, errors/maintenance, asset version transitions,
 cache variation and invalidation. No production deployment or performance claim
 follows from successful local builds.
+
+### STEP-06A Independent public rendering
+
+On 2026-11-10 the human explicitly chose independent work without correcting the
+native account blockers. This is a bounded exception to STEP-06's STEP-05 gate,
+not acceptance of STEP-05 or the complete STEP-06 capability. Guest public SSR,
+project metadata, public error/maintenance responses and Vite asset versions
+may proceed in a fresh plugin PR. HTML and page JSON remain private/no-store;
+full authenticated lifecycle, cache variation/invalidation, indexing and
+structured-data policy remain deferred. No native account workaround or STEP-05
+source is included. See [rendering contracts](RENDERING.md) and
+[STEP-06A evidence](../reports/e2e/STEP06A.md).
 
 ### STEP-07 Reusable installation and plugin compatibility
 

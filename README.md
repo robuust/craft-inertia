@@ -16,7 +16,8 @@ aliases rather than the released alpha.20; see [STEP-03](reports/e2e/STEP03.md).
 The current stack uses Laravel `13.40.0`, `inertiajs/inertia-laravel` `3.7.0` and `@inertiajs/vue3`
 `3.11.0`. The [scope and roadmap](docs/FRONTEND.md),
 [initialization](docs/PROJECT.md) and [domain contracts](docs/DOMAIN_MODEL.md)
-distinguish delivered slices from later account, SSR and cache work.
+distinguish delivered slices from deferred account and cache work.
+[Public rendering](docs/RENDERING.md) documents the independent STEP-06A slice.
 
 ## Install
 
@@ -152,12 +153,17 @@ content keeps Craft's availability rules.
 
 For now, every opted-in public response carries `private, no-store` and
 `X-Robots-Tag: noindex, nofollow` on initial HTML and Inertia JSON. This deliberately
-retains the experiment's conservative policy. Public cache/indexing policy is
+retains the experiment's conservative policy. Public cache/indexing policy remains deferred within
 STEP-06; no production-cache claim is made here.
 
-The project owns SSR policy. Playground keeps these example routes client-side
-and leaves its existing authenticated app SSR and Craft CP policy intact. The
-package does not replace the host SSR gateway or supply an SSR bundle.
+The project owns SSR policy and its build. STEP-06A enables explicit guest public
+SSR in the local Playground, while authenticated, preview and form/challenge
+responses retain conservative policies. Public 404/500/503 presentation uses the
+project's official Inertia exception callback. The package exposes
+`HandleInertiaRequests::protectResponse()` for applying its private/no-store,
+noindex and `Vary: X-Inertia` policy when exception rendering bypasses route
+middleware. See [rendering contracts](docs/RENDERING.md). Full STEP-06 caching and
+STEP-05 account behavior remain open.
 
 Craft authorizes and resolves preview elements. Project pages consume the native
 matched element and `previewing` state. Site IDs, translated URLs, domains and
