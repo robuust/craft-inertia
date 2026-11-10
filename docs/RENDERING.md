@@ -1,5 +1,10 @@
 # Public rendering and response policies
 
+The [STEP-07A installation checklist](INSTALLATION.md) adds a neutral consuming
+application and lifecycle proof. Its project provider confines SSR to selected
+static public pages, so native CP pages never enter the public resolver. Real
+content projects must also apply the privacy policies documented below.
+
 STEP-06A, STEP-06B and STEP-06C are human-authorized independent parts of STEP-06.
 STEP-05 remains open, including its native account blockers. These slices add
 guest SSR, metadata, errors/maintenance, asset versions, indexing/JSON-LD and

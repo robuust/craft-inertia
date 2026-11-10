@@ -135,6 +135,7 @@ separately; the prior PoC commit does not complete any target step.
 | STEP-04 Forms and file operations               | REQ-04, REQ-08                                | STEP-01 public middleware, STEP-02 assets, STEP-03 site/preview context                  | Plugin + Playground                              | Implemented; see STEP-04 evidence and its current publication/merge state.                                                       |
 | STEP-05 Accounts and access                     | REQ-09                                        | STEP-04 action/flash/error contract                                                      | Plugin + Playground                              | OPEN: preserved, unaccepted account work is blocked by native account behavior; no correction was authorized.                                                                                     |
 | STEP-06 Rendering and response policies         | REQ-10, REQ-11, REQ-12                        | STEP-02/03 content/site dependencies and STEP-05 private-session behavior                | Plugin + Playground                              | PARTIAL: independent STEP-06A/06B/06C are authorized without STEP-05; HTTP output caching, account-dependent caching and full AC-06 remain deferred.                                                                               |
+| STEP-07A Independent clean installation and fallback | AC-07 installation/disable subset | Merged STEP-01/02/03/04 and independent STEP-06A/06B/06C | Plugin; isolated neutral application | Implemented; scoped evidence in STEP07A.md, independent review and merge tracked separately. Full STEP-07 remains incomplete. |
 | STEP-07 Reusable installation and compatibility | REQ-13; release evidence for all requirements | STEP-01 through STEP-06; named third-party products/versions for advertised integrations | Plugin + Playground; selected integration owners | PARTLY_READY for product selection/release decisions; implementation and compatibility acceptance depend on predecessors. |
 
 The current execution follows the user-authorized roadmap with scoped tests and one fresh plugin PR per slice; Playground changes remain local and uncommitted. All step owners must read the
@@ -342,6 +343,30 @@ behavior under separately authorized checks. Release docs retain exact
 supported versions and deployment requirements. Publishing, changing repository
 visibility, contacting maintainers and production deployment each retain their
 own authorization boundary.
+
+### STEP-07A Independent clean installation and native fallback
+
+This bounded AC-07 subset depends on merged STEP-01/02/03/04 and the independent
+STEP-06A/06B/06C public contracts. It can proceed while native STEP-05 account
+defects remain open. The [clean installation checklist](INSTALLATION.md) and
+[STEP-07A report](../reports/e2e/STEP07A.md) own its configuration and evidence.
+A neutral fresh application installs the unchanged private package on the fixed
+Craft source/asset pins without a content schema or package UI. Project-owned
+routes, controller, public root, Vue page/resolver and client/SSR builds prove
+direct HTML and Inertia navigation.
+
+The project explicitly selects native fallback views when its opt-in is off or
+Craft's plugin registry reports disabled. Native enable/disable commands and
+fresh boots exercise that contract with cached routes, while representative
+CP/action/API/feed endpoints and unknown URLs retain native handling. Installing
+the package never implicitly takes over public routes. Composer availability
+alone does not follow Craft enablement; both project response selection and
+middleware must honor the native registry.
+
+This does not complete full STEP-07/AC-07. Package identity/license/distribution,
+upgrades, selected third-party integrations, account defects, public output
+caching, general release and production acceptance remain separate. The
+Playground remains local/uncommitted, and no native dependency is patched.
 
 ## Completion criteria
 
