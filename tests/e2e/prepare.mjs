@@ -164,6 +164,10 @@ copyFileSync(
   path.join(root, "tests/e2e/fixtures/ContentQueryTest.php"),
   path.join(playground, "tests/Feature/ContentQueryTest.php"),
 );
+copyFileSync(
+  path.join(root, "tests/e2e/fixtures/PublicContentCacheTest.php"),
+  path.join(playground, "tests/Feature/PublicContentCacheTest.php"),
+);
 
 const hashes = {};
 function hashFiles(directory) {

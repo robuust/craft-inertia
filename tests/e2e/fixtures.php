@@ -197,8 +197,16 @@ function previewToken(Entry $entry, bool $expired = false): string
 require_once __DIR__.'/content-fixtures.php';
 require_once __DIR__.'/site-fixtures.php';
 require_once __DIR__.'/file-fixtures.php';
+require_once __DIR__.'/cache-fixtures.php';
 
 $mode = $argv[1] ?? 'seed';
+
+if (in_array($mode, ['cache-create', 'cache-publish', 'cache-update', 'cache-unpublish', 'cache-delete'], true)) {
+    $data = contentCacheFixture($mode);
+    $app->terminate();
+    echo 'POC_FIXTURES_JSON='.json_encode($data, JSON_THROW_ON_ERROR)."\n";
+    exit;
+}
 
 if ($mode === 'indexing-case') {
     $payload = '</script><script>window.compromised=true</script><img src=x onerror="window.compromised=true"> & "quoted"';

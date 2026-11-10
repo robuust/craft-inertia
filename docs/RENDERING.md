@@ -1,10 +1,11 @@
 # Public rendering and response policies
 
-STEP-06A and STEP-06B are human-authorized independent parts of STEP-06. STEP-05 remains
-open, including its native account blockers. This slice adds guest public SSR,
-project metadata, public errors/maintenance and asset-version evidence. It does
-not deliver account behavior, public caches or invalidation; full AC-06 remains
-incomplete. See [verification and delivery](../reports/e2e/STEP06A.md).
+STEP-06A, STEP-06B and STEP-06C are human-authorized independent parts of STEP-06.
+STEP-05 remains open, including its native account blockers. These slices add
+guest SSR, metadata, errors/maintenance, asset versions, indexing/JSON-LD and
+native public content-data caching. Account behavior, HTTP output caching and
+full AC-06 remain incomplete. See [STEP-06A](../reports/e2e/STEP06A.md),
+[STEP-06B](../reports/e2e/STEP06B.md) and [STEP-06C evidence](../reports/e2e/STEP06C.md).
 
 ## Explicit project SSR policy
 
@@ -124,8 +125,9 @@ routes, otherwise an outer adapter can replace the response a second time.
 
 Every opted-in HTML and page JSON response remains `private, no-store`, including
 authenticated, preview, errors and SSR fallback. `Vary: X-Inertia` distinguishes
-representations but grants no shared-cache permission. No output cache, cache
-keys, generation helpers, dependency watchers or invalidation are introduced.
+representations but grants no shared-cache permission. STEP-06C adds data caching
+below this response boundary; it introduces no HTTP output cache or dependency
+watcher.
 
 The existing plugin `version()` uses the project's `Vite::manifestHash()`.
 Official Inertia middleware detects an outdated `X-Inertia-Version` and returns
@@ -133,6 +135,106 @@ Official Inertia middleware detects an outdated `X-Inertia-Version` and returns
 new build. The local fixture changes only manifest whitespace to demonstrate
 negotiation without breaking asset references. This is protocol evidence, not a
 production deployment or public-cache acceptance claim.
+
+## Native public content-data caching (STEP-06C)
+
+The [PublicContentCache project example](examples/PublicContentCache.php) composes
+Craft's `ElementCaches` collector with `DependencyCache`. It is an application
+convention for the Playground's article projections, not a new plugin API or a
+universal cache wrapper. Copy/adapt it into `App\Http` alongside the project's
+`PublicRendering` policy above. The package registers no cache middleware,
+listeners, store, schema or dependency. Use Craft's installed dependency-aware
+default store; the local evidence uses its file store across real requests.
+
+Keep `'cacheEnabled' => false` in `config/site-content.php` until the selected
+projections are deliberately public. Only article overview/detail routes carry
+`metadata(['public.ssr' => true, 'public.contentCache' => true])`. Both flags and
+the strict boolean config opt-in are required. The existing guest eligibility
+excludes CP/actions, authenticated visitors, native consumed route/site tokens,
+preview elements/markers/headers and session errors/messages/Inertia flash. This
+cache also excludes old form input. A session that contains only normal guest
+framework bookkeeping is not itself personalized content. Projects with any
+other personalization must extend their owning eligibility policy first.
+
+The detail projection runs only after native `CurrentElement` resolution and
+section checks. Collect the matched element explicitly because routing hydrated
+it before cache collection began:
+
+```php
+$data = PublicContentCache::remember(request(), ['article', $entry->getCanonicalId()], function () use ($entry): array {
+    ElementCaches::collectCacheInfoForElement($entry);
+    $this->loadContent($entry, 'articles');
+
+    return [
+        ...$this->articleSummary($entry),
+        'body' => $this->textField($entry, config('site-content.articles.bodyField')),
+        ...$this->content($entry, 'articles'),
+    ];
+});
+
+return Inertia::render('Site/Articles/Show', [
+    ...$this->pageProps($entry), // Always current request policy and SEO.
+    'entry' => $data,
+    'isPreview' => $entry->previewing,
+]);
+```
+
+The overview normalizes `q`, `topic`, `sort` and positive page input before
+lookup. Its key inputs are `['articles', $filters, $page, 20]`. Inside the
+collector the existing native queries resolve topics, search/relations, count,
+sort and bounded offset/limit; the value contains only projected entries/topics,
+total/current page and section existence. Reconstruct the paginator and its
+query links outside the cache using the native current-site URL. SEO, canonical
+and alternate links, robots, JSON-LD, globals, preview state, flash, HTTP status,
+SSR eligibility and asset-version negotiation remain outside both data values.
+HTML and page JSON therefore consume the same data without reusing policy.
+
+Keys contain native site ID/UID/base URL, normalized flow inputs, article/taxonomy
+schema config and a projection version. The example's `v1` must change when
+projection code, transforms or other output-affecting deployment inputs change;
+non-Craft data needs its own evidenced dependency or must stay uncached.
+Indexing settings are deliberately outside this key so a warmed public value
+cannot freeze yesterday's crawler policy. No raw request URL, session, user,
+query object, full element, response or head projection is stored.
+
+Native element queries collect their tags even for empty results, retaining the
+dependency when a missing filter later becomes available or new content is
+published. Explicitly call `collectCacheInfoForElement()` for every projected
+related element, including eager-loaded assets and recursively projected Matrix
+children: hydration may have happened outside the current collector. Relation
+queries and native owner invalidation also retain membership dependencies.
+Saves, publish/unpublish and delete use native element APIs, which invalidate
+the collected dependency. The example adds no manual purge or tag strings.
+
+The TTL is at most 300 seconds and no later than the collector's nearest expiry.
+On a miss, two native current-site queries also find the earliest enabled pending
+publication and live expiry across canonical entries, including off-page and
+currently invisible content. The project registers those dates with
+`ElementCaches::setCacheExpiryDate()`. On the fixed CMS source, live/pending
+queries compare against `now()->endOfMinute()`; the data TTL therefore ends at
+the **start of the publication/expiry minute**, preserving native visibility
+without waiting for a save, queue job or manual purge. A zero remaining TTL is
+not stored. The collector is stopped in `finally`, including projection errors.
+
+These broad scheduling queries intentionally collect broad native Entry tags.
+Any canonical entry save can invalidate multiple flows/sites; this is safe
+conservative invalidation, not a cache-granularity or performance claim. The
+evidence covers the normal dynamic native statuses, not static-status cron
+operation, arbitrary third-party fields, distributed stores, concurrent writes
+or nested output/template caches. Never wrap the entire response or assume
+element tags invalidate arbitrary config, remote data or a second cache layer.
+Recheck these APIs and minute semantics on Craft upgrades.
+
+`ElementQuery::cache()/noCache()` is the native alternative for query-result
+caching. This example keeps queries uncached and caches only the final public
+arrays with the native collector, avoiding a second cache lifetime. It needs no
+custom invalidation watcher or shared-cache response policy. Full HTTP/CDN/browser
+caching and account-dependent policies remain deferred.
+
+Pinned primary sources: [ElementCaches](https://github.com/craftcms/cms/blob/0506c32b44efbe3e7f5fded46a7c1d39de699d5b/src/Element/ElementCaches.php),
+[query tag collection](https://github.com/craftcms/cms/blob/0506c32b44efbe3e7f5fded46a7c1d39de699d5b/src/Element/Queries/Concerns/CollectsCacheTags.php),
+[Entry status queries](https://github.com/craftcms/cms/blob/0506c32b44efbe3e7f5fded46a7c1d39de699d5b/src/Element/Queries/EntryQuery.php)
+and [Craft's dependency-aware store](https://github.com/craftcms/laravel-dependency-aware-cache).
 
 Primary APIs: [official SSR](https://inertiajs.com/docs/v3/advanced/server-side-rendering),
 [Head](https://inertiajs.com/docs/v3/the-basics/title-and-meta),

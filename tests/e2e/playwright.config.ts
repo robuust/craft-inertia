@@ -20,6 +20,11 @@ export default defineConfig({
       dependencies: ["step03"],
     },
     {
+      name: "step06c",
+      testMatch: "cache.spec.ts",
+      dependencies: ["step03"],
+    },
+    {
       name: "step06b",
       testMatch: "indexing.spec.ts",
       dependencies: ["step03"],

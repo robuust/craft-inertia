@@ -68,7 +68,9 @@ into a universal schema.
 The following responsibilities define the reusable integration;
 STEP-01 implements items 1–4 through native destinations, required
 `CurrentElement` parameters and opt-in public middleware. Item 5 currently uses
-a conservative private/no-store policy; STEP-06A adds guest SSR/errors/asset versions and STEP-06B adds project indexing/structured data while production caching remains deferred:
+a conservative private/no-store policy; STEP-06A adds guest SSR/errors/asset versions,
+STEP-06B adds project indexing/structured data and STEP-06C adds native public
+content-data caching. HTTP output caching and production acceptance remain deferred:
 
 1. Craft resolves site context, normal session authority and any valid preview
    token before the public page consumes content.
@@ -85,6 +87,15 @@ a conservative private/no-store policy; STEP-06A adds guest SSR/errors/asset ver
    responses remain outside shared public caches. Public cache keys distinguish
    site, URL/query and response representation; content changes invalidate
    affected output.
+
+STEP-06C caches only explicit project content arrays, keyed by native current
+site, normalized filters/page, schema configuration and a projection version.
+HTML and page JSON may share that data key because no representation or request
+state is stored. SEO/robots/JSON-LD, links, session state, protocol decisions and
+errors are rebuilt for each response. Private/preview/token/form-state requests
+bypass the data cache. Craft's native dependency collector and dependency-aware
+store own invalidation; the project supplies scheduling boundaries for content
+that is not yet in the live query. See [RENDERING.md](RENDERING.md).
 
 Native named destinations must match the entry's URI, domain and method.
 Registered controller destinations also retain their configured Laravel
