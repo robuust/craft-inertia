@@ -156,7 +156,28 @@ The install harness is independent of the demo-specific `prepare.mjs` and all
 existing Playwright projects. It requires the approved local Playground
 dependency metadata, Composer, PHP 8.5, Node 24, Yarn, Docker and Chrome. Set an
 absolute task-owned evidence directory; the runtime refuses to overwrite an
-existing installation:
+existing installation.
+
+Preparation generates `bootstrap/database-target.json` in the disposable
+runtime, independently of the caller's environment. The fixture checks its
+loaded configuration immediately after Laravel's `LoadConfiguration`, before
+any application provider registers. CLI, HTTP and PHPUnit boots therefore
+reject foreign database tuples or application URLs, including cached config.
+This fixture supports one checked PostgreSQL connection only: connection URLs,
+read/write/direct endpoints and pooling overrides are rejected. Other connection
+templates and connector options are removed before providers load. Laravel
+normally lets URL fields/query parameters override individual `DB_*` values;
+the fixture deliberately does not accept that alternate transport. A correct
+cached target stays authoritative over inherited environment variables.
+
+The guard does not sanitize or print caller credentials. If a launch fails with
+`Installation fixture isolation`, remove conflicting inherited configuration and
+repeat it. `APP_ENV=install` and project `FRONTEND_ENABLED` changes remain allowed.
+Do not copy this task-only guard/target file into a consuming production project.
+The regression probes stop before provider registration even when demonstrating
+the previous failure, so sentinel values cannot cause a foreign DB connection.
+
+Run from the plugin checkout:
 
 ```sh
 export POC_INSTALL_REPORT_DIR=/absolute/task-owned/installation-evidence

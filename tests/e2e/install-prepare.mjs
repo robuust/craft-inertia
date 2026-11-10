@@ -189,6 +189,21 @@ writeFileSync(
     .join(""),
   { mode: 0o600 },
 );
+writeFileSync(
+  path.join(application, "bootstrap/database-target.json"),
+  JSON.stringify({
+    appUrl: environment.APP_URL,
+    connection: {
+      driver: "pgsql",
+      host: environment.DB_HOST,
+      port,
+      database: environment.DB_DATABASE,
+      username: environment.DB_USERNAME,
+      password: environment.DB_PASSWORD,
+    },
+  }),
+  { mode: 0o600 },
+);
 run("composer-install", "composer", [
   "update",
   "robuust/craft-inertia-poc",

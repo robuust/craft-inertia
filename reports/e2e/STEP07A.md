@@ -42,6 +42,21 @@ updates only the local plugin path metadata and fails on any other dependency
 change. The original demo-specific harness and earlier suites remain unchanged.
 The separate installation Playwright config excludes generated runtimes only.
 
+Independent review found that inherited `DB_*`/`DB_URL` values could override the
+fixture `.env` while its preflight checked only Docker's DB. Correction cycle 1
+adds a generated runtime-owned target and an early post-`LoadConfiguration`
+guard, before application provider registration. Both cached and uncached CLI/
+HTTP configuration must match its PostgreSQL tuple and application URL.
+Connection URLs and alternate endpoints are unsupported in this fixture; only
+the checked target tuple is made available to providers. Product and vendor
+runtime code remain unchanged. The installation guide documents this boundary.
+
+The regression probes use harmless sentinels and a second stop immediately
+before provider registration. Against the previous bootstrap they fail as
+expected without connecting anywhere; the corrected bootstrap blocks foreign
+targets earlier. They also prove valid install/opt-in variables are allowed and
+that inherited environment values cannot replace a safe cached target.
+
 - CMS `0506c32b44efbe3e7f5fded46a7c1d39de699d5b`, matching cms-assets
   `17973259d5727a1e50a1fc85dd90566b889407af`. The development alias is not
   released alpha.20 support.
@@ -56,12 +71,15 @@ The separate installation Playwright config excludes generated runtimes only.
 | --- | --- |
 | Fresh Composer/Craft/plugin install | Passed; empty task DB, normal discovery and native commands |
 | PHP installation/lifecycle/response contracts | 8 tests, 82 assertions passed |
+| PHP target isolation (correction cycle 1) | 13 tests, 26 assertions passed; no foreign provider/DB connection |
 | Browser HTML/SSR/navigation/native lifecycle/project opt-out | 5 passed, zero failures/skips/retries |
 | Project client and SSR builds | Passed from the locked dependency graph |
 | TypeScript, Prettier, PHP syntax, scoped PHP CS Fixer | Passed |
 | Composer metadata and Git whitespace | Passed |
 | Native source/asset and original-work preservation | Exact hashes retained and checked |
 | Independent review and merge | Pending coordinator review; PR deliberately remains open |
+
+The correction-cycle combined PHP run contains all 21 cases and 108 assertions.
 
 PHP coverage is not claimed: no coverage driver is installed, and this package
 has no PHP coverage gate or CI workflow. No threshold or existing suite was
@@ -82,9 +100,11 @@ retained separately from the final clean run.
 
 Operational evidence is retained under
 `~/.codex/agent-team/runs/craft-inertia-execution-20261109/step07a/`:
-the `verification` directory holds install/build logs, dependency/source and
-published-asset manifests, exact resolved lock, PHP JUnit and browser JSON/JUnit,
-screenshots and reports. The completion handoff records the stable head/PR,
+the original `verification` directory is retained. `correction-01/verification`
+holds the corrected clean install/build logs, dependency/source and published-
+asset manifests, exact resolved lock, combined PHP JUnit and browser JSON/JUnit,
+screenshots and reports. The correction directory also retains the red/green
+isolation evidence and prior task DB dump/runtime. The completion handoff records the stable head/PR,
 patch/hash, original source/stash preservation and task-service cleanup.
 No new agent or extra task chat was created.
 
