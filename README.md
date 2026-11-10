@@ -21,6 +21,10 @@ distinguish delivered slices from deferred account and HTTP caching work.
 
 ## Install
 
+See the [clean installation and native fallback checklist](docs/INSTALLATION.md)
+for the exact supported pins, minimal consuming application, project opt-out,
+native disable/enable commands, builds and isolated STEP-07A proof.
+
 Make this private package available to Composer. For sibling local checkouts,
 add the following repository to the consuming application's `composer.json`:
 

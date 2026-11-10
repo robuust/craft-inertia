@@ -57,6 +57,17 @@ identities or make a distribution/license decision.
 
 ## Source register
 
+**2026-11-10 STEP-07A addendum:** the independent
+[clean installation/fallback checklist](INSTALLATION.md),
+[neutral application fixture](../tests/e2e/installation) and
+[bounded acceptance report](../reports/e2e/STEP07A.md) extend installation
+evidence without changing the initialization's historical observations below.
+The pinned native `Plugin/Plugins.php`, `Plugin/PluginServiceProvider.php`,
+enable/disable commands and `Route/RouteServiceProvider.php` establish lifecycle
+ownership; fresh application boots and requests exercise those APIs.
+No plugin runtime or dependency change is required. Full STEP-07 and native
+account defects remain open.
+
 All entries were inspected on **2026-11-09**. Stable revisions and version tags
 take precedence over moving documentation for claims about installed behavior.
 
