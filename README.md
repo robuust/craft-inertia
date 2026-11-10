@@ -17,7 +17,7 @@ The current stack uses Laravel `13.40.0`, `inertiajs/inertia-laravel` `3.7.0` an
 `3.11.0`. The [scope and roadmap](docs/FRONTEND.md),
 [initialization](docs/PROJECT.md) and [domain contracts](docs/DOMAIN_MODEL.md)
 distinguish delivered slices from deferred account and cache work.
-[Public rendering](docs/RENDERING.md) documents the independent STEP-06A slice.
+[Public rendering](docs/RENDERING.md) documents the independent STEP-06A/06B slices.
 
 ## Install
 
@@ -152,9 +152,14 @@ content keeps Craft's availability rules.
 ## Response policy and preview limits
 
 For now, every opted-in public response carries `private, no-store` and
-`X-Robots-Tag: noindex, nofollow` on initial HTML and Inertia JSON. This deliberately
-retains the experiment's conservative policy. Public cache/indexing policy remains deferred within
-STEP-06; no production-cache claim is made here.
+`X-Robots-Tag: noindex, nofollow` by default on initial HTML and Inertia JSON.
+STEP-06B adds an optional `indexingPolicy` callable; the project must establish
+published guest eligibility, and native `disallowRobots` always wins. The local
+Playground example uses an empty `site-content.indexableSites` allowlist until a
+project deliberately opts in. Its public canonical pages project safely encoded
+WebPage JSON-LD through Inertia Head. See [rendering contracts](docs/RENDERING.md).
+Indexing permission does not enable a public cache; caching/invalidation remain
+deferred and no production-cache claim is made here.
 
 The project owns SSR policy and its build. STEP-06A enables explicit guest public
 SSR in the local Playground, while authenticated, preview and form/challenge

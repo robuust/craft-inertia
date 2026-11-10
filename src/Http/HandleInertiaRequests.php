@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Robuust\CraftInertiaPoc\Http;
 
 use Closure;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\Support\Flash;
 use Illuminate\Http\Request;
@@ -70,16 +71,31 @@ class HandleInertiaRequests extends Middleware
             Inertia::flash(Inertia::getFlashed($request) + $messages);
         }
 
-        return $this->protectResponse(parent::handle($request, $next));
+        // The adapter consumes one-time flash while rendering the response.
+        $robots = $this->robots($request);
+
+        return $this->protectResponse(parent::handle($request, $next), $robots);
+    }
+
+    /** Projects must establish published guest eligibility in their explicit policy. */
+    public function robots(Request $request): string
+    {
+        $policy = config('inertia-poc.indexingPolicy');
+
+        return !Cms::config()->disallowRobots && is_callable($policy) && $policy($request) === true
+            ? 'index, follow'
+            : 'noindex, nofollow';
     }
 
     /** Apply the same policy to project-owned exception responses outside route middleware. */
-    public function protectResponse(Response $response): Response
+    public function protectResponse(Response $response, string $robots = 'noindex, nofollow'): Response
     {
         app(ResponseHeaders::class)->noCache();
         $response->setVary([...$response->getVary(), Header::INERTIA]);
         $response->headers->set('Cache-Control', 'private, no-store');
-        $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
+        $response->headers->set('X-Robots-Tag', $response->getStatusCode() === 200
+            ? $robots
+            : 'noindex, nofollow');
 
         return $response;
     }

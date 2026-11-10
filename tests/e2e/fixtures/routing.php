@@ -122,6 +122,9 @@ if (app()->environment('e2e')) {
                 }
                 abort($code, 'Synthetic exception detail must not be projected', ['Retry-After' => '120']);
             });
+            Route::get('indexing-page', fn (Request $request) => app(\App\Http\Controllers\SiteController::class)
+                ->articles($request)->with('indexUrl', '/e2e/rendering/error/404'))->metadata(['public.ssr' => true]);
+            Route::get('flash', fn () => redirect('/articles')->with('inertia.flash_data', ['private' => 'Sensitive one-time message']));
             Route::get('redirect', fn () => redirect('/articles', 307));
             Route::get('page', function (Request $request) {
                 if ($request->boolean('fallback')) {

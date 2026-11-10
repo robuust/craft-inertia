@@ -134,7 +134,7 @@ separately; the prior PoC commit does not complete any target step.
 | STEP-03 Native preview and multisite            | REQ-06, REQ-07                                | STEP-01/02 mapped pages and content                                                      | Plugin + Playground                              | Implemented on the approved official 6.x baseline; see STEP-03 evidence. The pause was revoked by the human resume on 2026-11-10.                                                                               |
 | STEP-04 Forms and file operations               | REQ-04, REQ-08                                | STEP-01 public middleware, STEP-02 assets, STEP-03 site/preview context                  | Plugin + Playground                              | Implemented; see STEP-04 evidence and its current publication/merge state.                                                       |
 | STEP-05 Accounts and access                     | REQ-09                                        | STEP-04 action/flash/error contract                                                      | Plugin + Playground                              | OPEN: preserved, unaccepted account work is blocked by native account behavior; no correction was authorized.                                                                                     |
-| STEP-06 Rendering and response policies         | REQ-10, REQ-11, REQ-12                        | STEP-02/03 content/site dependencies and STEP-05 private-session behavior                | Plugin + Playground                              | PARTIAL: independent STEP-06A is authorized without STEP-05; account-dependent caching and full AC-06 remain deferred.                                                                               |
+| STEP-06 Rendering and response policies         | REQ-10, REQ-11, REQ-12                        | STEP-02/03 content/site dependencies and STEP-05 private-session behavior                | Plugin + Playground                              | PARTIAL: independent STEP-06A/06B are authorized without STEP-05; account-dependent caching and full AC-06 remain deferred.                                                                               |
 | STEP-07 Reusable installation and compatibility | REQ-13; release evidence for all requirements | STEP-01 through STEP-06; named third-party products/versions for advertised integrations | Plugin + Playground; selected integration owners | PARTLY_READY for product selection/release decisions; implementation and compatibility acceptance depend on predecessors. |
 
 The current execution follows the user-authorized roadmap with scoped tests and one fresh plugin PR per slice; Playground changes remain local and uncommitted. All step owners must read the
@@ -284,6 +284,19 @@ full authenticated lifecycle, cache variation/invalidation, indexing and
 structured-data policy remain deferred. No native account workaround or STEP-05
 source is included. See [rendering contracts](RENDERING.md) and
 [STEP-06A evidence](../reports/e2e/STEP06A.md).
+
+### STEP-06B Independent public indexing and structured data
+
+The human's next-independent-slice instruction authorizes opt-in project indexing
+and safe JSON-LD in one fresh plugin PR, with scoped tests and independent review.
+Native account defects stay open. The default remains noindex/nofollow; selected
+successful guest content may opt in while native disallowRobots, server-derived
+token/preview/session exclusions and private/no-store responses remain enforced.
+The project owns a minimal WebPage projection, schema choice and safe Inertia
+Head lifecycle. Playground changes stay local/uncommitted. No public cache,
+invalidation, native account fix, production policy or full AC-06 acceptance is
+included. See [rendering contracts](RENDERING.md) and
+[STEP-06B evidence](../reports/e2e/STEP06B.md).
 
 ### STEP-07 Reusable installation and plugin compatibility
 
