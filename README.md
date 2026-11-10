@@ -10,11 +10,13 @@ public routes, pages, preview targets or asset bundle, and requires no particula
 section or field handles. Existing `/inertia-poc` and numeric demo URLs are
 removed. The examples now live in the consuming Craft 6 Playground application.
 
-This remains an experimental integration, tested with Craft `6.0.0-alpha.20`,
-Laravel `13.40.0`, `inertiajs/inertia-laravel` `3.7.0` and `@inertiajs/vue3`
+This remains an experimental integration. The current validated Craft baseline
+is official CMS `0506c32` with matching assets `1797325`, using development
+aliases rather than the released alpha.20; see [STEP-03](reports/e2e/STEP03.md).
+The current stack uses Laravel `13.40.0`, `inertiajs/inertia-laravel` `3.7.0` and `@inertiajs/vue3`
 `3.11.0`. The [scope and roadmap](docs/FRONTEND.md),
 [initialization](docs/PROJECT.md) and [domain contracts](docs/DOMAIN_MODEL.md)
-distinguish this slice from later content, preview, forms, SSR and cache work.
+distinguish delivered slices from later account, SSR and cache work.
 
 ## Install
 
@@ -225,3 +227,12 @@ The legacy `diagnose-live-preview.mjs` script is retained only for the released
 alpha.20 reproduction (original revision `2c670fe`); it rejects the current dev
 runtime before writing historical output. The official baseline's native Twig
 control is part of the strict `editor-preview` project.
+
+## Forms and private files
+
+[Form and file contracts](docs/FORMS.md) describe the selected native and project
+actions, official Inertia forms/HTTP callers, named errors, old input, native
+flash and private uploads/downloads. The package bridges native session messages
+on opted-in pages; native JSON operations retain their own response contracts.
+The Playground examples and synthetic private-volume configuration stay local.
+See [STEP-04 evidence](reports/e2e/STEP04.md) for acceptance and limitations.

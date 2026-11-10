@@ -88,3 +88,26 @@ foreach (Route::getRoutes() as $route) {
         $route->middleware(ObserveSiteRequest::class);
     }
 }
+
+// A real native trait failure with no field errors, scoped to this test runtime.
+if (app()->environment('e2e')) {
+    Route::post('/e2e/native-failure', function (): Response {
+        $action = new class {
+            use \CraftCms\Cms\Http\RespondsWithFlash;
+        };
+
+        return $action->asFailure('Native action refused.', ['errorCode' => 'fixture-refusal']);
+    });
+}
+
+if (app()->environment('e2e')) {
+    foreach (['', '/nl'] as $prefix) {
+        Route::middleware(['craft', \Robuust\CraftInertiaPoc\Http\HandleInertiaRequests::class, 'auth:craft'])
+            ->get($prefix.'/e2e/native-failure-page', function () {
+                return app(\App\Http\Controllers\FileController::class)->index()->with('nativeEntry', [
+                    'entryId' => 1, 'siteId' => \CraftCms\Cms\Support\Facades\Sites::getCurrentSite()->id,
+                    'title' => 'Native failure fixture', 'redirect' => '', 'action' => '/e2e/native-failure',
+                ]);
+            });
+    }
+}

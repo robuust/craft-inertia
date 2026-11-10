@@ -125,8 +125,8 @@ where the native action supplies them.
 Inspect each native action before adapting it. JSON-expecting requests can
 receive JSON instead of session redirects. A failed action can also carry only
 a flash message/error code without field errors. A form integration that checks
-only an error bag can therefore misreport failure as success. STEP-04 owns this
-transport contract; STEP-05 applies it to account flows.
+only an error bag can therefore misreport failure as success. STEP-04 implements this
+transport contract in [FORMS.md](FORMS.md); STEP-05 applies it to account flows.
 
 ## Model decisions still needed
 
@@ -135,7 +135,7 @@ transport contract; STEP-05 applies it to account flows.
 | Minimal page/root/asset configuration API | Settled in STEP-01: native destinations, project controllers/pages/build and opt-in middleware with a configurable root view. |
 | Public projection extension conventions   | Settled in STEP-02: project-owned typed PHP methods, explicit arrays and native query/field APIs; see CONTENT.md.                                |
 | Site and preview public context shape     | STEP-03: project-owned site identity, native URLs and public translation links; matched element `previewing` supplies version context. See CONTENT.md. |
-| Supported native action contracts         | STEP-04 and STEP-05; inspect responses rather than duplicate validation.                                          |
+| Supported native action contracts         | STEP-04 covers the operations in FORMS.md; STEP-05 adds account contracts.                                          |
 | Public SSR/cache policy configuration     | STEP-06; establish HTML/JSON variation, private isolation and invalidation.                                       |
 | Initial third-party support matrix        | STEP-07; product selection remains open and does not block the core first step.                                   |
 

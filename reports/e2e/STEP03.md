@@ -108,7 +108,9 @@ in the preceding STEP-03 artifacts and the original report revision `2c670fe`.
 Only the plugin PR is published. All Playground dependency/application changes
 remain local and uncommitted at `f7dd95da555f704d49aa590f7fa60bf7d24f1731`.
 No production deployment or original database upgrade is included. The human
-requested a roadmap pause after STEP-03; no STEP-04 work is started or prepared.
+requested a roadmap pause at this STEP-03 handoff. That pause was subsequently
+revoked on 2026-11-10; current STEP-04 work is recorded separately in
+[STEP04.md](STEP04.md).
 
 ---
 

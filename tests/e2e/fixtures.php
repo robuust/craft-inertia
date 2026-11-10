@@ -196,8 +196,46 @@ function previewToken(Entry $entry, bool $expired = false): string
 
 require_once __DIR__.'/content-fixtures.php';
 require_once __DIR__.'/site-fixtures.php';
+require_once __DIR__.'/file-fixtures.php';
 
 $mode = $argv[1] ?? 'seed';
+
+if (in_array($mode, ['invalidate-file-session', 'restore-file-session'], true)) {
+    $credentials = json_decode(file_get_contents($runtime.'/credentials.json'), true, flags: JSON_THROW_ON_ERROR);
+    $user = CraftCms\Cms\User\Elements\User::find()->username('file-invalidated')->status(null)->one();
+    $user->newPassword = $credentials['password'].($mode === 'invalidate-file-session' ? '-changed' : '');
+    save($user, Elements::saveElement($user));
+    $app->terminate();
+    exit;
+}
+
+if ($mode === 'restore-form-titles') {
+    $sites = json_decode(file_get_contents($runtime.'/sites.json'), true, flags: JSON_THROW_ON_ERROR);
+    foreach ([['id' => $sites['primaryId'], 'article' => $sites['primaryArticle']], ...array_values($sites['sites'])] as $site) {
+        $entry = Entry::find()->id($site['article']['id'])->siteId($site['id'])->one();
+        $entry->title = $site['article']['title'];
+        save($entry, Elements::saveElement($entry, propagate: false));
+    }
+    $app->terminate();
+    exit;
+}
+
+if ($mode === 'clean-files') {
+    $volume = CraftCms\Cms\Support\Facades\Volumes::getVolumeByHandle('privateFiles');
+    foreach (CraftCms\Cms\Asset\Elements\Asset::find()->volumeId($volume->id)->site('*')->unique()->all() as $asset) {
+        Elements::deleteElement($asset);
+    }
+    $app->terminate();
+    exit;
+}
+
+if ($mode === 'seed-files') {
+    $files = seedFileFixtures();
+    file_put_contents($runtime.'/files.json', json_encode($files, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+    $app->terminate();
+    echo 'POC_FIXTURES_JSON='.json_encode($files, JSON_THROW_ON_ERROR)."\n";
+    exit;
+}
 
 if ($mode === 'seed-sites') {
     $fixtures = json_decode(file_get_contents($runtime.'/fixtures.json'), true, flags: JSON_THROW_ON_ERROR);
