@@ -16,8 +16,8 @@ aliases rather than the released alpha.20; see [STEP-03](reports/e2e/STEP03.md).
 The current stack uses Laravel `13.40.0`, `inertiajs/inertia-laravel` `3.7.0` and `@inertiajs/vue3`
 `3.11.0`. The [scope and roadmap](docs/FRONTEND.md),
 [initialization](docs/PROJECT.md) and [domain contracts](docs/DOMAIN_MODEL.md)
-distinguish delivered slices from deferred account and cache work.
-[Public rendering](docs/RENDERING.md) documents the independent STEP-06A/06B slices.
+distinguish delivered slices from deferred account and HTTP caching work.
+[Public rendering](docs/RENDERING.md) documents the independent STEP-06A/06B/06C slices.
 
 ## Install
 
@@ -158,8 +158,11 @@ published guest eligibility, and native `disallowRobots` always wins. The local
 Playground example uses an empty `site-content.indexableSites` allowlist until a
 project deliberately opts in. Its public canonical pages project safely encoded
 WebPage JSON-LD through Inertia Head. See [rendering contracts](docs/RENDERING.md).
-Indexing permission does not enable a public cache; caching/invalidation remain
-deferred and no production-cache claim is made here.
+Indexing permission does not enable a shared HTTP cache. STEP-06C adds an
+off-by-default project example for native public content-data caching and Craft
+invalidation. Article detail and filtered/paginated overview data may be reused
+while all response policies remain per-request and private/no-store. Full HTTP
+caching and production acceptance remain deferred.
 
 The project owns SSR policy and its build. STEP-06A enables explicit guest public
 SSR in the local Playground, while authenticated, preview and form/challenge

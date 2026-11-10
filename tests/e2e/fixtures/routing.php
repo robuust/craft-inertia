@@ -71,7 +71,16 @@ if (!class_exists(ObserveSiteRequest::class)) {
     {
         public function handle(Request $request, Closure $next): Response
         {
+            $cache = ['hits' => [], 'writes' => []];
+            foreach ([\Illuminate\Cache\Events\CacheHit::class => 'hits', \Illuminate\Cache\Events\KeyWritten::class => 'writes'] as $event => $kind) {
+                \Illuminate\Support\Facades\Event::listen($event, function ($event) use (&$cache, $kind): void {
+                    if (str_starts_with($event->key, 'site-content:')) {
+                        $cache[$kind][] = $event->key;
+                    }
+                });
+            }
             $response = $next($request);
+            $response->headers->set('X-E2E-Content-Cache', json_encode($cache, JSON_THROW_ON_ERROR));
             $response->headers->set('X-E2E-Preview-Markers', json_encode([
                 'token' => $request->query('token') !== null,
                 'marker' => $request->query('x-craft-preview') !== null,
