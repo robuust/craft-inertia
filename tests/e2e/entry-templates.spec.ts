@@ -61,6 +61,7 @@ test("native structure URL and second-site identity render directly", async ({
     page.getByRole("heading", { name: "Nederlands artikel" }),
   ).toBeVisible();
   await expect(page.locator("main")).toContainText("nl");
+  await expect(page.locator("html")).toHaveAttribute("lang", "nl");
   await expect(page.locator("link[rel=canonical]")).toHaveAttribute(
     "href",
     fixtures.dutch.url,

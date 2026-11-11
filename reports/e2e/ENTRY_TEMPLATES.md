@@ -39,12 +39,13 @@ The minimal consumer's PHP suite passes **40 tests / 218 assertions**. Its
 browser suite passes **4 scenarios**, including native CP Live Preview.
 Core public PHP passes **91 / 513**; neutral PHP **28 / 130** and browser **5**;
 scalar Contact Form PHP **29 / 123** and browser **5**.
-The broad existing browser run has 95 passing cases and three initial timing
-failures. Cache invalidation and authenticated SSR pass unchanged in focused
-confirmation. Both native form-validation cases pass after the harness waits
-explicitly for the final native save/redirect, with all original content/status
-assertions retained and no retries. This is combined criterion evidence, not a
-claim that one uninterrupted 98-case run was green.
+The complete broad browser suite passes **98 / 98** on the final native-save
+synchronization, with no retries, skips or flaky cases. Earlier results retain
+95 passes / three timing failures and their focused confirmations. The native
+form harness now awaits the final native save/redirect, retaining all original
+content/status assertions. A later fixture-only correction uses native site
+language for the public HTML document; its focused multisite browser check
+passes. Plugin runtime source stays byte-identical to the full-suite revision.
 
 ## Retained limitations and recovery evidence
 
