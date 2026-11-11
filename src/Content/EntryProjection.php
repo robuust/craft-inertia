@@ -13,7 +13,6 @@ use CraftCms\Cms\Field\Data\MarkdownData;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Support\Facades\ElementCaches;
-use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use DateTimeInterface;
 use InvalidArgumentException;
@@ -39,16 +38,6 @@ final class EntryProjection
         $identity = $entry->id !== null ? "$entry->id:$entry->siteId" : 'new:'.spl_object_id($entry);
         $fields = isset($ancestors[$identity]) || $depth >= 10 ? [] : ($entry->getFieldLayout()?->getCustomFields() ?? []);
         $ancestors[$identity] = true;
-        $relations = [];
-        foreach ($fields as $field) {
-            if ($field instanceof Field\Assets || $field instanceof Field\Entries || $field instanceof Field\Matrix) {
-                $relations[] = $field->handle;
-            }
-        }
-        if ($relations !== []) {
-            Elements::eagerLoadElements(Entry::class, [$entry], $relations);
-        }
-
         $values = [];
         foreach ($fields as $field) {
             $values[$field->handle] = $this->field($entry, $field, $ancestors, $depth);
@@ -69,7 +58,8 @@ final class EntryProjection
     {
         $handle = $field->handle;
         if ($field instanceof Field\Assets || $field instanceof Field\Entries || $field instanceof Field\Matrix) {
-            $elements = $entry->getEagerLoadedElements($handle) ?? $entry->getFieldValue($handle)->all();
+            // Native lazy eager loading batches this relation across the entry's siblings.
+            $elements = $entry->getEagerLoadedElements($handle) ?? $entry->getFieldValue($handle)->eagerly()->all();
             $values = [];
             foreach ($elements as $element) {
                 ElementCaches::collectCacheInfoForElement($element);

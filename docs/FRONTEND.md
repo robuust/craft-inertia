@@ -5,9 +5,14 @@ Inertia and Vue. Each project supplies its own pages, layouts and presentation.
 Craft remains responsible for content, URLs, publication rules, sessions,
 permissions and preview authorization.
 
+**Current verification policy:** this plugin repository contains no tests,
+fixtures, test dependencies or preparation scripts. Consuming Craft projects
+own integration verification. Historical delivery/check criteria below describe
+their original scope; they do not require restoring a plugin test suite.
+
 This is the agreed product direction following the initial proof of concept.
 The capabilities below are delivery requirements, not claims about the current
-package. The historical [E2E report](../reports/e2e/REPORT.md) covers only the initial
+package. The historical [E2E report](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/REPORT.md) covers only the initial
 fixed article demonstration. STEP-01 through STEP-04 replace it with native
 destinations and project-owned pages; their slice reports record scoped evidence. [PROJECT.md](PROJECT.md) records the inspected sources,
 coverage and decisions; [DOMAIN_MODEL.md](DOMAIN_MODEL.md) defines the data and
@@ -25,8 +30,8 @@ types use their own native serializers. Projects retain Vue/layout/build,
 special queries and business rules. [CONTENT.md](CONTENT.md) defines the current
 prop contract;
 [INSTALLATION.md](INSTALLATION.md) defines the minimal consumer setup.
-[Native-template evidence](../reports/e2e/ENTRY_TEMPLATES.md) records the initial
-beta.1 proof. [Automatic-field evidence](../reports/e2e/AUTOMATIC_FIELDS.md) records
+[Native-template evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/ENTRY_TEMPLATES.md) records the initial
+beta.1 proof. [Automatic-field evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/AUTOMATIC_FIELDS.md) records
 the current field contract, verification, preservation and limits.
 
 Native URI/site/publication/preview resolution remains authoritative. Installing
@@ -142,13 +147,12 @@ JSON action response globally.
 
 ## Delivery roadmap
 
-Each slice adds a complete observable capability to the Playground and records
-its support status. Tests need the user's explicit authorization; the acceptance
-criteria below do not grant permission to write or run them.
+Each slice describes a complete observable capability and its support status.
+Verify those outcomes in the consuming project; the plugin ships no test suite.
 
 Planning basis: 2026-11-09, the revisions and source register in PROJECT.md.
 STEP-01 is delivered and merged in [PR #1](https://github.com/robuust/craft-inertia/pull/1).
-STEP-02 implementation and evidence are recorded in [STEP02.md](../reports/e2e/STEP02.md).
+STEP-02 implementation and evidence are recorded in [STEP02.md](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP02.md).
 STEP-03/04 are also delivered and merged. STEP-05 remains open. STEP-06A is the
 human-authorized independent public subset described below. Implementation, independent review,
 publication, merge, deployment and runtime acceptance must be recorded
@@ -167,7 +171,9 @@ separately; the prior PoC commit does not complete any target step.
 | STEP-07C Permanent private package identity | AC-07 identity/upgrade subset | Merged STEP-07B; human identity/license/distribution choices | Plugin + disposable legacy/current consumers; local source patches only for Playground | Implemented; bounded proof in STEP07C.md; independent review/merge tracked separately. |
 | STEP-07 Reusable installation and compatibility | REQ-13; release evidence for all requirements | STEP-01 through STEP-06; named third-party products/versions for advertised integrations | Plugin + Playground; selected integration owners | PARTLY_READY for remaining compatibility/release acceptance; implementation and compatibility acceptance depend on predecessors. |
 
-The current execution follows the user-authorized roadmap with scoped tests and one fresh plugin PR per slice; Playground changes remain local and uncommitted. All step owners must read the
+The earlier execution used scoped checks and one plugin PR per slice; those
+records are historical. Current work follows the verification policy above;
+Playground changes remain local and uncommitted. All step owners must read the
 project/model and relevant pinned sources before implementation. If a step is
 published through PRs, its required PRs must merge before dependent roadmap work
 starts; each slice records its actual PR and merge state. Each handoff reports exact
@@ -313,7 +319,7 @@ may proceed in a fresh plugin PR. HTML and page JSON remain private/no-store;
 full authenticated lifecycle, cache variation/invalidation, indexing and
 structured-data policy remain deferred. No native account workaround or STEP-05
 source is included. See [rendering contracts](RENDERING.md) and
-[STEP-06A evidence](../reports/e2e/STEP06A.md).
+[STEP-06A evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP06A.md).
 
 ### STEP-06B Independent public indexing and structured data
 
@@ -326,7 +332,7 @@ The project owns a minimal WebPage projection, schema choice and safe Inertia
 Head lifecycle. Playground changes stay local/uncommitted. No public cache,
 invalidation, native account fix, production policy or full AC-06 acceptance is
 included. See [rendering contracts](RENDERING.md) and
-[STEP-06B evidence](../reports/e2e/STEP06B.md).
+[STEP-06B evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP06B.md).
 
 ### STEP-06C Independent public content-data caching
 
@@ -347,7 +353,7 @@ introduced. The checked project example and local Playground integration are
 the deliverable; the plugin runtime API remains unchanged. Playground changes
 remain local/uncommitted. Full HTTP/CDN/browser caching, account lifecycle,
 full AC-06, production acceptance and release remain deferred. See
-[rendering/cache contracts](RENDERING.md) and [STEP-06C evidence](../reports/e2e/STEP06C.md).
+[rendering/cache contracts](RENDERING.md) and [STEP-06C evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP06C.md).
 
 ### STEP-07 Reusable installation and plugin compatibility
 
@@ -378,7 +384,7 @@ own authorization boundary.
 This bounded AC-07 subset depends on merged STEP-01/02/03/04 and the independent
 STEP-06A/06B/06C public contracts. It can proceed while native STEP-05 account
 defects remain open. The [clean installation checklist](INSTALLATION.md) and
-[STEP-07A report](../reports/e2e/STEP07A.md) own its configuration and evidence.
+[STEP-07A report](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP07A.md) own its configuration and evidence.
 A neutral fresh application installs the unchanged private package on the fixed
 Craft source/asset pins without a content schema or package UI. Project-owned
 routes, controller, public root, Vue page/resolver and client/SSR builds prove
@@ -403,7 +409,7 @@ The human selected `craftcms/contact-form` after merged STEP-07A. This independe
 bounded integration uses the official 4.x-dev commit
 `6f3b6deed57d909ab024190a53d93dedc206e13f` on the unchanged accepted Craft source
 and asset pins. The [versioned capability matrix](CONTACT_FORM.md) names exactly
-what is exercised and the [report](../reports/e2e/STEP07B.md) records evidence.
+what is exercised and the [report](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP07B.md) records evidence.
 A project-owned accessible Vue page submits scalar native fields through the
 official Inertia form; the owning plugin retains validation, settings, rate
 limits, CSRF/session, flash/redirect and real local mail rendering/handoff.
@@ -432,7 +438,7 @@ fixtures and tooling use the canonical identity. Historical reports and frozen
 source locks retain the identity they actually exercised.
 
 The [migration checklist](INSTALLATION.md#migrate-the-legacy-package-identity)
-and [bounded evidence](../reports/e2e/STEP07C.md) cover a fresh current installation
+and [bounded evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP07C.md) cover a fresh current installation
 and a disposable installed legacy consumer, using native uninstall/install and
 Composer/project changes. They prove preserved custom root/indexing configuration,
 official SSR config, native/project data and native fallback across enable/disable

@@ -1,1 +1,0 @@
-  const preview = new Craft.Preview({

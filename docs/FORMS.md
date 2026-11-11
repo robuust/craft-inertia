@@ -10,7 +10,7 @@ STEP-04 uses the official Inertia Laravel 3.7 / Vue 3.11 APIs with the approved
 CMS `0506c32b44efbe3e7f5fded46a7c1d39de699d5b` and matching assets
 `17973259d5727a1e50a1fc85dd90566b889407af`. These are exact official development
 sources, aliased for Composer compatibility; they are not the released alpha.20.
-See [STEP-04 evidence](../reports/e2e/STEP04.md).
+See [STEP-04 evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP04.md).
 
 ## Select the transport for each operation
 
@@ -38,7 +38,7 @@ never constructs redirect ciphertext or trusts a visitor-supplied path.
 ## Session errors and flash
 
 Apply `HandleInertiaRequests` to selected project page/form routes, following
-[the public boundary](../README.md#opt-in-project-routes). Native action routes
+[the public boundary](../README.md#bespoke-project-routes). Native action routes
 keep their existing middleware. The plugin does not intercept or convert action
 JSON. Normal Laravel validation and the official adapter own error bags.
 

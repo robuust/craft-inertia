@@ -4,12 +4,7 @@
 /public/hot
 /composer.lock
 .DS_Store
+
+# Retain ignored local artifacts from the former test harness.
 /tests/e2e/.runtime/
-/reports/e2e/playwright/
-/reports/e2e/results/
-/reports/e2e/logs/
-/reports/e2e/step01/
-
-/reports/e2e/step02/
-
-/reports/e2e/step03/
+/reports/

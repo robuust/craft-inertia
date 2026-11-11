@@ -6,17 +6,18 @@ URLs, editorial workflows, sessions and permissions. Each project supplies its
 Vue presentation; native entry templates automatically expose their attached
 layout fields.
 
-**Current execution:** the 2026-11-11 human decision authorizes native
-`inertia:Component` entry templates, automatic all-layout-field serialization,
-beta.1 tests
-and one fresh plugin PR. Generic entry rendering/projection now belongs to the
+**Current implementation:** native `inertia:Component` entry templates and
+automatic all-layout-field serialization target Craft beta.1.
+Generic entry rendering/projection now belongs to the
 plugin; Vue/layout/build and business queries remain project-owned. The latest
 human decision supersedes explicit field selection: all attached entry fields
 are included automatically, using each field's native serialization contract.
 See [CONTENT.md](CONTENT.md) and
-[INSTALLATION.md](INSTALLATION.md). Official beta.1 source/assets are pinned in
-`tests/e2e/official-craft.json`; original Playground source/locks remain local,
-uncommitted and inactive. Earlier STEP reports retain their tested identities.
+[INSTALLATION.md](INSTALLATION.md), which records the inspected beta.1 source
+and asset identities. Current policy keeps tests, fixtures, preparation scripts
+and reports out of this plugin repository. Consuming projects own integration
+verification. Earlier STEP records and their test sources remain in Git history
+and describe their original versions and outcomes.
 
 STEP-01 through STEP-04 and independent STEP-06A/B/C and STEP-07A/B/C have scoped
 history. Four native account regressions and Contact Form N01 remain open.
@@ -28,7 +29,7 @@ production acceptance, nor incorporate the unaccepted local account adapter.
 - [Scope, requirement IDs, acceptance criteria and roadmap](FRONTEND.md).
 - [Domain glossary](../CONTEXT.md) and [data and response contracts](DOMAIN_MODEL.md).
 - [Installation and current demonstration](../README.md).
-- [Existing E2E report and evidence](../reports/e2e/REPORT.md).
+- [Existing E2E report and evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/REPORT.md).
 
 `FRONTEND.md` remains the single scope and roadmap document. There is no parallel
 requirements tracker or second roadmap created by initialization.
@@ -54,14 +55,14 @@ STEP-07C intentionally migrates current code to `robuust/craft-inertia`,
 `Robuust\CraftInertia`, handle `inertia` and display name `Inertia`. The human
 selected private distribution and retaining the proprietary license.
 See the [migration checklist](INSTALLATION.md#migrate-the-legacy-package-identity)
-and [bounded identity evidence](../reports/e2e/STEP07C.md); no public release is implied.
+and [bounded identity evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP07C.md); no public release is implied.
 
-## Source register
+## Historical source register
 
 **2026-11-10 STEP-07A addendum:** the independent
 [clean installation/fallback checklist](INSTALLATION.md),
-[neutral application fixture](../tests/e2e/installation) and
-[bounded acceptance report](../reports/e2e/STEP07A.md) extend installation
+[neutral application fixture](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/tests/e2e/installation) and
+[bounded acceptance report](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP07A.md) extend installation
 evidence without changing the initialization's historical observations below.
 The pinned native `Plugin/Plugins.php`, `Plugin/PluginServiceProvider.php`,
 enable/disable commands and `Route/RouteServiceProvider.php` establish lifecycle
@@ -75,10 +76,10 @@ take precedence over moving documentation for claims about installed behavior.
 | ID  | Source and version                                                                                                                                                                                                                                                             | Coverage and limits                                                                                                                                                                                                                                          |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | S01 | User decisions in this chat: reusable plugin for Craft sites; full public frontend scope; project-owned Vue pages; private repository and workspace rename; current `agent-team init`.                                                                                         | Product direction is confirmed. No specific existing site, visual design, Figma/Balsamiq file, Trello board or third-party compatibility list was supplied.                                                                                                  |
-| S02 | Plugin at the revision above: [source](../src), [routes](../routes/web.php), [historical configuration](https://github.com/robuust/craft-inertia/blob/aa361006dc985fa7c6343c8c84372adf58f2b7e0/config/inertia-poc.php), [Vue application](../resources/js), [Composer](../composer.json) and [npm](../package.json) manifests.                                                | Relevant implementation and build entrypoints inspected. Fixed demo routes, projections, page resolver and response policies; no reusable frontend implementation yet. No CI workflow exists in this repository at the inspected revision.                   |
+| S02 | Plugin at the revision above: [source](https://github.com/robuust/craft-inertia/tree/aa361006dc985fa7c6343c8c84372adf58f2b7e0/src), [routes](https://github.com/robuust/craft-inertia/blob/aa361006dc985fa7c6343c8c84372adf58f2b7e0/routes/web.php), [historical configuration](https://github.com/robuust/craft-inertia/blob/aa361006dc985fa7c6343c8c84372adf58f2b7e0/config/inertia-poc.php), [Vue application](https://github.com/robuust/craft-inertia/tree/aa361006dc985fa7c6343c8c84372adf58f2b7e0/resources/js), [Composer](https://github.com/robuust/craft-inertia/blob/aa361006dc985fa7c6343c8c84372adf58f2b7e0/composer.json) and [npm](https://github.com/robuust/craft-inertia/blob/aa361006dc985fa7c6343c8c84372adf58f2b7e0/package.json) manifests.                                                | Relevant implementation and build entrypoints inspected. Fixed demo routes, projections, page resolver and response policies; no reusable frontend implementation yet. No CI workflow exists in this repository at the inspected revision.                   |
 | S03 | Playground at the revision above: `routes/web.php`, `app/Http`, `app/Providers/AppServiceProvider.php`, `bootstrap/app.php`, `resources/js`, lockfiles and committed project config.                                                                                           | Existing authenticated Inertia/SSR example; one site, no committed content sections/fields. `/` currently redirects to `/users`. The original checkout was not changed.                                                                                      |
 | S04 | Installed alpha.20 framework in the ignored E2E snapshot; canonical [tagged source](https://github.com/craftcms/cms/tree/6.0.0-alpha.20/src). Targeted routing, site, preview, action/auth, content, asset and cache paths inspected.                                          | Establishes APIs and control flow, not executed behavior. The snapshot is an installation artifact, not a Git worktree or another authoritative Playground revision.                                                                                         |
-| S05 | [E2E report](../reports/e2e/REPORT.md), [environment](../reports/e2e/environment.json), [source manifest](../reports/e2e/source-manifest.json), [JUnit](../reports/e2e/junit.xml), native-preview evidence and existing test source.                                           | Saved run: 27 tests, 26 passed, 1 failed. The 13 application files still match the saved hashes. No tests were rerun during init. Report coverage is the demo, not the target plugin.                                                                        |
+| S05 | [E2E report](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/REPORT.md), [environment](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/environment.json), [source manifest](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/source-manifest.json), [JUnit](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/junit.xml), native-preview evidence and existing test source.                                           | Saved run: 27 tests, 26 passed, 1 failed. The 13 application files still match the saved hashes. No tests were rerun during init. Report coverage is the demo, not the target plugin.                                                                        |
 | S06 | GitHub issues for both repositories and PR inventory for the plugin, inspected through GitHub MCP; recent 100 Playground PR summaries also inspected.                                                                                                                          | Both issue lists returned zero with pagination exhausted; the plugin has no PRs. Historical Playground PR pagination was not exhausted; titles are not treated as new requirements or runtime evidence. No tracker changes made.                             |
 | S07 | [Craft roadmap](https://craftcms.com/roadmap), [alpha announcement](https://craftcms.com/blog/craft-6-alpha-released), [alpha.20 release](https://github.com/craftcms/cms/releases/tag/6.0.0-alpha.20), [merged routing PR 19762](https://github.com/craftcms/cms/pull/19762). | Published Inertia work names the CP. Native section/Matrix route destinations merged 2026-09-30. No official ready-made public frontend adapter commitment was found in the bounded public-source search; this is not a claim about private plans.           |
 | S08 | Official [Inertia v3 server setup](https://inertiajs.com/docs/v3/installation/server-side-setup), [validation](https://inertiajs.com/docs/v3/the-basics/validation), and [separate-root discussion](https://github.com/inertiajs/inertia-laravel/issues/730).                  | Official Laravel adapter is the transport owner. Moving docs must be checked against installed versions before implementation.                                                                                                                               |
@@ -156,9 +157,10 @@ or fix is unresolved. Do not waive the failure or call the suite green.
 The saved test services were stopped and the dedicated database removed. The
 folder rename repaired the ignored runtime's plugin symlink; some generated
 Composer metadata and compiled-view provenance still contain the old path.
-The tracked preparation script derives the package root dynamically. Recreate
-the isolated environment during a separately authorized future E2E run instead
-of treating generated path records as source defects.
+The former preparation script and its inputs remain historical. Generated
+runtime paths are not source defects or a supported current installation
+procedure; consuming projects verify the current integration with their own
+locked dependencies.
 
 The operational init plan/state is stored outside product repositories at
 `/Users/joostwaaijer/.codex/agent-team/runs/craft-inertia-init-20261109/`.

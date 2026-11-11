@@ -104,18 +104,27 @@ return [
 ```
 
 For example, register the namespace and SSR exclusions in the project service
-provider's `boot()` method, using `View`, `Inertia` and `Cms`:
+provider's `boot()` method. When `cpTrigger` is `null`, first configure Craft's
+`baseCpUrl` with the dedicated control-panel origin, such as
+`https://cms.example.test`. This lets the same setup distinguish CP requests
+from the public website without a global `/*` exclusion:
 
 ```php
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Facades\View;
 use Inertia\Inertia;
 
 // Inside the project's service provider boot() method:
 View::addNamespace('frontend', resource_path('views'));
+$cpUrl = rtrim(Url::cpUrl(), '/');
+$actionTrigger = trim(Cms::config()->actionTrigger, '/');
 Inertia::withoutSsr([
-    Cms::config()->cpTrigger.'/*',
-    Cms::config()->actionTrigger.'/*',
+    $cpUrl,
+    $cpUrl.'?*',
+    $cpUrl.'/*',
+    $actionTrigger,
+    $actionTrigger.'/*',
 ]);
 ```
 
@@ -173,10 +182,8 @@ their native serialized column keys, such as `col1` and `col2`. The project
 renders those values in Vue and owns description, hreflang and structured data.
 
 Ordinary mapped entry pages need no project entry controller, copied Laravel
-entry route, custom PHP renderer or per-page SSR middleware. The
-[minimal consumer](tests/e2e/entry-templates) demonstrates two independent schemas,
-a homepage and native structure URL. Projects still own Vue/layout/build,
-search/navigation queries and business rules.
+entry route, custom PHP renderer or per-page SSR middleware. Projects still own
+Vue/layout/build, search/navigation queries and business rules.
 
 The exact `inertia:` prefix is opt-in. Explicit native route/controller
 destinations take precedence. Twig/Blade, dynamic view routes, CP, actions,
@@ -217,7 +224,7 @@ a working Twig/Blade fallback must be deliberately configured and retained.
 There is no automatic reconstruction of a previous Twig design.
 
 [INSTALLATION.md](docs/INSTALLATION.md) covers current setup, local-only migration,
-clean consumer verification and the historical explicit-route lifecycle proof.
+and native lifecycle/fallback behavior.
 [FORMS.md](docs/FORMS.md) covers native mutations/files, and
 [CONTACT_FORM.md](docs/CONTACT_FORM.md) records bounded optional compatibility.
 
@@ -236,18 +243,15 @@ capabilities; the linked issues define their scope and acceptance criteria.
 
 ## Verification scope
 
-[Fixed metadata](tests/e2e/official-craft.json) pins genuine beta.1 CMS/assets
-source and dist manifests. Disposable consumers resolve those dependencies;
-the original Playground manifest/lock and local work are preserved. The previous
-official development baseline and STEP reports remain historical evidence;
-they do not establish released alpha.20 compatibility.
+This PHP plugin contains no automated tests, fixtures or test harness. Its Vue
+application and frontend toolchain belong to the consuming Craft project.
+Use Composer validation and PHP syntax checks for the package, and verify native
+URLs, complete field data, preview identity, SSR/hydration, forms, privacy and
+fallback in the actual consuming project with its own locked dependencies.
 
-Use Node 24 explicitly. `npm run typecheck`, `npm run format:check`, Composer
-validation and PHP syntax checks cover tooling/source. Authorized integration
-checks use the isolated PHP/Playwright harnesses documented in
-[INSTALLATION.md](docs/INSTALLATION.md). Their bootstrap guards isolate database,
-cache, sessions and mail. Local HTTP servers disable OPcache for rapid fixture
-config changes. Keep exact locks, native hashes, build manifests and reports.
+Earlier development reports and test sources remain available in Git history.
+They describe their original versions and bounded outcomes; they do not establish
+current compatibility or production acceptance.
 
 Four native account regressions and Contact Form's N01 nested-message failure
 remain separate open failures. The local unaccepted account adapter is excluded.
