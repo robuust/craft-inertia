@@ -46,31 +46,28 @@ Keep the section's native URI and select a Vue component in its Template:
 | Structure entry | Native nested URI | `inertia:Site/Places/Show` |
 
 `inertia:Site/Articles/Show` resolves through the project's normal resolver,
-for example `resources/js/pages/Site/Articles/Show.vue`. Select public fields in
-`config/craft-inertia.php`:
+for example `resources/js/pages/Site/Articles/Show.vue`. All fields from the
+entry's field layout are automatically supplied under their native handles:
 
-```php
-return [
-    'rootView' => 'frontend::app',
-    'indexingPolicy' => null,
-    'pages' => [
-        'Site/Articles/Show' => ['fields' => ['summary', 'body', 'heroImage']],
-    ],
-];
+```vue
+<p>{{ entry.fields.summary }}</p>
+<img v-for="image in entry.fields.heroImage" :key="image.id" :src="image.url" :alt="image.alt" />
 ```
 
-The plugin supplies `entry`, `site`, `preview`, `seo` and official response
-protocol props. Selected values keep native handles under `entry.fields`;
-no fields are implicit. Core scalars, dates, choices, sanitized Markdown,
-assets/transforms/srcset, related entries and nested Matrix content have bounded
-selection. [CONTENT.md](docs/CONTENT.md) defines the exact shapes and a small
-explicit custom-field callback.
+No field-selection configuration or admin selector is required. Craft's native
+project-config YAML already stores the section template and entry-type layout.
+The plugin supplies `entry`, `site`, `preview`, `seo` and official protocol props.
+It automatically includes nested Matrix and related entry fields, with bounded
+circular-reference handling. Assets use their original native URLs; other field
+types use their own native serializers. [CONTENT.md](docs/CONTENT.md) defines
+the exact shapes and boundaries. All attached fields, including internal notes,
+are part of the page data; the old `pages[component].fields` setting is ignored.
 
 Ordinary mapped entry pages need no project entry controller, copied Laravel
 entry route, custom PHP renderer or per-page SSR middleware. The
 [minimal consumer](tests/e2e/entry-templates) demonstrates two independent schemas,
-a homepage and native structure URL. Projects still own Vue/layout/build, field
-selection, custom serializers, search/navigation queries and business rules.
+a homepage and native structure URL. Projects still own Vue/layout/build,
+search/navigation queries and business rules.
 
 The exact `inertia:` prefix is opt-in. Explicit native route/controller
 destinations take precedence. Twig/Blade, dynamic view routes, CP, actions,

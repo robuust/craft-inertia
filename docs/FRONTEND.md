@@ -16,15 +16,18 @@ response boundaries. This file owns the requirements and draft roadmap.
 ## Approved native entry templates
 
 The 2026-11-11 human decision adds native Template values such as
-`inertia:Site/Articles/Show` and component-keyed explicit field selection.
+`inertia:Site/Articles/Show`. The latest human decision supersedes the initial
+field selection: all fields attached to each native entry layout are automatic.
 This changes the earlier project-owned generic serialization boundary: the
 plugin now owns reusable entry/site/preview context and bounded serialization
-of selected core fields, assets, relations and Matrix children. Projects retain
-Vue/layout/build, field selection, custom serializers, special queries and
-business rules. [CONTENT.md](CONTENT.md) defines the current prop contract;
+of all attached fields, assets, relations and Matrix children. Other field
+types use their own native serializers. Projects retain Vue/layout/build,
+special queries and business rules. [CONTENT.md](CONTENT.md) defines the current
+prop contract;
 [INSTALLATION.md](INSTALLATION.md) defines the minimal consumer setup.
-[Native-template evidence](../reports/e2e/ENTRY_TEMPLATES.md) records beta.1
-verification, preservation and material limits.
+[Native-template evidence](../reports/e2e/ENTRY_TEMPLATES.md) records the initial
+beta.1 proof. [Automatic-field evidence](../reports/e2e/AUTOMATIC_FIELDS.md) records
+the current field contract, verification, preservation and limits.
 
 Native URI/site/publication/preview resolution remains authoritative. Installing
 the package captures no page without the exact `inertia:` template prefix.
@@ -39,8 +42,8 @@ requires an explicitly configured native fallback, not automatic reconstruction.
 | Owner         | Responsibility                                                                                                                                                               |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Craft         | Content models and queries, element URLs, site and locale resolution, publication status, drafts, revisions, preview tokens, accounts and permissions.                       |
-| This plugin   | Connect Craft site requests and application responses to the official Inertia adapter; provide native entry-template rendering, selected-field serialization, public page context, response policies and integration points. |
-| Each project  | Vue pages, layouts, navigation, styling and accessibility; field selection, custom serializers, PHP queries and explicit bespoke projections for business rules.                              |
+| This plugin   | Connect Craft site requests and application responses to the official Inertia adapter; provide native entry-template rendering, automatic field serialization, public page context, response policies and integration points. |
+| Each project  | Vue pages, layouts, navigation, styling and accessibility; native field layouts, PHP queries and explicit bespoke projections for business rules.                              |
 | Other plugins | Their own domain behavior, such as Commerce calculations, form processing or SEO metadata. An integration exposes that behavior to the Vue frontend.                         |
 
 A site must be able to use the plugin without an `articles` section, the

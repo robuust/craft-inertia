@@ -36,7 +36,7 @@ the conservative private boundary therefore operates on the response's gateway.
 The renderer also clones the official response factory and clears its shared
 props for this response, preventing host/CP globals from entering public pages.
 The original factory, shares and SSR gateway are restored even on projection
-failure. Public props are the documented selected values plus official errors
+failure. Public props are all attached layout fields plus official errors
 and native flash; no account adapter is introduced. The project owns its Blade
 root, Vue Head/layout, resolver, matching client/SSR bundles and service operation.
 When enabling a project SSR bundle, exclude native CP/action paths once through

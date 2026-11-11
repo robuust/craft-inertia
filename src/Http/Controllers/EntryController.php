@@ -51,7 +51,7 @@ final class EntryController
             return $middleware->handle($request, function () use ($request, $entry, $component, $guest, $middleware): Response {
                 $site = Sites::getCurrentSite();
                 return Inertia::render($component, [
-                    'entry' => app(EntryProjection::class)->entry($entry, config("craft-inertia.pages.$component.fields", [])),
+                    'entry' => app(EntryProjection::class)->entry($entry),
                     'site' => [
                         'id' => $site->id, 'uid' => $site->uid, 'handle' => $site->handle,
                         'name' => $site->name, 'language' => $site->language, 'baseUrl' => $site->getBaseUrl(),
