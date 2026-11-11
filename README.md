@@ -9,6 +9,20 @@ No public package release is implied by the local `0.1.0` development version.
 
 ## How it works
 
+For a homepage mapped to `inertia:Site/Home`, the request flows through:
+
+```mermaid
+flowchart TD
+    A["Browser requests /"] --> B["Craft resolves the homepage entry and current site"]
+    B --> C["Template: inertia:Site/Home"]
+    C --> D["Plugin projects the entry and its fields"]
+    D --> E["Official Inertia adapter"]
+    E -->|"First visit"| F["HTML with SSR when configured and permitted"]
+    E -->|"Navigation via an Inertia Link"| G["JSON with component name and page props"]
+    F --> H["Site/Home.vue renders the page"]
+    G --> H
+```
+
 1. Craft resolves the requested URL, current site and entry. It applies its normal
    publication and preview rules before the plugin selects a renderer.
 2. The plugin listens to Craft's native entry-routing event. A section template
