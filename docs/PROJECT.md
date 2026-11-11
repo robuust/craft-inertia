@@ -5,33 +5,19 @@ complete public frontend with Inertia and Vue. Craft keeps ownership of content,
 URLs, editorial workflows, sessions and permissions. Each project supplies its
 Vue presentation and chooses the data it exposes.
 
-**Current execution:** STEP-01 through STEP-04 and independent STEP-06A/06B are merged. The human's
-2026-11-10 independent-work decision authorizes STEP-06A guest public SSR,
-metadata, errors/maintenance and asset versions while STEP-05 stays open.
-STEP-06B adds project opt-in indexing and safe JSON-LD. Independent STEP-06C adds
-an opt-in project convention for native public content-data caching and Craft
-invalidation; it does not close native account defects or add HTTP output caching.
-Conservative private/no-store responses remain; full AC-06 and account-dependent
-caching are incomplete. Approved official CMS `0506c32` plus matching assets
-`1797325` remains fixed. Tests and one plugin PR are authorized; all Playground
-integration stays local and uncommitted. See [rendering](RENDERING.md) and
-[STEP-06A evidence](../reports/e2e/STEP06A.md), [STEP-06B evidence](../reports/e2e/STEP06B.md)
-and [STEP-06C evidence](../reports/e2e/STEP06C.md).
+**Current execution:** the 2026-11-11 human decision authorizes native
+`inertia:Component` entry templates, selected-field serialization, beta.1 tests
+and one fresh plugin PR. Generic entry rendering/projection now belongs to the
+plugin; Vue/layout/build, field selection, custom serializers and business
+queries remain project-owned. See [CONTENT.md](CONTENT.md) and
+[INSTALLATION.md](INSTALLATION.md). Official beta.1 source/assets are pinned in
+`tests/e2e/official-craft.json`; original Playground source/locks remain local,
+uncommitted and inactive. Earlier STEP reports retain their tested identities.
 
-**STEP-07B addendum (2026-11-10):** the human-selected optional native
-`craftcms/contact-form` integration has a [versioned capability matrix](CONTACT_FORM.md)
-and [bounded evidence](../reports/e2e/STEP07B.md). Only the isolated optional
-consumer adds its exact official development pin. The scalar flow is exercised;
-an unsupported nested-message native regression remains failing. This adds no
-core dependency/runtime change and does not complete STEP-07 or native accounts.
-
-**Initialized:** 2026-11-09. This is research and documentation, with a draft
-execution roadmap. Product implementation, new test work and publication are
-separate actions. This initialization records the original bounded article PoC.
-STEP-01 replaces its fixed runtime with opt-in public middleware and
-project-owned pages; STEP-02 documents project-owned native content and queries
-in [CONTENT.md](CONTENT.md); see the [current integration](../README.md). The source
-register and original E2E findings below retain their historical meaning.
+STEP-01 through STEP-04 and independent STEP-06A/B/C and STEP-07A/B/C have scoped
+history. Four native account regressions and Contact Form N01 remain open.
+This feature does not complete full STEP-05, full AC-06/AC-07, release or
+production acceptance, nor incorporate the unaccepted local account adapter.
 
 ## Project entrypoints
 

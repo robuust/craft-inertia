@@ -13,13 +13,34 @@ destinations and project-owned pages; their slice reports record scoped evidence
 coverage and decisions; [DOMAIN_MODEL.md](DOMAIN_MODEL.md) defines the data and
 response boundaries. This file owns the requirements and draft roadmap.
 
+## Approved native entry templates
+
+The 2026-11-11 human decision adds native Template values such as
+`inertia:Site/Articles/Show` and component-keyed explicit field selection.
+This changes the earlier project-owned generic serialization boundary: the
+plugin now owns reusable entry/site/preview context and bounded serialization
+of selected core fields, assets, relations and Matrix children. Projects retain
+Vue/layout/build, field selection, custom serializers, special queries and
+business rules. [CONTENT.md](CONTENT.md) defines the current prop contract;
+[INSTALLATION.md](INSTALLATION.md) defines the minimal consumer setup.
+[Native-template evidence](../reports/e2e/ENTRY_TEMPLATES.md) records beta.1
+verification, preservation and material limits.
+
+Native URI/site/publication/preview resolution remains authoritative. Installing
+the package captures no page without the exact `inertia:` template prefix.
+Explicit native destinations keep precedence. No project entry controller or
+per-entry Laravel route is required for mapped templates. Manual integrations,
+Twig/Blade, APIs, feeds, actions and CP retain their owning behavior. Disabling
+the plugin restores native template interpretation; an `inertia:`-only template
+requires an explicitly configured native fallback, not automatic reconstruction.
+
 ## Ownership
 
 | Owner         | Responsibility                                                                                                                                                               |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Craft         | Content models and queries, element URLs, site and locale resolution, publication status, drafts, revisions, preview tokens, accounts and permissions.                       |
-| This plugin   | Connect Craft site requests and application responses to the official Inertia adapter; provide configuration, public page context, response policies and integration points. |
-| Each project  | Vue pages, layouts, navigation, styling and accessibility; PHP queries and explicit public data projections for its content and business rules.                              |
+| This plugin   | Connect Craft site requests and application responses to the official Inertia adapter; provide native entry-template rendering, selected-field serialization, public page context, response policies and integration points. |
+| Each project  | Vue pages, layouts, navigation, styling and accessibility; field selection, custom serializers, PHP queries and explicit bespoke projections for business rules.                              |
 | Other plugins | Their own domain behavior, such as Commerce calculations, form processing or SEO metadata. An integration exposes that behavior to the Vue frontend.                         |
 
 A site must be able to use the plugin without an `articles` section, the
@@ -69,14 +90,15 @@ elements use which project pages and data providers. A mapped entry should move
 from its Twig response to an Inertia response at the same URL, including the
 correct current site and any server-authorized preview element.
 
-Craft `6.0.0-alpha.20` already has native section/Matrix destinations for named
-Laravel routes and controllers, with [`CurrentElement`](https://github.com/craftcms/cms/blob/6.0.0-alpha.20/src/Route/CurrentElement.php)
+Craft beta.1 retains native section/Matrix destinations for named
+Laravel routes and controllers, with [`CurrentElement`](https://github.com/craftcms/cms/blob/05ce9b81be3704fb27da3a5a6670accfa49ec9a9/src/Route/CurrentElement.php)
 injection. Prefer composing that configuration before adding a parallel mapping
 registry. Named destinations must match the URI, domain and method; native
-[`ElementRoute`](https://github.com/craftcms/cms/blob/6.0.0-alpha.20/src/Route/ElementRoute.php)
-checks these constraints. The [`SetRoute` event](https://github.com/craftcms/cms/blob/6.0.0-alpha.20/src/Element/Events/SetRoute.php)
-is another seam, but can bypass native entry guards if used indiscriminately and
-does not participate in every registered-destination matching path.
+[`ElementRoute`](https://github.com/craftcms/cms/blob/05ce9b81be3704fb27da3a5a6670accfa49ec9a9/src/Route/ElementRoute.php)
+checks these constraints. The [`SetRoute` event](https://github.com/craftcms/cms/blob/05ce9b81be3704fb27da3a5a6670accfa49ec9a9/src/Element/Events/SetRoute.php)
+selects the approved `inertia:` entry templates. Its listener preserves native
+live/preview and has-URLs checks, explicit destinations and earlier handled
+decisions before returning the generic controller. It does not register URLs.
 
 STEP-01 must establish route precedence, including native homepage resolution,
 the Playground's current `/` redirect and project-config dynamic view routes.
@@ -93,9 +115,11 @@ returns strings and cannot by itself supply the complete Inertia protocol.
 
 The project owns one public Vue application and its Vite and SSR builds. The
 package must coexist with Craft's separate control-panel frontend. Public page
-middleware must not inherit CP props or a CP root view. STEP-01 removed the demonstration's blanket `flushShared()` and package-owned
-frontend. Public routes retain a conservative private/no-store and noindex policy;
-production rendering and cache policy remain STEP-06.
+middleware must not inherit CP props or a CP root view. Manual project routes
+retain intentional host shares. Native mapped pages isolate and clear the cloned
+response factory, then restore the host factory. The package ships no frontend.
+Responses retain conservative private/no-store and default-deny indexing;
+production acceptance and full cache policy remain open.
 
 Data providers return explicit public props. Do not serialize entire elements,
 field layouts, users or queries into page data. Resolve related content and

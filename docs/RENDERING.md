@@ -12,6 +12,46 @@ native public content-data caching. Account behavior, HTTP output caching and
 full AC-06 remain incomplete. See [STEP-06A](../reports/e2e/STEP06A.md),
 [STEP-06B](../reports/e2e/STEP06B.md) and [STEP-06C evidence](../reports/e2e/STEP06C.md).
 
+## Native entry-template renderer
+
+An `inertia:` entry page uses the plugin controller through Craft's existing
+site fallback and `ControllerRoute`; there is no second catch-all URL registry.
+The controller actually runs the public adapter around response rendering, since
+native fallback dispatch does not execute hypothetical Laravel route middleware.
+It uses the configured public root and Vite manifest version, and applies
+private/no-store, `Vary: X-Inertia` and default-deny indexing to HTML and JSON.
+Explicit indexing policy still requires strict `true`; private/auth/token/preview
+or session-form-state contexts remain denied regardless of that callback.
+
+Native mapped pages may use SSR when official `inertia.ssr.enabled` is true and
+the host gateway permits it. Guest eligibility excludes native authentication,
+consumed route/site tokens, preview state/markers/headers, old input, errors and
+messages/flash. The plugin does not set a global SSR callback or replace HTTP
+transport. For a private response it clones the resolved gateway, disables SSR
+through `DisablesSsr`, then restores the original in `finally`. A custom gateway
+must implement that official capability. Host disable/configure callbacks and
+transport remain intact. Config alone cannot override a host disable callback;
+the conservative private boundary therefore operates on the response's gateway.
+
+The renderer also clones the official response factory and clears its shared
+props for this response, preventing host/CP globals from entering public pages.
+The original factory, shares and SSR gateway are restored even on projection
+failure. Public props are the documented selected values plus official errors
+and native flash; no account adapter is introduced. The project owns its Blade
+root, Vue Head/layout, resolver, matching client/SSR bundles and service operation.
+When enabling a project SSR bundle, exclude native CP/action paths once through
+official `Inertia::withoutSsr()` in the host provider, or retain the host's
+existing appropriate exclusion. Craft beta.1 otherwise sends CP components to
+the same gateway; the public resolver cannot render them. The plugin does not
+replace that host policy. The minimal consumer derives paths from Craft's
+configured triggers, with no entry-specific callback.
+Public exception presentation remains an optional project concern; configuration
+errors use normal application exception handling and do not serialize values.
+
+The policies below continue to describe explicit project routes and the local
+Playground's earlier SSR, errors, indexing and data-cache integration. Generic
+mapped entry pages need none of that project's rendering/controller boilerplate.
+
 ## Explicit project SSR policy
 
 The consuming application owns its Vite client/SSR builds and the official

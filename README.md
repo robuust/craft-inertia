@@ -1,271 +1,132 @@
-# Craft 6 public Inertia frontend
+# Craft Inertia
 
-An opt-in public frontend integration for Craft CMS 6 and the official Inertia
-Laravel adapter. Craft resolves sites, element URLs, publication state and
-preview authorization. The consuming project owns PHP controllers, explicit
-page props, Vue pages, the public Blade root and its Vite build.
-
-STEP-01 replaces the original fixed article demo. The package registers no
-public routes, pages, preview targets or asset bundle, and requires no particular
-section or field handles. Existing `/inertia-poc` and numeric demo URLs are
-removed. The examples now live in the consuming Craft 6 Playground application.
-
-This remains an experimental integration. The current validated Craft baseline
-is official CMS `0506c32` with matching assets `1797325`, using development
-aliases rather than the released alpha.20; see [STEP-03](reports/e2e/STEP03.md).
-The current stack uses Laravel `13.40.0`, `inertiajs/inertia-laravel` `3.7.0` and `@inertiajs/vue3`
-`3.11.0`. The [scope and roadmap](docs/FRONTEND.md),
-[initialization](docs/PROJECT.md) and [domain contracts](docs/DOMAIN_MODEL.md)
-distinguish delivered slices from deferred account and HTTP caching work.
-[Public rendering](docs/RENDERING.md) documents the independent STEP-06A/06B/06C slices.
+Private Craft CMS 6 plugin for a project-owned Inertia/Vue public frontend.
+Craft owns content, native URLs, sites, publication rules and preview authority.
+The plugin connects explicitly selected pages to the official Inertia adapter.
+Composer identity is `robuust/craft-inertia`, PHP namespace
+`Robuust\CraftInertia`, native handle `inertia`; license is proprietary.
+No public package release is implied by the local `0.1.0` development version.
 
 ## Install
 
-See the [clean installation and native fallback checklist](docs/INSTALLATION.md)
-for the exact supported pins, minimal consuming application, project opt-out,
-native disable/enable commands, builds and isolated proofs.
-[Legacy identity migration](docs/INSTALLATION.md#migrate-the-legacy-package-identity)
-requires native lifecycle and project/Composer changes. The permanent identity is
-`robuust/craft-inertia` / `Robuust\CraftInertia` / handle `inertia`; distribution
-remains private with the existing proprietary license.
-
-Make this private package available to Composer. For sibling local checkouts,
-add the following repository to the consuming application's `composer.json`:
+The current target is PHP 8.5, official Craft `6.0.0-beta.1` and
+`inertiajs/inertia-laravel` 3.7. Use an authenticated private Composer source.
+For local development, a consuming project's path repository can use:
 
 ```json
 {
-  "type": "path",
-  "url": "../craft-inertia",
-  "options": {
-    "symlink": true,
-    "versions": { "robuust/craft-inertia": "0.1.0" }
-  }
+  "repositories": [{
+    "type": "path",
+    "url": "../craft-inertia",
+    "options": {"symlink": true, "versions": {"robuust/craft-inertia": "0.1.0"}}
+  }],
+  "require": {"robuust/craft-inertia": "0.1.0"}
 }
 ```
 
-Then run from that application:
-
 ```sh
-composer require robuust/craft-inertia:0.1.0 --no-interaction
+composer update robuust/craft-inertia --no-interaction
 php artisan craft:plugin:install inertia --no-interaction
 php artisan vendor:publish --tag=craft-inertia-config --no-interaction
 ```
 
-Craft owns plugin discovery and enablement; do not register its provider again.
-There is no package frontend build or asset publication. In containers the
-Composer path must be visible inside every consuming PHP service. For example,
-a sibling host checkout needs a corresponding `/app/craft-inertia` mount when
-the app is at `/app/user` and Composer resolves `../craft-inertia`.
+Craft discovers the plugin provider. Supply your normal public Blade root,
+Vue page resolver, layout, Vite client/SSR build and optional SSR service. Use a
+public view namespace such as `frontend::app` to distinguish it from Craft's CP
+root. The plugin publishes configuration, not a design or frontend bundle.
 
-## Opt in project routes
+## Native entry templates
 
-Set the application's `config/craft-inertia.php` to its public root view:
+Keep the section's native URI and select a Vue component in its Template:
 
-```php
-return ['rootView' => 'frontend::app'];
-```
+| Content | Native URI | Template |
+| --- | --- | --- |
+| Homepage single | `__home__` | `inertia:Site/Home` |
+| Articles | `articles/{slug}` | `inertia:Site/Articles/Show` |
+| Structure entry | Native nested URI | `inertia:Site/Places/Show` |
 
-Integration configuration uses `craft-inertia.*`; official adapter SSR/protocol
-configuration stays under `inertia.*` in `config/inertia.php`.
-
-The default is `app`. Craft also uses an `app` view for its control panel, so use
-a project view namespace to avoid ambiguity. The Playground registers
-`View::addNamespace('frontend', resource_path('views'))` and uses its existing
-`resources/views/app.blade.php`, `resources/js/app.js` and Vue page resolver.
-The [official Inertia setup](https://inertiajs.com/docs/v3/installation/server-side-setup)
-owns root rendering and response negotiation.
-
-Apply the public middleware only to selected page routes, after the normal web
-middleware. Keep Craft's middleware so site/token handling and response policies
-continue to run:
+`inertia:Site/Articles/Show` resolves through the project's normal resolver,
+for example `resources/js/pages/Site/Articles/Show.vue`. Select public fields in
+`config/craft-inertia.php`:
 
 ```php
-use App\Http\Controllers\SiteController;
-use Robuust\CraftInertia\Http\HandleInertiaRequests;
-
-Route::middleware(['craft', HandleInertiaRequests::class])->group(function (): void {
-    Route::get('/', [SiteController::class, 'home'])->name('home');
-    Route::get('/articles', [SiteController::class, 'articles'])->name('site.articles.index');
-    Route::get('/articles/{slug}', [SiteController::class, 'article'])->name('site.articles.show');
-});
+return [
+    'rootView' => 'frontend::app',
+    'indexingPolicy' => null,
+    'pages' => [
+        'Site/Articles/Show' => ['fields' => ['summary', 'body', 'heroImage']],
+    ],
+];
 ```
 
-Use these in the application's `routes/web.php` (which already gets `web`). Do
-not attach the public middleware to a catch-all, the CP, actions, GraphQL, feeds
-or assets. It bypasses CP and action requests defensively. It preserves
-intentional project shared props and the adapter's validation errors; it does
-not install Craft CP props on public requests. The asset version comes from the
-project's Laravel Vite manifest.
+The plugin supplies `entry`, `site`, `preview`, `seo` and official response
+protocol props. Selected values keep native handles under `entry.fields`;
+no fields are implicit. Core scalars, dates, choices, sanitized Markdown,
+assets/transforms/srcset, related entries and nested Matrix content have bounded
+selection. [CONTENT.md](docs/CONTENT.md) defines the exact shapes and a small
+explicit custom-field callback.
 
-## Native entry destinations and explicit props
+Ordinary mapped entry pages need no project entry controller, copied Laravel
+entry route, custom PHP renderer or per-page SSR middleware. The
+[minimal consumer](tests/e2e/entry-templates) demonstrates two independent schemas,
+a homepage and native structure URL. Projects still own Vue/layout/build, field
+selection, custom serializers, search/navigation queries and business rules.
 
-Configure a section's site settings with its normal URI format and a **route**
-destination, rather than a Twig template. In the Playground example:
+The exact `inertia:` prefix is opt-in. Explicit native route/controller
+destinations take precedence. Twig/Blade, dynamic view routes, CP, actions,
+API/feed endpoints and unknown paths retain native handling. No catch-all is
+registered. An already configured project route remains ordinary Laravel code.
 
-| Section | URI format | Native route destination | Vue page |
-| --- | --- | --- | --- |
-| Homepage single | `__home__` | `home` | `Site/Home` |
-| Articles | `articles/{slug}` | `site.articles.show` | `Site/Articles/Show` |
-| Projects | `projects/{slug}` | `App\Http\Controllers\SiteController@project` | `Site/Projects/Show` |
+## Bespoke project routes
 
-The overview is an ordinary project route with a project-owned query. Entry
-controllers require Craft's matched element, rather than looking it up from a
-numeric ID or slug a second time:
+Existing manual integrations remain supported. Apply
+`Robuust\CraftInertia\Http\HandleInertiaRequests` only to selected page routes,
+after `web` and `craft`; render explicit project props through `Inertia::render()`.
+For native destinations, consume Craft's `#[CurrentElement] Entry` rather than
+requerying a slug/ID. Registered named/controller routes must match native
+URI/domain/method and retain their own middleware. This path suits overviews,
+search, special queries and private/business pages.
 
-```php
-use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Route\CurrentElement;
-use Inertia\Inertia;
-use Inertia\Response;
+## Rendering, privacy and lifecycle
 
-public function article(#[CurrentElement] Entry $entry): Response
-{
-    return Inertia::render('Site/Articles/Show', [
-        'entry' => [
-            'title' => $entry->title,
-            'url' => $entry->getUrl(),
-            'summary' => $entry->getFieldValue('summary'),
-        ],
-        'isPreview' => $entry->previewing,
-    ]);
-}
-```
+Integration config belongs to `craft-inertia.*`. Official adapter SSR/protocol
+config belongs only to `inertia.*`. Mapped pages use the project root and Vite
+manifest version, private/no-store headers and `Vary: X-Inertia`. Indexing defaults
+to deny; an explicit callable must return `true`, and Craft `disallowRobots` wins.
+Private/auth/token/preview/form-state requests remain non-indexable and do not
+reach SSR. Public guest SSR respects official configuration and host callbacks.
+CP/global shared props are excluded from mapped pages; the host factory/gateway
+are restored afterward. See [RENDERING.md](docs/RENDERING.md).
 
-That field belongs to this example project, not the package. Project PHP code
-must choose public values explicitly; do not pass whole elements or queries as
-props. The Playground's separate project page exposes `location`, and its
-`config/site-content.php` permits another section/field configuration without
-package edits. Canonical links use `Entry::getUrl()`.
+Native plugin disable/enable removes/restores the listener on a new boot,
+including with cached routes. Restart long-lived workers after lifecycle changes.
+The plugin does not rewrite section templates, DB state or project YAML.
+Disabling an `inertia:`-only template leaves normal native template interpretation;
+a working Twig/Blade fallback must be deliberately configured and retained.
+There is no automatic reconstruction of a previous Twig design.
 
-Craft attaches `ResolveElementRoute` to registered site routes. A required
-`#[CurrentElement]` parameter returns 404 when no compatible live or authorized
-preview element matched. Disabled, future, expired, deleted and unpublished
-content keeps Craft's availability rules.
+[INSTALLATION.md](docs/INSTALLATION.md) covers current setup, local-only migration,
+clean consumer verification and the historical explicit-route lifecycle proof.
+[FORMS.md](docs/FORMS.md) covers native mutations/files, and
+[CONTACT_FORM.md](docs/CONTACT_FORM.md) records bounded optional compatibility.
 
-## Route precedence
+## Verification scope
 
-- Register a matching GET/HEAD route for every element destination. Named and
-  registered controller destinations must match the request URI, domain and
-  method. A destination name alone does not grant access.
-- Register controller actions explicitly so their middleware executes. Native
-  unregistered-controller fallback can dispatch for all HTTP methods without a
-  separately registered route's middleware; this integration does not use it.
-- Remove an existing `/` redirect if the homepage single should resolve there.
-  Craft's native URI resolver recognizes the homepage without a demo prefix.
-- Craft alpha.20 registers project-config dynamic **view** routes at runtime.
-  They take precedence when they replace the same method/domain/URI signature,
-  including cached application routes. Keep their signatures disjoint from
-  Inertia pages. A winning dynamic view remains a native view response; the
-  package does not reinterpret its template as a Vue component or override it.
-- Other explicit project endpoints retain normal Laravel/Craft handling. There
-  is no package `SetRoute` listener or catch-all to intercept them.
+[Fixed metadata](tests/e2e/official-craft.json) pins genuine beta.1 CMS/assets
+source and dist manifests. Disposable consumers resolve those dependencies;
+the original Playground manifest/lock and local work are preserved. The previous
+official development baseline and STEP reports remain historical evidence;
+they do not establish released alpha.20 compatibility.
 
-## Response policy and preview limits
+Use Node 24 explicitly. `npm run typecheck`, `npm run format:check`, Composer
+validation and PHP syntax checks cover tooling/source. Authorized integration
+checks use the isolated PHP/Playwright harnesses documented in
+[INSTALLATION.md](docs/INSTALLATION.md). Their bootstrap guards isolate database,
+cache, sessions and mail. Local HTTP servers disable OPcache for rapid fixture
+config changes. Keep exact locks, native hashes, build manifests and reports.
 
-For now, every opted-in public response carries `private, no-store` and
-`X-Robots-Tag: noindex, nofollow` by default on initial HTML and Inertia JSON.
-STEP-06B adds an optional `indexingPolicy` callable; the project must establish
-published guest eligibility, and native `disallowRobots` always wins. The local
-Playground example uses an empty `site-content.indexableSites` allowlist until a
-project deliberately opts in. Its public canonical pages project safely encoded
-WebPage JSON-LD through Inertia Head. See [rendering contracts](docs/RENDERING.md).
-Indexing permission does not enable a shared HTTP cache. STEP-06C adds an
-off-by-default project example for native public content-data caching and Craft
-invalidation. Article detail and filtered/paginated overview data may be reused
-while all response policies remain per-request and private/no-store. Full HTTP
-caching and production acceptance remain deferred.
-
-The project owns SSR policy and its build. STEP-06A enables explicit guest public
-SSR in the local Playground, while authenticated, preview and form/challenge
-responses retain conservative policies. Public 404/500/503 presentation uses the
-project's official Inertia exception callback. The package exposes
-`HandleInertiaRequests::protectResponse()` for applying its private/no-store,
-noindex and `Vary: X-Inertia` policy when exception rendering bypasses route
-middleware. See [rendering contracts](docs/RENDERING.md). Full STEP-06 caching and
-STEP-05 account behavior remain open.
-
-Craft authorizes and resolves preview elements. Project pages consume the native
-matched element and `previewing` state. Site IDs, translated URLs, domains and
-subdirectory roots stay with Craft. See the [site and preview integration](docs/CONTENT.md#native-sites-and-preview).
-
-## Tested Craft baselines
-
-STEP-03's approved development baseline is the exact official source/assets pair:
-
-| Package | Official commit |
-| --- | --- |
-| `craftcms/cms` | `0506c32b44efbe3e7f5fded46a7c1d39de699d5b` |
-| `craftcms/cms-assets` | `17973259d5727a1e50a1fc85dd90566b889407af` |
-
-The [test metadata](tests/e2e/official-craft.json) comes from those fixed manifests,
-with exact source and dist references. The consuming root requires both packages
-as `6.x-dev as 6.0.0-alpha.20` and uses those package repositories ahead of Packagist.
-The alias only satisfies the existing plugin constraint and CMS `self.version`
-asset constraint. It does not make this a released alpha.20 environment. The
-pinned CMS still reports an alpha.20 version constant, so the UI version string
-alone is insufficient evidence. Root and runtime locks plus installed source and
-published asset hashes identify the actual tested environment.
-
-A plugin dependency hash alone is not a reproducible root pin; Composer also
-[reads metadata from the branch when using commit references](https://getcomposer.org/doc/04-schema.md#require).
-The harness checks both package refs/manifests and all native published CP asset
-bytes before seeding. It does not build Craft's private icon assets locally.
-
-The official source has the new ordinary-editor and standalone Vue Live Preview.
-Released alpha.20 retains the recorded legacy WeakMap failure and is not accepted
-for the complete editorial criterion. This is a tested development-commit claim,
-not a blanket support claim for released Craft 6. See [STEP-03 evidence](reports/e2e/STEP03.md).
-
-## Development and acceptance
-
-See the [STEP-01 result and limits](reports/e2e/STEP01.md) for current scoped
-acceptance and the separately failing editor-preview regression.
-
-The package contains Playwright integration tests. `npm ci`,
-`npm run typecheck` and `npm run format:check` check its test tooling. PHP syntax
-and Composer validation apply to the runtime. Build and Vue unit checks run in
-the consuming application, using its existing tooling.
-
-`npm run test:e2e:prepare -- --fresh --working-tree` snapshots the sibling Playground's tracked
-and untracked, non-ignored working files into `tests/e2e/.runtime`, installs it
-with this package, creates an isolated database and seeds test-only content. It
-does not commit the source or use the original app database. The copied older
-project-config YAML is retained as evidence and omitted only in the fresh test
-snapshot, so the pinned installer initializes its native schema; this does not
-verify an upgrade of the original database/configuration. The script records
-source hashes so local, uncommitted examples remain traceable. Follow its output
-for PHP/SSR servers, then run `npm run test:e2e`. The `step03` project depends on the STEP-01/02
-projects and seeds additional isolated sites only after those checks. Use a fresh
-snapshot for the complete suite. Current output defaults to `reports/e2e/step03/`;
-historical alpha.20 output remains separate. STEP-01 outputs live under the
-ignored `reports/e2e/step01/`; the original 26 passed / 1 failed evidence is
-preserved separately.
-
-## Content and queries
-
-Projects own explicit content projections, native Craft queries and Vue presentation.
-See [the content convention](docs/CONTENT.md) for native Markdown, nested Matrix,
-relations, globals, taxonomy, responsive assets and URL-based pagination across
-two schemas, and [STEP-02 evidence](reports/e2e/STEP02.md) for scope and limits.
-
-The legacy `diagnose-live-preview.mjs` script is retained only for the released
-alpha.20 reproduction (original revision `2c670fe`); it rejects the current dev
-runtime before writing historical output. The official baseline's native Twig
-control is part of the strict `editor-preview` project.
-
-## Forms and private files
-
-[Form and file contracts](docs/FORMS.md) describe the selected native and project
-actions, official Inertia forms/HTTP callers, named errors, old input, native
-flash and private uploads/downloads. The package bridges native session messages
-on opted-in pages; native JSON operations retain their own response contracts.
-The Playground examples and synthetic private-volume configuration stay local.
-See [STEP-04 evidence](reports/e2e/STEP04.md) for acceptance and limitations.
-
-## Optional Contact Form integration
-
-The human-selected [native Contact Form example and versioned capability matrix](docs/CONTACT_FORM.md)
-reuse native actions, validation, settings and mail. Only the isolated optional
-consumer installs its exact official development commit. Scalar forms have
-local acceptance evidence; a nested-message native failure remains open. This
-is not blanket plugin compatibility, a core dependency or production acceptance.
+Four native account regressions and Contact Form's N01 nested-message failure
+remain separate open failures. The local unaccepted account adapter is excluded.
+Full STEP-05, full AC-06/AC-07, general compatibility, release and production
+acceptance remain incomplete. No PHP coverage percentage is claimed without a
+compatible driver. [FRONTEND.md](docs/FRONTEND.md) owns the agreed requirements.
