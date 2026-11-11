@@ -15,13 +15,22 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 // The optional profile never changes the default installation fixture or suites.
 const contactForm = process.env.POC_INSTALL_PROFILE === "contact-form";
-if (process.env.POC_INSTALL_PROFILE && !contactForm)
+const entryTemplates = process.env.POC_INSTALL_PROFILE === "entry-templates";
+if (process.env.POC_INSTALL_PROFILE && !contactForm && !entryTemplates)
   throw new Error("Unknown installation profile.");
-const profile = contactForm ? "contact-form" : "installation";
+const profile = contactForm
+  ? "contact-form"
+  : entryTemplates
+    ? "entry-templates"
+    : "installation";
 const selected = contactForm
   ? JSON.parse(readFileSync(new URL("./contact-form.json", import.meta.url)))
   : null;
-const fixture = path.join(root, "tests/e2e/installation");
+const fixture = path.join(
+  root,
+  "tests/e2e",
+  entryTemplates ? "entry-templates" : "installation",
+);
 const application = path.join(root, "tests/e2e/.runtime", profile);
 const source =
   process.env.POC_PLAYGROUND_PATH ?? path.resolve(root, "../craft6-playground");
@@ -55,7 +64,7 @@ function assertPins(lock) {
     }
   }
 }
-assertPins(sourceLock);
+// The source metadata stays immutable; only the disposable lock moves to beta.1.
 mkdirSync(path.join(evidence, "logs"), { recursive: true });
 cpSync(fixture, application, { recursive: true });
 if (contactForm) {
@@ -100,6 +109,8 @@ composer.description = "Isolated clean installation acceptance fixture";
 composer.scripts = {};
 delete composer.require["robuust/craft-inertia-poc"];
 composer.require["robuust/craft-inertia"] = "0.1.0";
+composer.require["craftcms/cms"] = baseline.targetVersion;
+composer.require["craftcms/cms-assets"] = baseline.targetVersion;
 if (selected)
   composer.require[selected.package.name] = selected.package.version;
 composer.repositories = [
@@ -139,7 +150,8 @@ writeFileSync(
     ports:
       - "127.0.0.1::5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U clean_installation -d clean_installation"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U clean_installation -d clean_installation"]
+      start_period: 60s
       interval: 1s
       timeout: 3s
       retries: 30
@@ -175,13 +187,20 @@ const port = run("database-port", "docker", [
   .split(":")
   .at(-1);
 const password = randomBytes(24).toString("hex");
+if (entryTemplates) {
+  writeFileSync(
+    path.join(application, "credentials.json"),
+    JSON.stringify({ username: "installation-owner", password }),
+    { mode: 0o600 },
+  );
+}
 const environment = {
   APP_NAME: "Clean installation",
   APP_ENV: "local",
   APP_DEBUG: "false",
   APP_KEY: `base64:${randomBytes(32).toString("base64")}`,
-  APP_URL: `http://127.0.0.1:${contactForm ? 18778 : 18777}`,
-  DEFAULT_SITE_URL: `http://127.0.0.1:${contactForm ? 18778 : 18777}`,
+  APP_URL: `http://127.0.0.1:${contactForm ? 18778 : entryTemplates ? 18779 : 18777}`,
+  DEFAULT_SITE_URL: `http://127.0.0.1:${contactForm ? 18778 : entryTemplates ? 18779 : 18777}`,
   DB_CONNECTION: "pgsql",
   DB_HOST: "127.0.0.1",
   DB_PORT: port,
@@ -195,7 +214,7 @@ const environment = {
   LOG_CHANNEL: "single",
   FRONTEND_ENABLED: contactForm ? "true" : "false",
   INERTIA_SSR_ENABLED: "true",
-  INERTIA_SSR_URL: "http://127.0.0.1:13727",
+  INERTIA_SSR_URL: `http://127.0.0.1:${entryTemplates ? 13729 : 13727}`,
   INERTIA_SSR_THROW_ON_ERROR: "true",
 };
 writeFileSync(
@@ -223,6 +242,10 @@ writeFileSync(
 run("composer-install", "composer", [
   "update",
   "robuust/craft-inertia",
+  "robuust/craft-inertia-poc",
+  "craftcms/cms",
+  "craftcms/cms-assets",
+  "mcp/sdk",
   ...(selected ? [selected.package.name] : []),
   "--no-interaction",
   "--no-scripts",
@@ -246,7 +269,8 @@ const withoutPlugin = (input) =>
     ({ name }) =>
       name !== "robuust/craft-inertia" &&
       name !== "robuust/craft-inertia-poc" &&
-      name !== selected?.package.name,
+      name !== selected?.package.name &&
+      !["craftcms/cms", "craftcms/cms-assets", "mcp/sdk"].includes(name),
   );
 if (
   JSON.stringify(withoutPlugin(lock)) !==
@@ -413,6 +437,9 @@ writeFileSync(
       sourceMetadataOnly: true,
       dependencyChanges: [
         "robuust/craft-inertia",
+        "craftcms/cms",
+        "craftcms/cms-assets",
+        "mcp/sdk",
         ...(selected ? [selected.package.name] : []),
       ],
       profile,
@@ -434,5 +461,5 @@ copyFileSync(
   path.join(evidence, "runtime-composer.lock"),
 );
 console.log(
-  `Clean installation ready at ${application}; project opt-in defaults ${contactForm ? "on" : "off"}.`,
+  `Clean installation ready at ${application}; project opt-in ${entryTemplates ? "uses native inertia: templates" : `defaults ${contactForm ? "on" : "off"}`}.`,
 );

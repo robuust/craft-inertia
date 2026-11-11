@@ -489,7 +489,12 @@ test("public shell keeps project shares and excludes CP data while CP retains it
   ).toBeVisible();
   const initial = await initialPage(page);
   expect(initial.props).not.toHaveProperty("craft");
-  expect(initial.props.auth.user.email).toBe(credentials.email);
+  expect(Object.keys(initial.props.auth.user).sort()).toEqual([
+    "id",
+    "username",
+  ]);
+  expect(initial.props.auth.user.username).toBe(credentials.username);
+  expect(initial.props.auth.user).not.toHaveProperty("email");
   const scripts = await page
     .locator("script[src]")
     .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("src")));
@@ -533,10 +538,14 @@ test("assets, native actions and GraphQL keep their own response handling", asyn
   expect((await graphql.json()).message).toBe("Missing Authorization header");
 });
 
-test("host SSR remains separate from explicitly enabled guest public SSR", async ({
-  page,
-}) => {
-  await page.goto("/login");
+test("public and host SSR retain the configured policy", async ({ page }) => {
+  await page.goto("/articles");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-server-rendered",
+    "true",
+  );
+  await login(page);
+  await page.goto("/users");
   await expect(page.locator("#app")).toHaveAttribute(
     "data-server-rendered",
     "true",
@@ -545,14 +554,9 @@ test("host SSR remains separate from explicitly enabled guest public SSR", async
   await expect(
     page.getByRole("heading", { name: "Articles", exact: true }),
   ).toBeVisible();
-  expect(await page.locator("#app").getAttribute("data-server-rendered")).toBe(
-    "true",
-  );
-  await page.goto("/login");
-  await expect(page.locator("#app")).toHaveAttribute(
-    "data-server-rendered",
-    "true",
-  );
+  expect(
+    await page.locator("#app").getAttribute("data-server-rendered"),
+  ).not.toBe("true");
 });
 
 test("publishing a named draft updates its native public URL", async ({

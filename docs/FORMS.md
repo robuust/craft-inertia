@@ -1,5 +1,11 @@
 # Forms and private files
 
+Native `inertia:` entry templates provide read-only GET/HEAD rendering and
+selected public content. They add no action, upload, download or account system.
+The existing mutation and private-file contracts below remain project/native
+responsibilities; adding a field to a page does not authorize an action.
+
+
 STEP-04 uses the official Inertia Laravel 3.7 / Vue 3.11 APIs with the approved
 CMS `0506c32b44efbe3e7f5fded46a7c1d39de699d5b` and matching assets
 `17973259d5727a1e50a1fc85dd90566b889407af`. These are exact official development

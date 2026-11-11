@@ -1,4 +1,95 @@
-# Clean installation and native fallback
+# Installation and native fallback
+
+## Native entry templates on Craft 6 beta.1
+
+The current package requires PHP 8.5 and Craft `^6.0.0-beta.1`, using the native
+beta.1 routing APIs. Exact verification pins are CMS
+`05ce9b81be3704fb27da3a5a6670accfa49ec9a9`, CP assets
+`87acafef481f17c12a10170211bbccda42588dbd` and native schema `6.0.0.36`.
+[Harness metadata](../tests/e2e/official-craft.json) preserves the tagged manifests,
+source/dist versions and `mcp/sdk` 0.9.0 requirement without a development alias.
+Earlier baseline reports below are historical, not released alpha.20 support.
+
+1. Make private `robuust/craft-inertia` available through your authenticated
+   Composer source, require it and run `craft:plugin:install inertia`.
+   Publish `craft-inertia-config` without `--force` over existing project config.
+2. Supply your public Blade root, view namespace and Vue client/SSR resolver.
+   Set `craft-inertia.rootView` to e.g. `frontend::app`. Build both project bundles.
+   Official `inertia.*` alone owns adapter SSR/protocol configuration.
+3. Keep the section's native URI (`articles/{slug}`, `__home__` for a homepage,
+   or a native structure URI) and set Template to `inertia:Site/Articles/Show`.
+   Leave the native route destination empty for this path. Add that Vue component
+   to the project resolver and select fields with
+   `pages['Site/Articles/Show']['fields'] = ['summary', 'body', 'heroImage']`.
+   See [the nested selection contract](CONTENT.md).
+
+No project entry controller, repeated Laravel entry route, custom PHP renderer,
+public middleware class or per-entry SSR policy callback is needed for these ordinary pages.
+The [minimal consumer](../tests/e2e/entry-templates) has native homepage, article,
+journal and nested structure pages with project-owned Vue and schema selection.
+Its only explicit web endpoints are independent native Blade/feed controls.
+The provider registers the public view namespace and uses official
+`Inertia::withoutSsr()` to exclude native CP/action paths from the project's SSR
+bundle. This one-time host setup is required because Craft's CP shares the
+official gateway; it is not a per-entry SSR policy callback. Fixture bootstrap isolation
+and seeding are test-only infrastructure, not application requirements.
+
+An existing explicit route/controller destination still wins. Bespoke overview,
+search, private pages and business rules keep their ordinary project routes and
+public middleware. Installing the plugin does not reinterpret dynamic view
+routes, native Twig/Blade templates or non-page endpoints.
+
+### Disable, fallback and cached routes
+
+The plugin registers a native element event listener, not an application route.
+On a fresh boot, `craft:plugin:disable inertia` removes this listener and
+`craft:plugin:enable inertia` restores it, including with cached application
+routes. No section/DB/YAML rewrite is performed. Restart long-lived workers when
+changing native plugin state; rebuild configuration caches after config changes.
+Use separate `config:clear` then `config:cache` on this Craft baseline.
+
+Component segments may contain letters, digits, `_` and `-`, separated by `/`.
+An empty or invalid component is a configuration error.
+
+An `inertia:...` Template by itself has no native Twig file. Disabling the plugin
+therefore follows normal Craft template handling and can return its ordinary
+missing-template error. For a working native fallback, deliberately configure a
+real Twig/Blade template or an explicit native destination that selects a native
+view when the integration is off. Retain the fallback and make that choice before
+opting out; the plugin cannot reconstruct the previous design. Unknown URLs stay
+native 404s. Existing manual integrations keep their own opt-out predicate.
+
+### Repeat the isolated native-template consumer
+
+Use Node 24 explicitly. The installer reads source dependency metadata without
+modifying its lock, resolves beta.1 only in the disposable consumer, and enforces
+its own pre-provider DB/cache/session/mail isolation. Use a unique Compose project
+and an absolute new evidence directory. It refuses to replace an existing runtime.
+
+```sh
+export POC_INSTALL_PROFILE=entry-templates
+export POC_INSTALL_REPORT_DIR=/absolute/task-owned/consumer-evidence
+export POC_INSTALL_COMPOSE_PROJECT=craft-inertia-entry-templates
+node tests/e2e/install-prepare.mjs
+php tests/e2e/entry-template-fixtures.php
+cd tests/e2e/.runtime/entry-templates
+php -d memory_limit=512M vendor/bin/phpunit --log-junit "$POC_INSTALL_REPORT_DIR/phpunit.xml"
+# Start from public/; disable OPcache for rapidly edited local fixtures:
+cd public
+php -d opcache.enable=0 -S 127.0.0.1:18779 \
+  ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php
+# In another shell from the consumer:
+php artisan inertia:start-ssr --runtime=/absolute/path/to/node24
+# From the plugin checkout:
+POC_ENTRY_REPORT_DIR=/absolute/task-owned/browser-evidence \
+  npx playwright test --config=tests/e2e/entry-templates.config.ts
+```
+
+Stop only these PHP/SSR processes and the selected Compose project with `down`;
+retain its volumes, locks and evidence. No original application activation,
+package publication or production acceptance is implied.
+
+## Historical explicit-route installation proof
 
 STEP-07A proves the independent clean-installation and opt-out clauses of AC-07.
 It does not complete STEP-07 or establish general release readiness. The
@@ -7,7 +98,7 @@ project pages, one Vue component and explicit public string/link props. It has
 no sections, custom fields, entries, demo content or package-owned frontend.
 The existing Playground remains a separate, local example.
 
-## Validated baseline
+### Historical STEP-07A baseline
 
 | Dependency | Tested version |
 | --- | --- |
@@ -21,7 +112,7 @@ The existing Playground remains a separate, local example.
 | Node / Yarn | 24.15.0 / 4.14.1 |
 
 The root lock aliases Craft `6.x-dev` to `6.0.0-alpha.20` solely to satisfy the
-existing Composer constraint. This is **not** released alpha.20 compatibility.
+then-existing Composer constraint. This is **not** released alpha.20 compatibility.
 [Fixed metadata](../tests/e2e/official-craft.json) and the consuming application's
 lockfiles own reproducibility. The broad package constraints are not a tested
 support matrix. No floating latest-version install or dependency upgrade is
@@ -228,8 +319,8 @@ Full STEP-05, full AC-06 and the remaining AC-07 clauses stay open.
 STEP-07C changes Composer `robuust/craft-inertia-poc` to `robuust/craft-inertia`,
 PHP `Robuust\CraftInertiaPoc` to `Robuust\CraftInertia`, native Craft handle
 `inertia-poc` to `inertia`, and display name to `Inertia`. The npm harness is
-`@robuust/craft-inertia` and remains private. Schema version `1.0.0`, dependency
-constraints and proprietary license are unchanged. There is no public release,
+`@robuust/craft-inertia` and remains private. Schema version `1.0.0` and proprietary license were unchanged by the identity
+migration. Native entry templates now require beta.1 routing APIs. There is no public release,
 Packagist registration, npm publication or compatibility alias.
 
 Integration configuration is **`config/craft-inertia.php` / `craft-inertia.*`**,
@@ -319,3 +410,28 @@ in its patched legacy installer; retain evidence before repeating with a new
 directory. It does not exercise missing vendor recovery, a forced uninstall,
 an original database upgrade, custom uninstall hooks or all historical versions.
 See [STEP-07C evidence and limits](../reports/e2e/STEP07C.md).
+
+## Migrate an existing manual entry page locally
+
+Inventory the existing native URI/destination, projection and Vue props first.
+Keep special overview/search/navigation/global queries in their project owner.
+In a disposable copy, upgrade to the exact beta.1 baseline and complete any
+[legacy identity migration](#migrate-the-legacy-package-identity) before selecting
+the new API; do not activate a half-updated old-name lock/vendor tree.
+
+For each ordinary entry page, leave its native URI and site settings intact,
+clear the explicit route destination and choose `inertia:Component/Name` as its
+Template. Remove only the duplicate detail route/controller integration that is
+now unused. Keep overview and special routes. Select native handles in
+`pages[component]['fields']`, and update the Vue page from old renamed/root props
+to `entry.fields.<nativeHandle>`. Map Matrix presentation to the documented native
+`type` and selected child `fields`; preserve asset list cardinality. Do not move
+business-specific PHP into the plugin to make an old component work unchanged.
+
+Check native URLs/sites, initial SSR/hydration, Inertia visits/version changes,
+preview identity, hidden fields, private state and deliberate native fallback
+before changing an existing installation. Build matching project bundles and
+restart its workers. The original local Playground has not been migrated or
+activated by the native-template proof; all demonstration changes belong to the
+isolated consumers. Its existing work, lock, config, environment and vendor stay
+local and uncommitted.

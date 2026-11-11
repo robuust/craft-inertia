@@ -5,11 +5,11 @@ It does not introduce a second content store or propose database migrations.
 Terms are defined in [CONTEXT.md](../CONTEXT.md); product requirements and
 acceptance criteria remain in [FRONTEND.md](FRONTEND.md).
 
-**Basis:** plugin commit `aa361006dc985fa7c6343c8c84372adf58f2b7e0`, Playground
-commit `f7dd95da555f704d49aa590f7fa60bf7d24f1731`, installed Craft
-`6.0.0-alpha.20`, inspected on 2026-11-09. Current contracts are distinguished
-from proposed contracts below. Primary source locations are indexed in
-[PROJECT.md](PROJECT.md#source-register).
+**Current native-template contract:** approved 2026-11-11, targeting official
+Craft `6.0.0-beta.1` source `05ce9b81be3704fb27da3a5a6670accfa49ec9a9`.
+The earlier initialization inspected plugin `aa36100`, local Playground
+`f7dd95d` and alpha.20; historical contracts/reports retain their original scope.
+[CONTENT.md](CONTENT.md) owns the selected-field shape.
 
 ## Actors and authority
 
@@ -33,8 +33,8 @@ ID, site ID, draft ID or preview marker has not thereby obtained access.
 | Canonical entry           | Existing entry identity; has site variants and can have drafts/revisions. | Craft owns status, dates, structure, fields and URL rules. Canonical identity does not imply public availability.                           |
 | Site variant              | Representation of an entry in one configured site.                        | Entry identity and current site jointly determine the content/URL context; do not replace them with a slug alone.                           |
 | Preview content           | Version related to a canonical entry and a site.                          | Craft validates authorization and supplies the preview element. Ordinary queries must not inherit another request's preview state.          |
-| Page selection            | Chooses a project page and its public projection for a resolved request.  | A project page may represent an entry or an overview with no matched element. Final configuration API is a STEP-01 implementation decision. |
-| Public projection         | Explicit values the project makes available to the page.                  | Preserve existing canonical names where applicable. Do not dump an element, user, field layout or query object into props.                  |
+| Page selection            | Chooses a project page and its public projection for a resolved request.  | A project page may represent an entry or an overview with no matched element. Native `inertia:Component` templates use plugin rendering; explicit native destinations retain precedence. |
+| Public projection         | Explicitly selected Craft values made public by plugin or project code.                  | Preserve existing canonical names where applicable. Do not dump an element, user, field layout or query object into props.                  |
 | Compatibility integration | Named external plugin, version range and supported operations.            | That plugin remains responsible for its calculations, validation and permissions. Installation alone does not establish compatibility.      |
 
 These are logical relationships using Craft's existing model. A project may
@@ -78,8 +78,9 @@ content-data caching. HTTP output caching and production acceptance remain defer
    the destination consumes Craft's matched element; an overview uses a
    project-owned query. Explicit route configuration determines which requests
    opt into Inertia.
-3. Project PHP code projects allowed content into page props. It uses the
-   existing query, relation, field, transform and authorization APIs.
+3. For `inertia:` entry templates, plugin code projects safe base context and
+   explicitly selected fields using native APIs. Projects select handles and
+   own custom serializers and bespoke query/projection behavior.
 4. The official Inertia adapter supplies initial HTML or an Inertia page JSON
    response. The project owns the public root view, page resolver and client/SSR
    builds. Craft's CP uses its own root view, props and assets.
@@ -150,7 +151,7 @@ transport contract in [FORMS.md](FORMS.md); STEP-05 applies it to account flows.
 | Public SSR/cache policy configuration     | STEP-06; establish HTML/JSON variation, private isolation and invalidation.                                       |
 | Initial third-party support matrix        | STEP-07; product selection remains open and does not block the core first step.                                   |
 
-## STEP-01 integration contract
+## Historical STEP-01 manual integration contract
 
 `Robuust\CraftInertia\Http\HandleInertiaRequests` is selected explicitly on
 project GET/HEAD page routes. `craft-inertia.rootView` names the project Blade root
@@ -165,9 +166,10 @@ view routes retain Craft alpha.20 precedence on identical route signatures;
 projects keep those signatures disjoint from Inertia page routes. See the
 [installation and route policy](../README.md).
 
-## STEP-02 content contract
+## Historical STEP-02 content contract
 
-The [content convention](CONTENT.md) retains STEP-01 field names and adds explicit
+The STEP-02 project example retained STEP-01 field names and added explicit
 optional content, globals, filter and pagination values in the consuming project.
-The package remains schema-free. Native Markdown is the covered rich-text variant;
+The package remains schema-free. Current generic selected-field props are defined
+separately in [CONTENT.md](CONTENT.md); they retain native handles. Native Markdown is the covered rich-text variant;
 native singles and Entries relations supply alpha.20 globals and taxonomy.

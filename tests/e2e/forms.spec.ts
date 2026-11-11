@@ -94,6 +94,8 @@ for (const [prefix, articles] of [
   test(`native form validation, old input, bags and redirect at ${prefix || "/"}`, async ({
     page,
   }) => {
+    // Native saves synchronously propagate this fixture's nested content across sites.
+    test.setTimeout(90_000);
     await login(page);
     await page.goto(`${prefix}/files`);
     const native = page.locator('form[action*="entries/save-entry"]');
@@ -104,6 +106,7 @@ for (const [prefix, articles] of [
         response.url().endsWith(`${prefix}/files`) &&
         response.request().method() === "GET" &&
         response.headers()["x-inertia"] === "true",
+      { timeout: 30_000 },
     );
     await native.getByRole("button", { name: "Save title" }).click();
     expect((await (await failedPage).json()).props.nativeEntry.title).toBe(
@@ -146,8 +149,17 @@ for (const [prefix, articles] of [
     ).toHaveCount(0);
     await page.goto(`${prefix}/files`);
     await native.locator('[name="title"]').fill(originalTitle);
+    const restored = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname === "/actions/entries/save-entry",
+      { timeout: 30_000 },
+    );
     await native.getByRole("button", { name: "Save title" }).click();
-    await expect(page.getByRole("status")).toContainText("Entry saved");
+    expect([302, 303]).toContain((await restored).status());
+    await expect(page.getByRole("status")).toContainText("Entry saved", {
+      timeout: 30_000,
+    });
   });
 
   test(`message-only native failure keeps form unsuccessful at ${prefix || "/"}`, async ({

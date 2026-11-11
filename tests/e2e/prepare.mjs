@@ -34,9 +34,7 @@ function assertPinnedCraft(lock) {
     }
   }
 }
-assertPinnedCraft(
-  JSON.parse(readFileSync(path.join(source, "composer.lock"), "utf8")),
-);
+// Preserve original source locks; resolve the official baseline only in this consumer.
 const composeProject =
   process.env.POC_E2E_COMPOSE_PROJECT ?? "craft-inertia-poc-e2e";
 if (!/^craft-inertia-[a-z0-9-]+$/.test(composeProject))
@@ -354,7 +352,9 @@ writeFileSync(
 );
 const composerPath = path.join(playground, "composer.json");
 const composer = JSON.parse(readFileSync(composerPath, "utf8"));
-composer.repositories ??= [];
+composer.require["craftcms/cms"] = officialBaseline.targetVersion;
+composer.require["craftcms/cms-assets"] = officialBaseline.targetVersion;
+composer.repositories = officialBaseline.repositories;
 composer.repositories = composer.repositories.filter(
   (repository) =>
     repository.type !== "path" || !repository.url.includes("craft-inertia"),
@@ -375,6 +375,9 @@ run("composer-install", "composer", [
   "update",
   "robuust/craft-inertia",
   "robuust/craft-inertia-poc",
+  "craftcms/cms",
+  "craftcms/cms-assets",
+  "mcp/sdk",
   "--no-interaction",
   "--no-scripts",
   "--prefer-dist",
