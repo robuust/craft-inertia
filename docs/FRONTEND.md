@@ -147,7 +147,7 @@ its support status. Tests need the user's explicit authorization; the acceptance
 criteria below do not grant permission to write or run them.
 
 Planning basis: 2026-11-09, the revisions and source register in PROJECT.md.
-STEP-01 is delivered and merged in [PR #1](https://github.com/joostwaaijer/craft-inertia/pull/1).
+STEP-01 is delivered and merged in [PR #1](https://github.com/robuust/craft-inertia/pull/1).
 STEP-02 implementation and evidence are recorded in [STEP02.md](../reports/e2e/STEP02.md).
 STEP-03/04 are also delivered and merged. STEP-05 remains open. STEP-06A is the
 human-authorized independent public subset described below. Implementation, independent review,

@@ -10,7 +10,7 @@ is the support boundary, not general Contact Form compatibility or full AC-07.
 
 ## Baseline and implementation
 
-Work starts from live merged STEP-07A PR [#8](https://github.com/joostwaaijer/craft-inertia/pull/8),
+Work starts from live merged STEP-07A PR [#8](https://github.com/robuust/craft-inertia/pull/8),
 merge `42c10aaca6c7f820e2dc6cb3089252401a6fa2e5`, on fresh
 `feature/contact-form-compatibility`. The original Playground stays read-only;
 the protected account branch and all three partial STEP-05 stashes stay intact.
