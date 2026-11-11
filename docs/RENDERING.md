@@ -1,16 +1,16 @@
 # Public rendering and response policies
 
-The [STEP-07A installation checklist](INSTALLATION.md) adds a neutral consuming
-application and lifecycle proof. Its project provider confines SSR to selected
-static public pages, so native CP pages never enter the public resolver. Real
-content projects must also apply the privacy policies documented below.
+The [installation checklist](INSTALLATION.md) describes project-owned setup and
+native lifecycle behavior. CP pages must stay outside the public SSR resolver.
+Consuming projects own verification of the privacy policies below; the plugin
+contains no test harness. Earlier STEP records remain historical.
 
 STEP-06A, STEP-06B and STEP-06C are human-authorized independent parts of STEP-06.
 STEP-05 remains open, including its native account blockers. These slices add
 guest SSR, metadata, errors/maintenance, asset versions, indexing/JSON-LD and
 native public content-data caching. Account behavior, HTTP output caching and
-full AC-06 remain incomplete. See [STEP-06A](../reports/e2e/STEP06A.md),
-[STEP-06B](../reports/e2e/STEP06B.md) and [STEP-06C evidence](../reports/e2e/STEP06C.md).
+full AC-06 remain incomplete. See [STEP-06A](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP06A.md),
+[STEP-06B](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP06B.md) and [STEP-06C evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP06C.md).
 
 ## Native entry-template renderer
 
@@ -43,8 +43,11 @@ When enabling a project SSR bundle, exclude native CP/action paths once through
 official `Inertia::withoutSsr()` in the host provider, or retain the host's
 existing appropriate exclusion. Craft beta.1 otherwise sends CP components to
 the same gateway; the public resolver cannot render them. The plugin does not
-replace that host policy. The minimal consumer derives paths from Craft's
-configured triggers, with no entry-specific callback.
+replace that host policy. The
+[provider example](../README.md#configure-the-consuming-project) derives
+absolute CP exclusions from Craft's URL API. A dedicated CP origin must be
+configured through `baseCpUrl` when `cpTrigger` is null, so the public website
+does not inherit a `/*` exclusion. No entry-specific callback is needed.
 Public exception presentation remains an optional project concern; configuration
 errors use normal application exception handling and do not serialize values.
 
@@ -145,7 +148,7 @@ including closing script sequences, while retaining parseable JSON. Head owns
 SSR output, hydration, replacement/removal and history restoration. One keyed
 robots meta follows the same page projection. Error pages have their own keyed
 deny meta. No parallel head store, SEO dependency, robots.txt replacement or
-production crawler setting is introduced. See [STEP-06B evidence](../reports/e2e/STEP06B.md).
+production crawler setting is introduced. See [STEP-06B evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP06B.md).
 
 ## Errors, maintenance and native isolation
 

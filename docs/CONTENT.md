@@ -65,11 +65,12 @@ Markdown's demonstrated `v-html` sink applies only to the sanitized Markdown
 path. Other strings and custom-field HTML retain the field's own semantics and
 should be rendered appropriately by the project.
 
-Entries/Matrix/Assets are eager-loaded through native `Elements` APIs before
-projection. Craft's status, site and preview placeholder behavior remains in
-force. The matched preview is never requeried as a canonical entry. Each visited
-entry/asset is passed to the native active dependency collector; the plugin
-starts no cache, collector, queue or invalidation system.
+Entries/Matrix/Assets use Craft's native `eagerly()` relation queries during
+projection. Relations shared by sibling entries are loaded together and existing
+eager-loaded collections are reused. Craft's status, site and preview placeholder
+behavior remains in force. The matched preview is never requeried as a canonical
+entry. Each visited entry/asset is passed to the native active dependency
+collector; the plugin starts no cache, collector, queue or invalidation system.
 
 Circular references stop at an entry already present on the current relation
 path. That repeated entry retains its base identity and has `fields: []`.
@@ -89,7 +90,7 @@ route/controller destinations and `HandleInertiaRequests` for those pages. Such
 destinations take precedence over `inertia:` templates. Their existing explicit
 prop contracts are unchanged; the generic entry shape is not forced onto them.
 
-[STEP-02](../reports/e2e/STEP02.md) and [STEP-03](../reports/e2e/STEP03.md) retain
+[STEP-02](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP02.md) and [STEP-03](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP03.md) retain
 historical evidence for the local Playground's explicit projections across two
 schemas, native pagination, globals, responsive images and editor workflows.
 That project convention may still be used for bespoke pages. It is no longer a

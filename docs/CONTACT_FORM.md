@@ -1,11 +1,12 @@
 # Optional native Contact Form integration
 
-STEP-07B is a bounded REQ-13 / AC-07 integration, selected by the human after
-STEP-07A. It supplies a project-owned Vue contact page and acceptance fixture;
-the reusable plugin's PHP, configuration and dependencies are unchanged.
+STEP-07B records a historical bounded REQ-13 / AC-07 integration. Its
+project-owned Vue page and native action flow did not change the reusable
+plugin's PHP, configuration or dependencies. The plugin no longer contains
+that test fixture or its preparation scripts.
 Contact Form is **not installed or required by the core package**. Full STEP-07,
 account defects, general release and production acceptance remain
-open. See the [evidence and native limitation](../reports/e2e/STEP07B.md).
+open. See the [evidence and native limitation](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP07B.md).
 
 ## Exact capability matrix (2026-11-10, revision 2)
 
@@ -39,14 +40,11 @@ The separate upstream beta-only compatibility branch was not substituted.
 
 ## Project integration
 
-The optional [fixture overlay](../tests/e2e/contact-form) reuses the neutral
-[STEP-07A application](../tests/e2e/installation). A consuming project needs to
-install/enable the selected owning plugin separately. Copy/adapt the project
-[controller](../tests/e2e/contact-form/app/Http/Controllers/ContactController.php),
-[Vue page](../tests/e2e/contact-form/resources/js/pages/Contact.vue),
-[success page](../tests/e2e/contact-form/resources/js/pages/ContactThanks.vue) and
-the explicit project page routes. Register the pages in the project's resolver.
-Do not copy the fixture's capture transport or task isolation into production.
+A consuming project installs/enables the selected owning plugin separately
+and supplies its contact page, success page, controller and explicit page routes.
+Register those Vue pages in the project's resolver. Historical example sources
+remain in Git history; adapt them to the project's installed versions and mail
+configuration instead of copying test isolation or capture transports.
 
 `/contact` is a selected public Inertia page. Its controller only chooses the
 presentation, emits the native action URL, encrypts the project success URL and
@@ -72,75 +70,24 @@ The Vue page submits only scalar basic fields. Unsupported nested callers are
 an explicit native limitation; no replacement validator, fork, vendor fix or
 constraint bypass is included.
 
-The project [privacy middleware](../tests/e2e/contact-form/app/Http/Middleware/ContactPrivacy.php)
-sets headers on these selected page/action paths, including exception responses,
+Project privacy middleware sets headers on these selected page/action paths, including exception responses,
 without changing native statuses, bodies, CSRF, throttling or session behavior.
-It does not attach the public Inertia middleware to native actions. This private
-fixture disables SSR with the official `Inertia::disableSsr(true)` API; it adds
-no JSON-LD or content cache. Larger projects should compose their existing
+It does not attach the public Inertia middleware to native actions. Contact pages and session/form state must stay outside guest SSR, JSON-LD and
+public content caches. Compose the project's existing
 [public SSR/cache eligibility](RENDERING.md) so contact pages and form/session
 state remain excluded.
 
-## Repeat the isolated proof
+## Verification and remaining limits
 
-Use the [installation prerequisites](INSTALLATION.md#repeat-the-isolated-proof).
-The optional profile has its own runtime, Compose project, database and loopback
-HTTP port. Default STEP-07A and other suites neither install nor load Contact
-Form. Only dependency metadata is read from the original Playground; its code,
-DB, config, environment and vendor tree stay untouched.
+The consuming project owns verification against its locked Craft, Contact Form
+and Inertia versions. This repository has no automated test suite, disposable
+consumer, mail-capture transport or preparation command. The historical matrix
+above does not establish compatibility with current or other versions.
 
-```sh
-export POC_INSTALL_PROFILE=contact-form
-export POC_INSTALL_COMPOSE_PROJECT=craft-inertia-contact-form
-export POC_INSTALL_REPORT_DIR=/absolute/task-owned/contact-form-evidence
-node tests/e2e/install-prepare.mjs
-cd tests/e2e/.runtime/contact-form
-php vendor/bin/phpunit --log-junit "$POC_INSTALL_REPORT_DIR/phpunit.xml"
-# This separate negative probe currently FAILS with the documented native 500:
-php vendor/bin/phpunit tests/NativeLimits/NestedMessageTest.php \
-  --log-junit "$POC_INSTALL_REPORT_DIR/native-limits.xml"
-cd public
-php -d opcache.enable=0 -S 127.0.0.1:18778 \
-  ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php
-# From the plugin checkout in another shell:
-npx playwright test --config=tests/e2e/contact-form.config.ts
-```
-
-The existing generated database-target guard runs before providers on CLI,
-HTTP and test boots. The optional bootstrap fixes the application's storage root
-to this disposable runtime before configuration loads. After configuration, but
-before any provider, it replaces the entire cache map with one local file store
-and explicitly selects it for native throttling and session locks. File sessions
-use the same runtime's own storage directory; inherited Redis/session choices,
-cached external file paths and alternate named stores cannot redirect these
-operations. Tests may therefore reset only this fixture's local cache. Six
-console/HTTP probes stop before providers even when reproducing the previous
-unsafe configuration; the real native limiter is still exercised separately.
-
-The optional bootstrap also replaces the entire
-mail configuration with one local capture transport and forces synchronous
-handoff before providers. Inherited and cached SMTP URLs/config cannot select
-an external transport; a native project setting selecting an unknown mailer
-fails closed. Native rendering still runs before capture. Only generated
-synthetic `.test` submissions are used; captured MIME files are local under
-`storage/mail-capture`, with no network or sendmail process.
-
-Preparation checks the exact source/dist pins, unchanged remaining Composer
-package records, original frontend lock, native source manifests and published
-CP asset bytes. It records both fixture manifests and the resolved runtime lock.
-The native limitation probe is separate from the supported scalar suite and is
-reported as a real failure, never skipped or counted as passing.
-
-Stop the task-owned PHP process and database after verification:
-
-```sh
-docker compose -f "$POC_INSTALL_REPORT_DIR/compose.yaml" \
-  -p "${POC_INSTALL_COMPOSE_PROJECT:-craft-inertia-contact-form}" down
-```
-
-Retain evidence before archiving only this disposable runtime and preparing a
-fresh one. No real email, original app activation, upstream publication, Craft
-upgrade, package release or deployment belongs to this slice.
+Keep recipient and delivery configuration server-owned. Verify native redirects,
+validation, global failure flash, CSRF, throttling and private response policies
+in the consuming project. Nested-message handling remains the documented native
+limitation; no replacement validator or dependency patch is included here.
 
 Pinned primary sources: [Contact Form action](https://github.com/craftcms/contact-form/blob/6f3b6deed57d909ab024190a53d93dedc206e13f/src/Http/Controllers/SendController.php),
 [validation](https://github.com/craftcms/contact-form/blob/6f3b6deed57d909ab024190a53d93dedc206e13f/src/Validation/SubmissionRuleset.php),
