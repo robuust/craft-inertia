@@ -6,7 +6,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
-use Robuust\CraftInertiaPoc\Plugin;
+use Robuust\CraftInertia\Plugin;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
@@ -24,12 +24,28 @@ class InstallationTest extends TestCase
         foreach (['sections', 'fields', 'entries'] as $table) {
             $this->assertSame(0, DB::table($table)->count(), $table);
         }
-        $this->assertTrue(app(Plugins::class)->isPluginEnabled('inertia-poc'));
+        $this->assertTrue(app(Plugins::class)->isPluginEnabled('inertia'));
         $this->assertInstanceOf(Plugin::class, $this->app->getProvider(Plugin::class));
+        $native = app(Plugins::class)->getPlugin('inertia');
+        $this->assertSame('Inertia', $native->name);
+        $this->assertSame('robuust/craft-inertia', $native->packageName);
+        $this->assertSame('1.0.0', $native->schemaVersion);
         $published = ServiceProvider::pathsToPublish(Plugin::class);
         $this->assertSame([
-            realpath(base_path('vendor/robuust/craft-inertia-poc/config/inertia-poc.php')) => config_path('inertia-poc.php'),
+            realpath(base_path('vendor/robuust/craft-inertia/config/craft-inertia.php')) => config_path('craft-inertia.php'),
         ], array_combine(array_map('realpath', array_keys($published)), array_values($published)));
+    }
+
+    public function testIntegrationConfigurationKeepsTheOfficialAdapterOwner(): void
+    {
+        $official = config('inertia');
+        $this->assertSame('frontend::app', config('craft-inertia.rootView'));
+        $this->assertArrayHasKey('ssr', $official);
+        $this->assertArrayNotHasKey('rootView', $official);
+        $this->assertArrayNotHasKey('indexingPolicy', $official);
+        $this->artisan('vendor:publish', ['--tag' => 'craft-inertia-config'])->assertSuccessful();
+        $this->assertSame($official, config('inertia'));
+        $this->assertFileDoesNotExist(config_path('inertia-poc.php'));
     }
 
     public function testDirectHtmlUsesTheProjectRootAndBundle(): void
@@ -67,7 +83,7 @@ class InstallationTest extends TestCase
             ->assertOk()->assertHeaderMissing('X-Inertia')
             ->assertSee('About this site')->assertSee('Project native fallback')
             ->assertDontSee('data-page', false)->assertDontSee('build/assets', false);
-        $this->assertTrue(app(Plugins::class)->isPluginEnabled('inertia-poc'));
+        $this->assertTrue(app(Plugins::class)->isPluginEnabled('inertia'));
     }
 
     public function testStaleProjectAssetVersionRequiresAFullVisit(): void
@@ -93,7 +109,7 @@ class InstallationTest extends TestCase
             $this->refreshApplication();
             config(['frontend.enabled' => true, 'inertia.ssr.enabled' => false]);
 
-            $this->assertFalse(app(Plugins::class)->isPluginEnabled('inertia-poc'));
+            $this->assertFalse(app(Plugins::class)->isPluginEnabled('inertia'));
             $this->assertNull($this->app->getProvider(Plugin::class));
             $this->get('/about', ['X-Inertia' => 'true'])->assertOk()
                 ->assertHeaderMissing('X-Inertia')->assertSee('About this site')
@@ -105,7 +121,7 @@ class InstallationTest extends TestCase
 
         $this->refreshApplication();
         config(['frontend.enabled' => true, 'inertia.ssr.enabled' => false]);
-        $this->assertTrue(app(Plugins::class)->isPluginEnabled('inertia-poc'));
+        $this->assertTrue(app(Plugins::class)->isPluginEnabled('inertia'));
         $this->assertInstanceOf(Plugin::class, $this->app->getProvider(Plugin::class));
         $this->get('/about', $this->inertiaHeaders())->assertOk()
             ->assertHeader('X-Inertia', 'true')->assertJsonPath('component', 'Page');
@@ -135,6 +151,6 @@ class InstallationTest extends TestCase
 
     private function pluginCommand(string $action): void
     {
-        (new Process([PHP_BINARY, 'artisan', 'craft:plugin:'.$action, 'inertia-poc', '--no-interaction'], base_path()))->mustRun();
+        (new Process([PHP_BINARY, 'artisan', 'craft:plugin:'.$action, 'inertia', '--no-interaction'], base_path()))->mustRun();
     }
 }

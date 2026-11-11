@@ -152,8 +152,8 @@ transport contract in [FORMS.md](FORMS.md); STEP-05 applies it to account flows.
 
 ## STEP-01 integration contract
 
-`Robuust\CraftInertiaPoc\Http\HandleInertiaRequests` is selected explicitly on
-project GET/HEAD page routes. `inertia-poc.rootView` names the project Blade root
+`Robuust\CraftInertia\Http\HandleInertiaRequests` is selected explicitly on
+project GET/HEAD page routes. `craft-inertia.rootView` names the project Blade root
 (default `app`); the project's Vite manifest supplies asset versioning. The
 package registers no routes, page resolver, shared schema, preview targets or
 frontend assets. Intentional project shared props remain intact.

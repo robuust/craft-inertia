@@ -37,12 +37,16 @@ function assertPinnedCraft(lock) {
 assertPinnedCraft(
   JSON.parse(readFileSync(path.join(source, "composer.lock"), "utf8")),
 );
+const composeProject =
+  process.env.POC_E2E_COMPOSE_PROJECT ?? "craft-inertia-poc-e2e";
+if (!/^craft-inertia-[a-z0-9-]+$/.test(composeProject))
+  throw new Error("Use a task-owned craft-inertia-* Compose project.");
 const compose = [
   "compose",
   "-f",
   path.join(root, "tests/e2e/compose.yaml"),
   "-p",
-  "craft-inertia-poc-e2e",
+  composeProject,
 ];
 const evidence =
   process.env.POC_E2E_REPORT_DIR ?? path.join(root, "reports/e2e/step03");
@@ -121,6 +125,48 @@ if (workingTree) {
   execFileSync("tar", ["-xf", archive, "-C", playground]);
   rmSync(archive);
 }
+// Migrate only the disposable consumer, preserving the frozen source manifest/lock.
+const identityChanges = {};
+for (const directory of ["app", "bootstrap", "config", "routes", "tests"]) {
+  function migrate(current) {
+    if (!existsSync(current)) return;
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const file = path.join(current, entry.name);
+      if (entry.isDirectory()) migrate(file);
+      else if (entry.isFile() && file.endsWith(".php")) {
+        const before = readFileSync(file, "utf8");
+        const after = before
+          .replaceAll("CraftInertiaPoc", "CraftInertia")
+          .replaceAll("'inertia-poc.", "'craft-inertia.")
+          .replaceAll('"inertia-poc.', '"craft-inertia.');
+        if (after !== before) {
+          writeFileSync(file, after);
+          identityChanges[path.relative(playground, file)] = {
+            before: createHash("sha256").update(before).digest("hex"),
+            after: createHash("sha256").update(after).digest("hex"),
+          };
+        }
+      }
+    }
+  }
+  migrate(path.join(playground, directory));
+}
+const legacyConfig = path.join(playground, "config/inertia-poc.php");
+if (existsSync(legacyConfig)) {
+  if (existsSync(path.join(playground, "config/craft-inertia.php")))
+    throw new Error(
+      "Both integration config files exist; reconcile project choices first.",
+    );
+  copyFileSync(legacyConfig, path.join(playground, "config/craft-inertia.php"));
+  rmSync(legacyConfig);
+  identityChanges["config/inertia-poc.php"] = {
+    renamedTo: "config/craft-inertia.php",
+  };
+}
+writeFileSync(
+  path.join(evidence, "identity-source-migration.json"),
+  JSON.stringify(identityChanges, null, 2),
+);
 for (const folder of [
   "storage/framework/cache/data",
   "storage/framework/sessions",
@@ -261,6 +307,51 @@ writeFileSync(
     .join(""),
   { mode: 0o600 },
 );
+// Reuse the neutral fixture's pre-provider target and local storage/mail boundary.
+copyFileSync(
+  path.join(root, "tests/e2e/installation/bootstrap/isolation.php"),
+  path.join(playground, "bootstrap/isolation.php"),
+);
+writeFileSync(
+  path.join(playground, "bootstrap/database-target.json"),
+  JSON.stringify({
+    appUrl: environment.APP_URL,
+    connection: {
+      driver: "pgsql",
+      host: environment.DB_HOST,
+      port: databasePort,
+      database: environment.DB_DATABASE,
+      username: environment.DB_USERNAME,
+      password: environment.DB_PASSWORD,
+    },
+  }),
+  { mode: 0o600 },
+);
+const bootPath = path.join(playground, "bootstrap/app.php");
+const isolationHooks = readFileSync(
+  path.join(root, "tests/e2e/installation/bootstrap/app.php"),
+  "utf8",
+)
+  .split("$app->useStoragePath")[1]
+  .split("return $app;")[0];
+const boot = readFileSync(bootPath, "utf8");
+if (!boot.includes("return Application::configure"))
+  throw new Error(
+    "Unexpected consumer bootstrap; review isolation before booting.",
+  );
+writeFileSync(
+  bootPath,
+  boot.replace(
+    "return Application::configure",
+    "$app = Application::configure",
+  ) +
+    "\n$app->useStoragePath" +
+    isolationHooks.replaceAll(
+      "LoadConfiguration::class",
+      "\\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class",
+    ) +
+    "\n$app->afterBootstrapping(\\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class, fn (Application $app) => $app->make('config')->set('cache.stores.array', ['driver' => 'array', 'serialize' => false]));\nreturn $app;\n",
+);
 const composerPath = path.join(playground, "composer.json");
 const composer = JSON.parse(readFileSync(composerPath, "utf8"));
 composer.repositories ??= [];
@@ -273,14 +364,16 @@ composer.repositories.unshift({
   url: root,
   options: {
     symlink: true,
-    versions: { "robuust/craft-inertia-poc": "0.1.0" },
+    versions: { "robuust/craft-inertia": "0.1.0" },
   },
 });
-composer.require["robuust/craft-inertia-poc"] = "0.1.0";
+delete composer.require["robuust/craft-inertia-poc"];
+composer.require["robuust/craft-inertia"] = "0.1.0";
 writeFileSync(composerPath, JSON.stringify(composer, null, 4));
 
 run("composer-install", "composer", [
   "update",
+  "robuust/craft-inertia",
   "robuust/craft-inertia-poc",
   "--no-interaction",
   "--no-scripts",
@@ -310,13 +403,13 @@ run(
 run("plugin-install", "php", [
   "artisan",
   "craft:plugin:install",
-  "inertia-poc",
+  "inertia",
   "--no-interaction",
 ]);
 run("plugin-config", "php", [
   "artisan",
   "vendor:publish",
-  "--tag=inertia-poc-config",
+  "--tag=craft-inertia-config",
   "--no-interaction",
 ]);
 run("craft-assets", "php", [

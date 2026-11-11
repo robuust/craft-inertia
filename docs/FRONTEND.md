@@ -137,7 +137,8 @@ separately; the prior PoC commit does not complete any target step.
 | STEP-06 Rendering and response policies         | REQ-10, REQ-11, REQ-12                        | STEP-02/03 content/site dependencies and STEP-05 private-session behavior                | Plugin + Playground                              | PARTIAL: independent STEP-06A/06B/06C are authorized without STEP-05; HTTP output caching, account-dependent caching and full AC-06 remain deferred.                                                                               |
 | STEP-07A Independent clean installation and fallback | AC-07 installation/disable subset | Merged STEP-01/02/03/04 and independent STEP-06A/06B/06C | Plugin; isolated neutral application | Implemented; scoped evidence in STEP07A.md, independent review and merge tracked separately. Full STEP-07 remains incomplete. |
 | STEP-07B Optional native Contact Form | REQ-13; bounded AC-07 integration | Merged STEP-07A; human-selected Contact Form exact official commit | Plugin docs; isolated optional project fixture | Scalar flow exercised; native nested-message limitation remains failing. See CONTACT_FORM.md and STEP07B.md; independent review/merge tracked separately. |
-| STEP-07 Reusable installation and compatibility | REQ-13; release evidence for all requirements | STEP-01 through STEP-06; named third-party products/versions for advertised integrations | Plugin + Playground; selected integration owners | PARTLY_READY for product selection/release decisions; implementation and compatibility acceptance depend on predecessors. |
+| STEP-07C Permanent private package identity | AC-07 identity/upgrade subset | Merged STEP-07B; human identity/license/distribution choices | Plugin + disposable legacy/current consumers; local source patches only for Playground | Implemented; bounded proof in STEP07C.md; independent review/merge tracked separately. |
+| STEP-07 Reusable installation and compatibility | REQ-13; release evidence for all requirements | STEP-01 through STEP-06; named third-party products/versions for advertised integrations | Plugin + Playground; selected integration owners | PARTLY_READY for remaining compatibility/release acceptance; implementation and compatibility acceptance depend on predecessors. |
 
 The current execution follows the user-authorized roadmap with scoped tests and one fresh plugin PR per slice; Playground changes remain local and uncommitted. All step owners must read the
 project/model and relevant pinned sources before implementation. If a step is
@@ -387,6 +388,36 @@ enabled attachments, custom events, JSON clients, CP/settings UI and production
 mail are not accepted by the scalar proof. A native nested-message 500 remains
 an explicitly failing regression; no criterion is waived to make it pass.
 Full STEP-07/AC-07 and the existing native account defects remain open.
+
+### STEP-07C Permanent private package identity
+
+The human approved Composer `robuust/craft-inertia`, PHP `Robuust\CraftInertia`,
+native handle `inertia` and display name `Inertia`, retaining private distribution
+and the proprietary license. The npm harness is `@robuust/craft-inertia` and stays
+private. No public tag/release, Packagist/npm publication or repository visibility
+change is included. Existing native pins, dependency graph and schema version
+remain unchanged.
+
+Integration `config/craft-inertia.php`, `craft-inertia.*` and tag
+`craft-inertia-config` preserve `rootView`/`indexingPolicy`; the official adapter
+continues to own `config/inertia.php` / `inertia.*` and SSR. All active examples,
+fixtures and tooling use the canonical identity. Historical reports and frozen
+source locks retain the identity they actually exercised.
+
+The [migration checklist](INSTALLATION.md#migrate-the-legacy-package-identity)
+and [bounded evidence](../reports/e2e/STEP07C.md) cover a fresh current installation
+and a disposable installed legacy consumer, using native uninstall/install and
+Composer/project changes. They prove preserved custom root/indexing configuration,
+official SSR config, native/project data and native fallback across enable/disable
+and project opt-out with fresh boots/cached routes. No permanent alias or parallel
+registry is introduced. Original Playground source, DB/config/env/vendor and
+partial STEP-05 stashes stay untouched; mechanical source patches stay local.
+
+This closes only the bounded identity/installation-migration subset. Four native
+account regressions and Contact Form N01 remain open real failures. Full STEP-05,
+full AC-06, full AC-07, general upgrade support, production and release acceptance
+are incomplete. The coordinator independently reviews the stable result before
+merge and owns the next task.
 
 ## Completion criteria
 

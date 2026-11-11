@@ -23,7 +23,11 @@ distinguish delivered slices from deferred account and HTTP caching work.
 
 See the [clean installation and native fallback checklist](docs/INSTALLATION.md)
 for the exact supported pins, minimal consuming application, project opt-out,
-native disable/enable commands, builds and isolated STEP-07A proof.
+native disable/enable commands, builds and isolated proofs.
+[Legacy identity migration](docs/INSTALLATION.md#migrate-the-legacy-package-identity)
+requires native lifecycle and project/Composer changes. The permanent identity is
+`robuust/craft-inertia` / `Robuust\CraftInertia` / handle `inertia`; distribution
+remains private with the existing proprietary license.
 
 Make this private package available to Composer. For sibling local checkouts,
 add the following repository to the consuming application's `composer.json`:
@@ -34,7 +38,7 @@ add the following repository to the consuming application's `composer.json`:
   "url": "../craft-inertia",
   "options": {
     "symlink": true,
-    "versions": { "robuust/craft-inertia-poc": "0.1.0" }
+    "versions": { "robuust/craft-inertia": "0.1.0" }
   }
 }
 ```
@@ -42,9 +46,9 @@ add the following repository to the consuming application's `composer.json`:
 Then run from that application:
 
 ```sh
-composer require robuust/craft-inertia-poc:0.1.0 --no-interaction
-php artisan craft:plugin:install inertia-poc --no-interaction
-php artisan vendor:publish --tag=inertia-poc-config --no-interaction
+composer require robuust/craft-inertia:0.1.0 --no-interaction
+php artisan craft:plugin:install inertia --no-interaction
+php artisan vendor:publish --tag=craft-inertia-config --no-interaction
 ```
 
 Craft owns plugin discovery and enablement; do not register its provider again.
@@ -55,11 +59,14 @@ the app is at `/app/user` and Composer resolves `../craft-inertia`.
 
 ## Opt in project routes
 
-Set the application's `config/inertia-poc.php` to its public root view:
+Set the application's `config/craft-inertia.php` to its public root view:
 
 ```php
 return ['rootView' => 'frontend::app'];
 ```
+
+Integration configuration uses `craft-inertia.*`; official adapter SSR/protocol
+configuration stays under `inertia.*` in `config/inertia.php`.
 
 The default is `app`. Craft also uses an `app` view for its control panel, so use
 a project view namespace to avoid ambiguity. The Playground registers
@@ -74,7 +81,7 @@ continue to run:
 
 ```php
 use App\Http\Controllers\SiteController;
-use Robuust\CraftInertiaPoc\Http\HandleInertiaRequests;
+use Robuust\CraftInertia\Http\HandleInertiaRequests;
 
 Route::middleware(['craft', HandleInertiaRequests::class])->group(function (): void {
     Route::get('/', [SiteController::class, 'home'])->name('home');

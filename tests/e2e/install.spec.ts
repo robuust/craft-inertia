@@ -19,7 +19,7 @@ function optIn(enabled: boolean) {
 
 test.describe.configure({ mode: "serial" });
 test.afterAll(() => {
-  artisan(["craft:plugin:enable", "inertia-poc"]);
+  artisan(["craft:plugin:enable", "inertia"]);
   artisan(["route:clear"]);
   artisan(["config:clear"]);
 });
@@ -87,7 +87,7 @@ test("native disable and enable work with cached routes", async ({
 }) => {
   artisan(["route:cache"]);
   try {
-    artisan(["craft:plugin:disable", "inertia-poc"]);
+    artisan(["craft:plugin:disable", "inertia"]);
     await page.goto("/about");
     await expect(page.locator("[data-native]")).toBeVisible();
     await expect(
@@ -117,7 +117,7 @@ test("native disable and enable work with cached routes", async ({
     expect(missing.status()).toBe(404);
     expect(missing.headers()["x-inertia"]).toBeUndefined();
   } finally {
-    artisan(["craft:plugin:enable", "inertia-poc"]);
+    artisan(["craft:plugin:enable", "inertia"]);
   }
   await page.goto("/about");
   await expect(page.locator("#app")).toBeVisible();

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Robuust\CraftInertiaPoc\Http;
+namespace Robuust\CraftInertia\Http;
 
 use Closure;
 use CraftCms\Cms\Cms;
@@ -21,7 +21,7 @@ class HandleInertiaRequests extends Middleware
     #[Override]
     public function rootView(Request $request): string
     {
-        return config('inertia-poc.rootView', 'app');
+        return config('craft-inertia.rootView', 'app');
     }
 
     #[Override]
@@ -80,7 +80,7 @@ class HandleInertiaRequests extends Middleware
     /** Projects must establish published guest eligibility in their explicit policy. */
     public function robots(Request $request): string
     {
-        $policy = config('inertia-poc.indexingPolicy');
+        $policy = config('craft-inertia.indexingPolicy');
 
         return !Cms::config()->disallowRobots && is_callable($policy) && $policy($request) === true
             ? 'index, follow'

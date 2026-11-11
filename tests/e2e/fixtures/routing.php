@@ -93,7 +93,7 @@ if (!class_exists(ObserveSiteRequest::class)) {
 }
 
 foreach (Route::getRoutes() as $route) {
-    if (in_array(\Robuust\CraftInertiaPoc\Http\HandleInertiaRequests::class, (array) $route->getAction('middleware'), true)) {
+    if (in_array(\Robuust\CraftInertia\Http\HandleInertiaRequests::class, (array) $route->getAction('middleware'), true)) {
         $route->middleware(ObserveSiteRequest::class);
     }
 }
@@ -111,7 +111,7 @@ if (app()->environment('e2e')) {
 
 if (app()->environment('e2e')) {
     foreach (['', '/nl'] as $prefix) {
-        Route::middleware(['craft', \Robuust\CraftInertiaPoc\Http\HandleInertiaRequests::class, 'auth:craft'])
+        Route::middleware(['craft', \Robuust\CraftInertia\Http\HandleInertiaRequests::class, 'auth:craft'])
             ->get($prefix.'/e2e/native-failure-page', function () {
                 return app(\App\Http\Controllers\FileController::class)->index()->with('nativeEntry', [
                     'entryId' => 1, 'siteId' => \CraftCms\Cms\Support\Facades\Sites::getCurrentSite()->id,
@@ -122,7 +122,7 @@ if (app()->environment('e2e')) {
 }
 
 if (app()->environment('e2e')) {
-    Route::middleware(['craft', \Robuust\CraftInertiaPoc\Http\HandleInertiaRequests::class])
+    Route::middleware(['craft', \Robuust\CraftInertia\Http\HandleInertiaRequests::class])
         ->prefix('e2e/rendering')->group(function (): void {
             Route::get('error/{code}', function (int $code, Request $request): never {
                 config(['app.debug' => $request->boolean('debug')]);
