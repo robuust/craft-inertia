@@ -276,7 +276,7 @@ class PublicContentCacheTest extends TestCase
 
     public function testProjectionFailureLeavesNoCachedDataOrOpenCollector(): void
     {
-        Route::middleware(['web', 'craft', \Robuust\CraftInertiaPoc\Http\HandleInertiaRequests::class])
+        Route::middleware(['web', 'craft', \Robuust\CraftInertia\Http\HandleInertiaRequests::class])
             ->get('/cache-failure', fn () => PublicContentCache::remember(request(), ['failure'], function (): array {
                 Entry::find()->section('articles')->one();
                 throw new \RuntimeException('Private projection failure');

@@ -4,7 +4,7 @@ STEP-07B is a bounded REQ-13 / AC-07 integration, selected by the human after
 STEP-07A. It supplies a project-owned Vue contact page and acceptance fixture;
 the reusable plugin's PHP, configuration and dependencies are unchanged.
 Contact Form is **not installed or required by the core package**. Full STEP-07,
-account defects, release/distribution decisions and production acceptance remain
+account defects, general release and production acceptance remain
 open. See the [evidence and native limitation](../reports/e2e/STEP07B.md).
 
 ## Exact capability matrix (2026-11-10, revision 2)
@@ -91,6 +91,7 @@ DB, config, environment and vendor tree stay untouched.
 
 ```sh
 export POC_INSTALL_PROFILE=contact-form
+export POC_INSTALL_COMPOSE_PROJECT=craft-inertia-contact-form
 export POC_INSTALL_REPORT_DIR=/absolute/task-owned/contact-form-evidence
 node tests/e2e/install-prepare.mjs
 cd tests/e2e/.runtime/contact-form
@@ -134,7 +135,7 @@ Stop the task-owned PHP process and database after verification:
 
 ```sh
 docker compose -f "$POC_INSTALL_REPORT_DIR/compose.yaml" \
-  -p craft-inertia-contact-form down
+  -p "${POC_INSTALL_COMPOSE_PROJECT:-craft-inertia-contact-form}" down
 ```
 
 Retain evidence before archiving only this disposable runtime and preparing a

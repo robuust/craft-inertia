@@ -32,16 +32,17 @@ part of this slice.
 1. Start from an independently installed Craft application on the pinned
    baseline, with its own environment, database and lockfiles. Keep existing
    application data and project config intact. Make this private package
-   available to Composer, retaining `robuust/craft-inertia-poc`, the
-   `Robuust\CraftInertiaPoc` namespace, `inertia-poc` handle and existing license.
+   available to Composer as `robuust/craft-inertia`, with PHP namespace
+   `Robuust\CraftInertia`, native handle `inertia` and display name `Inertia`.
+   Distribution stays private and the license stays proprietary.
    The [README path repository](../README.md#install) supports local development;
    `0.1.0` there is a local repository version, not a published release.
 2. Require the package in the consuming project and install it through Craft:
 
    ```sh
-   composer require robuust/craft-inertia-poc:0.1.0 --no-interaction
-   php artisan craft:plugin:install inertia-poc --no-interaction
-   php artisan vendor:publish --tag=inertia-poc-config --no-interaction
+   composer require robuust/craft-inertia:0.1.0 --no-interaction
+   php artisan craft:plugin:install inertia --no-interaction
+   php artisan vendor:publish --tag=craft-inertia-config --no-interaction
    ```
 
    Craft's plugin discovery owns provider registration. Do not also add the
@@ -50,7 +51,7 @@ part of this slice.
    CP assets remain Craft's `craft:setup:publish` responsibility.
 3. Supply a project Blade root and page resolver. Use a view namespace, such as
    `frontend::app`, to distinguish the public root from Craft's own `app` view.
-   Set `config/inertia-poc.php` to `['rootView' => 'frontend::app']`.
+   Set `config/craft-inertia.php` to `['rootView' => 'frontend::app']`.
    Register the namespace in the project's provider. The fixture supplies
    [the root](../tests/e2e/installation/resources/views/app.blade.php),
    [client resolver](../tests/e2e/installation/resources/js/app.js),
@@ -82,7 +83,7 @@ Its single project predicate combines that setting with Craft's registry:
 
 ```php
 return config('frontend.enabled')
-    && app(\CraftCms\Cms\Plugin\Plugins::class)->isPluginEnabled('inertia-poc');
+    && app(\CraftCms\Cms\Plugin\Plugins::class)->isPluginEnabled('inertia');
 ```
 
 The project middleware calls the public adapter only when this predicate is
@@ -92,8 +93,8 @@ while Craft disables the provider, so unconditionally rendering Inertia or
 applying its middleware will not opt out automatically.
 
 ```sh
-php artisan craft:plugin:disable inertia-poc --no-interaction
-php artisan craft:plugin:enable inertia-poc --no-interaction
+php artisan craft:plugin:disable inertia --no-interaction
+php artisan craft:plugin:enable inertia --no-interaction
 ```
 
 Craft owns persisted plugin state and project config. The provider is absent
@@ -181,6 +182,8 @@ Run from the plugin checkout:
 
 ```sh
 export POC_INSTALL_REPORT_DIR=/absolute/task-owned/installation-evidence
+# Optional unique project for repeated proofs; use it for cleanup too.
+export POC_INSTALL_COMPOSE_PROJECT=craft-inertia-installation
 node tests/e2e/install-prepare.mjs
 cd tests/e2e/.runtime/installation
 php vendor/bin/phpunit --log-junit "$POC_INSTALL_REPORT_DIR/phpunit.xml"
@@ -202,7 +205,7 @@ Stop the task-owned PHP/SSR processes when finished, then stop its database:
 
 ```sh
 docker compose -f "$POC_INSTALL_REPORT_DIR/compose.yaml" \
-  -p craft-inertia-installation down
+  -p "${POC_INSTALL_COMPOSE_PROJECT:-craft-inertia-installation}" down
 ```
 
 Retain the reports and locks. Before repeating a fresh install, archive this
@@ -214,7 +217,105 @@ original application or another slice's runtime.
 
 [STEP-07A evidence](../reports/e2e/STEP07A.md) records exactly what passed.
 Upgrades and migration from an existing Twig site need project-specific route,
-template, field, action and privacy acceptance. No package rename, namespace or
-handle migration, license/distribution decision, third-party compatibility,
-native account correction, production deployment or public release is included.
+template, field, action and privacy acceptance. The bounded [identity migration](#migrate-the-legacy-package-identity) has its own
+proof. General third-party compatibility, native account correction, production
+deployment and public release remain outside it.
 Full STEP-05, full AC-06 and the remaining AC-07 clauses stay open.
+
+
+## Migrate the legacy package identity
+
+STEP-07C changes Composer `robuust/craft-inertia-poc` to `robuust/craft-inertia`,
+PHP `Robuust\CraftInertiaPoc` to `Robuust\CraftInertia`, native Craft handle
+`inertia-poc` to `inertia`, and display name to `Inertia`. The npm harness is
+`@robuust/craft-inertia` and remains private. Schema version `1.0.0`, dependency
+constraints and proprietary license are unchanged. There is no public release,
+Packagist registration, npm publication or compatibility alias.
+
+Integration configuration is **`config/craft-inertia.php` / `craft-inertia.*`**,
+with publish tag `craft-inertia-config`. Preserve the existing `rootView` and
+`indexingPolicy` values. The official `inertiajs/inertia-laravel` adapter owns
+`config/inertia.php` / `inertia.*`, including SSR; never rename our old config to
+`inertia.php`, merge our defaults there or overwrite that file.
+
+The fixed native `Plugins` API has no handle-rename operation. It uninstalls the
+old registration and installs the new one. This core has no content tables or
+install migrations, but that does not make an arbitrary project's uninstall
+safe. Back up its database, project config and source; inventory its own hooks,
+classes, cached routes/config and workers first. Keep the exact old package
+available until its caches are cleared and native uninstall completes.
+
+1. Select the project's explicit native fallback/opt-out, keep it active for the
+   replacement and stop long-lived workers. Record whether the old plugin was
+   enabled. Clear caches **while old classes still exist**:
+
+   ```sh
+   php artisan route:clear --no-interaction
+   php artisan config:clear --no-interaction
+   ```
+
+   Native uninstall rejects a disabled plugin without force. If disabled,
+   restore/enable the known old source with the project still opted out, then
+   uninstall normally. Do not force a missing-source uninstall based on this proof.
+
+   ```sh
+   # Only if the known old installation was disabled:
+   php artisan craft:plugin:enable inertia-poc --no-interaction
+   php artisan craft:plugin:uninstall inertia-poc --no-interaction
+   ```
+
+2. Change the consuming Composer requirement and path-repository version key to
+   `robuust/craft-inertia`, removing the old requirement. Use the same approved
+   version and authenticated private source; `0.1.0` in these path examples is
+   local Composer metadata, not a published tag. Update only the two package
+   identities; preserve every other package record in the root lock:
+
+   ```sh
+   composer update robuust/craft-inertia robuust/craft-inertia-poc \
+     --no-scripts --no-interaction
+   ```
+
+3. Change project imports to `Robuust\CraftInertia`, native registry predicates
+   to handle `inertia`, and config reads to `craft-inertia.*`. Move the custom
+   `config/inertia-poc.php` to `config/craft-inertia.php` without discarding values.
+   Reconcile an existing destination rather than overwriting it. Do not edit
+   plugin DB rows/project YAML or register a second provider.
+
+   ```sh
+   php artisan package:discover --no-interaction
+   php artisan craft:plugin:install inertia --no-interaction
+   php artisan vendor:publish --tag=craft-inertia-config --no-interaction
+   ```
+
+   Do not use `--force` on publication over custom config. Native install enables
+   the new plugin. If the previous installation was intentionally disabled,
+   disable `inertia` again before restoring project traffic.
+
+4. Rebuild configuration and routes, restart workers, then restore the intended
+   project opt-in. Use separate `config:clear` and `config:cache` commands on this
+   Craft revision. Verify native fallback, direct HTML, Inertia JSON, statuses,
+   custom root/indexing policy and unchanged official adapter SSR configuration.
+   Verify project data before removing backup/recovery material.
+
+The reproducible disposable proof uses the immutable merged predecessor
+`935df5dc922d391cecd572cf59149c7864614b38` via `git archive`. It installs that
+legacy package first, tests enabled/disabled fallback, clears old caches,
+uninstalls natively, changes Composer/project source/config and installs the new
+identity. Nine fresh-boot checkpoints compare native users/sites/elements,
+content tables, unrelated project config and a nonempty project-owned table.
+A custom root and indexing callable survive; the official SSR config file stays
+byte-identical. Other Composer package records stay identical. The archived
+fixture receives only current task storage/mail isolation and a unique Compose
+project; archived package source/config/metadata stay unchanged.
+
+```sh
+export POC_IDENTITY_REPORT_DIR=/absolute/new/task-owned/identity-evidence
+node tests/e2e/identity-migrate.mjs
+```
+
+The proof stops its database on success and retains the runtime, locks and
+reports. On failure, inspect its task logs and stop the Compose project printed
+in its patched legacy installer; retain evidence before repeating with a new
+directory. It does not exercise missing vendor recovery, a forced uninstall,
+an original database upgrade, custom uninstall hooks or all historical versions.
+See [STEP-07C evidence and limits](../reports/e2e/STEP07C.md).

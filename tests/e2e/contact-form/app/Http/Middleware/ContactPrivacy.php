@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Robuust\CraftInertiaPoc\Http\HandleInertiaRequests;
+use Robuust\CraftInertia\Http\HandleInertiaRequests;
 use Symfony\Component\HttpFoundation\Response;
 
 /** Applies project privacy headers without adapting native action responses. */

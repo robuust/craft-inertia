@@ -498,7 +498,7 @@ test("public shell keeps project shares and excludes CP data while CP retains it
     false,
   );
   expect(
-    scripts.some((src) => src?.includes("/vendor/robuust/craft-inertia-poc/")),
+    scripts.some((src) => src?.includes("/vendor/robuust/craft-inertia/")),
   ).toBe(false);
   await page.goto("/admin/dashboard");
   await expect(

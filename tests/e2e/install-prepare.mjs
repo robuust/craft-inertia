@@ -98,6 +98,8 @@ const composer = JSON.parse(readFileSync(path.join(source, "composer.json")));
 composer.name = "local/clean-inertia-installation";
 composer.description = "Isolated clean installation acceptance fixture";
 composer.scripts = {};
+delete composer.require["robuust/craft-inertia-poc"];
+composer.require["robuust/craft-inertia"] = "0.1.0";
 if (selected)
   composer.require[selected.package.name] = selected.package.version;
 composer.repositories = [
@@ -106,7 +108,7 @@ composer.repositories = [
     url: root,
     options: {
       symlink: true,
-      versions: { "robuust/craft-inertia-poc": "0.1.0" },
+      versions: { "robuust/craft-inertia": "0.1.0" },
     },
   },
   ...(selected ? [{ type: "package", package: selected.package }] : []),
@@ -143,13 +145,11 @@ writeFileSync(
       retries: 30
 `,
 );
-const compose = [
-  "compose",
-  "-f",
-  composeFile,
-  "-p",
-  `craft-inertia-${profile}`,
-];
+const composeProject =
+  process.env.POC_INSTALL_COMPOSE_PROJECT ?? `craft-inertia-${profile}`;
+if (!/^craft-inertia-[a-z0-9-]+$/.test(composeProject))
+  throw new Error("Use a task-owned craft-inertia-* Compose project.");
+const compose = ["compose", "-f", composeFile, "-p", composeProject];
 run("database-start", "docker", [...compose, "up", "--wait", "-d"]);
 const tables = run("database-empty", "docker", [
   ...compose,
@@ -222,7 +222,7 @@ writeFileSync(
 );
 run("composer-install", "composer", [
   "update",
-  "robuust/craft-inertia-poc",
+  "robuust/craft-inertia",
   ...(selected ? [selected.package.name] : []),
   "--no-interaction",
   "--no-scripts",
@@ -244,7 +244,9 @@ if (selected) {
 const withoutPlugin = (input) =>
   [...input.packages, ...input["packages-dev"]].filter(
     ({ name }) =>
-      name !== "robuust/craft-inertia-poc" && name !== selected?.package.name,
+      name !== "robuust/craft-inertia" &&
+      name !== "robuust/craft-inertia-poc" &&
+      name !== selected?.package.name,
   );
 if (
   JSON.stringify(withoutPlugin(lock)) !==
@@ -291,7 +293,7 @@ run(
 run("plugin-install", "php", [
   "artisan",
   "craft:plugin:install",
-  "inertia-poc",
+  "inertia",
   "--no-interaction",
 ]);
 if (selected) {
@@ -305,7 +307,7 @@ if (selected) {
 run("plugin-config", "php", [
   "artisan",
   "vendor:publish",
-  "--tag=inertia-poc-config",
+  "--tag=craft-inertia-config",
   "--no-interaction",
 ]);
 run("native-assets", "php", [
@@ -379,7 +381,7 @@ if (selected) {
 const plugin = {};
 for (const directory of ["src", "config"]) {
   plugin[directory] = manifest(
-    path.join(application, "vendor/robuust/craft-inertia-poc", directory),
+    path.join(application, "vendor/robuust/craft-inertia", directory),
   );
   if (
     JSON.stringify(plugin[directory]) !==
@@ -410,10 +412,11 @@ writeFileSync(
         : null,
       sourceMetadataOnly: true,
       dependencyChanges: [
-        "robuust/craft-inertia-poc",
+        "robuust/craft-inertia",
         ...(selected ? [selected.package.name] : []),
       ],
       profile,
+      composeProject,
       packages: [...lock.packages, ...lock["packages-dev"]].map(
         ({ name, version, source: origin }) => ({
           name,
