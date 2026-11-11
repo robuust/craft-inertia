@@ -5,6 +5,13 @@ namespace Tests\Feature;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Fields;
+use Illuminate\Support\Facades\DB;
 use CraftCms\Cms\Route\ControllerRoute;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use Illuminate\Support\Facades\Http;
@@ -52,7 +59,7 @@ class EntryTemplateTest extends TestCase
         $this->assertStringNotContainsString('Articles', file_get_contents(base_path('routes/web.php')));
     }
 
-    public function testOnlyExplicitNestedFieldsAndNativeAssetDataArePublic(): void
+    public function testAllLayoutFieldsNestedEntriesAndNativeAssetDataAreAutomatic(): void
     {
         Inertia::share(['cpSecret' => 'CP secret', 'auth' => ['email' => 'secret@example.test']]);
         $response = $this->get('/articles/first', $this->headers());
@@ -60,57 +67,123 @@ class EntryTemplateTest extends TestCase
             ->assertJsonPath('props.entry.fields.featured', true)->assertJsonPath('props.entry.fields.rating', 3.25)
             ->assertJsonPath('props.entry.fields.tone.value', 'calm')
             ->assertJsonMissingPath('props.cpSecret')->assertJsonMissingPath('props.auth')
-            ->assertJsonMissingPath('props.entry.fields.internalNote')->assertJsonMissingPath('props.entry.fields.editors');
+            ->assertJsonPath('props.entry.fields.internalNote', 'Internal secret')->assertJsonPath('props.entry.fields.editors', []);
         $fields = $response->json('props.entry.fields');
         $this->assertCount(1, $fields['relatedArticles']);
-        $this->assertSame(['summary' => 'Related summary'], $fields['relatedArticles'][0]['fields']);
+        $this->assertSame('Related summary', $fields['relatedArticles'][0]['fields']['summary']);
+        $this->assertSame('Related secret', $fields['relatedArticles'][0]['fields']['internalNote']);
+        $this->assertSame('Block secret', $fields['contentBlocks'][0]['fields']['internalNote']);
+        $this->assertSame('Nested secret', $fields['contentBlocks'][1]['fields']['nestedContent'][0]['fields']['internalNote']);
         $this->assertSame(['textBlock', 'groupBlock'], array_column($fields['contentBlocks'], 'type'));
         $this->assertSame('Nested heading', $fields['contentBlocks'][1]['fields']['nestedContent'][0]['fields']['heading']);
         $this->assertStringContainsString('<strong>safe</strong>', $fields['richText']);
         $this->assertStringNotContainsString('<script', $fields['richText']);
-        $this->assertSame(320, $fields['heroImage'][0]['width']);
-        $this->assertSame(180, $fields['heroImage'][0]['height']);
+        $this->assertSame(960, $fields['heroImage'][0]['width']);
+        $this->assertSame(540, $fields['heroImage'][0]['height']);
         $this->assertSame('Blue content fixture', $fields['heroImage'][0]['alt']);
-        $this->assertStringContainsString('640w', $fields['heroImage'][0]['srcset']);
-        $this->assertStringNotContainsString('secret', json_encode($fields));
+        $this->assertNull($fields['heroImage'][0]['srcset']);
         $this->assertArrayNotHasKey('image', $fields);
         $this->assertSame('CP secret', Inertia::getShared('cpSecret'));
     }
 
-    public function testUnconfiguredFieldsAreEmptyAndAbsentLayoutFieldsAreOmitted(): void
+    public function testLayoutChangesNeedNoComponentFieldConfiguration(): void
     {
-        config(['craft-inertia.pages' => []]);
-        $this->get('/articles/first', $this->headers())->assertOk()->assertJsonPath('props.entry.fields', []);
-        $projection = app(EntryProjection::class)->entry($this->entry(), ['doesNotExist']);
-        $this->assertSame([], $projection['fields']);
-        $this->assertCount(9, $projection);
+        config(['craft-inertia.pages.Articles/Show.fields' => ['summary']]);
+        $this->get('/articles/first', $this->headers())->assertOk()
+            ->assertJsonPath('props.entry.fields.body', 'Public body')
+            ->assertJsonPath('props.entry.fields.internalNote', 'Internal secret');
+        $entry = $this->withFields(new Field\PlainText(['handle' => 'newField']));
+        $entry->setFieldValue('newField', 'Added without plugin configuration');
+        $this->assertSame(['newField' => 'Added without plugin configuration'], app(EntryProjection::class)->entry($entry)['fields']);
     }
 
-    public function testUnsupportedUserFieldIsAConfigurationError(): void
+    private function withFields(Field\Field ...$fields): Entry
     {
+        $entry = $this->entry();
+        $layout = new FieldLayout(['type' => Entry::class]);
+        $tab = new FieldLayoutTab(['name' => 'Content']);
+        $tab->setLayout($layout);
+        foreach ($fields as $field) {
+            if (!Fields::getFieldByHandle($field->handle)) {
+                $field->name = ucfirst($field->handle);
+                $saved = Fields::saveField($field);
+                app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->saveModifiedConfigData();
+                $this->assertTrue($saved, json_encode($field->errors()->getMessages()));
+            }
+        }
+        $tab->setElements(array_map(fn ($field) => new CustomField($field), $fields));
+        $layout->setTabs([$tab]);
+        $entry->getType()->setFieldLayout($layout);
+        return $entry;
+    }
+
+    public function testOtherCoreFieldsUseTheirNativeSerialization(): void
+    {
+        $entry = $this->withFields(
+            new Field\Json(['handle' => 'metadata']),
+            new Field\Color(['handle' => 'accent', 'allowCustomColors' => true]),
+            new Field\Link(['handle' => 'website']),
+            new Field\Money(['handle' => 'price']),
+        );
+        $entry->setFieldValues(['metadata' => ['nested' => ['enabled' => true], 'empty' => (object) []], 'accent' => '#123456',
+            'website' => ['type' => 'url', 'value' => 'https://example.test/details']]);
+        $fields = app(EntryProjection::class)->entry($entry)['fields'];
+        $this->assertSame('{"nested":{"enabled":true},"empty":{}}', json_encode($fields['metadata']));
+        $this->assertSame('#123456', $fields['accent']);
+        $this->assertSame('https://example.test/details', $fields['website']['url']);
+        $this->assertNull($fields['price']);
+    }
+
+    public function testCustomFieldUsesItsOwnSerializerWithoutPluginConfiguration(): void
+    {
+        $field = new class(['handle' => 'summary']) extends Field\PlainText {
+            public function serializeValue(mixed $value, ?\CraftCms\Cms\Element\Contracts\ElementInterface $element): mixed
+            {
+                return ['native' => $value];
+            }
+        };
+        $entry = $this->withFields($field);
+        $entry->setFieldValue('summary', 'Custom field data');
+        $this->assertSame(['native' => 'Custom field data'], app(EntryProjection::class)->entry($entry)['fields']['summary']);
+    }
+
+    public function testUnserializableFieldObjectsFailWithoutDumpingTheirAttributes(): void
+    {
+        $field = new class(['handle' => 'summary']) extends Field\PlainText {
+            public function serializeValue(mixed $value, ?\CraftCms\Cms\Element\Contracts\ElementInterface $element): mixed
+            {
+                return new class {
+                    public string $privateAttribute = 'Not a JSON serialization contract';
+                };
+            }
+        };
+        $entry = $this->withFields($field);
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unsupported entry field editors');
-        app(EntryProjection::class)->entry($this->entry(), ['editors']);
+        $this->expectExceptionMessage('must serialize to finite JSON');
+        app(EntryProjection::class)->entry($entry);
     }
 
-    public function testCustomSerializerIsExplicitAndCannotReturnAnElement(): void
+    public function testCircularEntryRelationsKeepIdentityAndStopExpanding(): void
     {
-        $projection = app(EntryProjection::class)->entry($this->entry(), ['summary' => ['serialize' => [self::class, 'upper']]]);
-        $this->assertSame('PUBLIC SUMMARY', $projection['fields']['summary']);
-        $this->expectException(InvalidArgumentException::class);
-        app(EntryProjection::class)->entry($this->entry(), ['summary' => ['serialize' => fn () => $this->entry()]]);
+        DB::beginTransaction();
+        try {
+            $entry = $this->entry();
+            $entry->setFieldValue('relatedArticles', [$entry->id]);
+            $this->assertTrue(Elements::saveElement($entry));
+            $fields = app(EntryProjection::class)->entry($this->entry())['fields'];
+            $this->assertSame($entry->id, $fields['relatedArticles'][0]['id']);
+            $this->assertSame([], $fields['relatedArticles'][0]['fields']);
+            $this->assertSame('Public summary', $fields['summary']);
+        } finally {
+            DB::rollBack();
+        }
     }
 
-    public static function upper(mixed $value): string
-    {
-        return strtoupper($value);
-    }
-
-    public function testDependenciesIncludeTheMatchedEntryAndSelectedRelations(): void
+    public function testDependenciesIncludeTheMatchedEntryAndAutomaticRelations(): void
     {
         ElementCaches::startCollectingCacheInfo();
         try {
-            app(EntryProjection::class)->entry($this->entry(), config('craft-inertia.pages.Articles/Show.fields'));
+            app(EntryProjection::class)->entry($this->entry());
         } finally {
             $dependencies = ElementCaches::stopCollectingCacheInfo();
         }
@@ -199,11 +272,11 @@ class EntryTemplateTest extends TestCase
     public function testNullsEmptyRelationsAndChoiceOrderingFollowNativeValues(): void
     {
         $entry = $this->entry();
-        $projection = app(EntryProjection::class)->entry($entry, ['publishedAt', 'tags']);
+        $projection = app(EntryProjection::class)->entry($entry);
         $this->assertSame('2026-11-01T12:00:00+00:00', $projection['fields']['publishedAt']);
         $this->assertSame(array_map(fn ($option) => $option->value, iterator_to_array($entry->getFieldValue('tags'))), array_column($projection['fields']['tags'], 'value'));
         $related = Entry::find()->section('articles')->slug('related')->one();
-        $empty = app(EntryProjection::class)->entry($related, ['publishedAt', 'heroImage']);
+        $empty = app(EntryProjection::class)->entry($related);
         $this->assertNull($empty['fields']['publishedAt']);
         $this->assertSame([], $empty['fields']['heroImage']);
     }
@@ -261,13 +334,13 @@ class EntryTemplateTest extends TestCase
         $factory = app(ResponseFactory::class);
         $gateway = app(Gateway::class);
         Inertia::share('hostValue', 'Retained host value');
-        config(['craft-inertia.pages.Articles/Show.fields' => ['editors']]);
+        $this->app->bind(EntryProjection::class, fn () => throw new InvalidArgumentException('Fixture serialization failure'));
         $this->withoutExceptionHandling();
         try {
             $this->get('/articles/first');
-            $this->fail('Unsupported public fields must fail explicitly.');
+            $this->fail('Projection failure must propagate.');
         } catch (InvalidArgumentException $exception) {
-            $this->assertStringContainsString('Unsupported entry field editors', $exception->getMessage());
+            $this->assertSame('Fixture serialization failure', $exception->getMessage());
         }
         $this->assertSame($factory, app(ResponseFactory::class));
         $this->assertSame($gateway, app(Gateway::class));

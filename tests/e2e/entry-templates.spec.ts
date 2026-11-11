@@ -32,7 +32,13 @@ test("native homepage SSR hydrates and navigates with real Inertia JSON", async 
   const data = await response.json();
   expect(data.component).toBe("Articles/Show");
   expect(data.props.entry.fields.summary).toBe("Public summary");
-  expect(data.props.entry.fields).not.toHaveProperty("internalNote");
+  expect(data.props.entry.fields.internalNote).toBe("Internal secret");
+  expect(data.props.entry.fields.contentBlocks[0].fields.internalNote).toBe(
+    "Block secret",
+  );
+  expect(data.props.entry.fields.relatedArticles[0].fields.internalNote).toBe(
+    "Related secret",
+  );
   await expect(
     page.getByRole("heading", { name: "Published current" }),
   ).toBeVisible();

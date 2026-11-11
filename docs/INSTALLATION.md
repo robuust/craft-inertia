@@ -19,14 +19,14 @@ Earlier baseline reports below are historical, not released alpha.20 support.
 3. Keep the section's native URI (`articles/{slug}`, `__home__` for a homepage,
    or a native structure URI) and set Template to `inertia:Site/Articles/Show`.
    Leave the native route destination empty for this path. Add that Vue component
-   to the project resolver and select fields with
-   `pages['Site/Articles/Show']['fields'] = ['summary', 'body', 'heroImage']`.
-   See [the nested selection contract](CONTENT.md).
+   to the project resolver. Every field in the entry's layout is included
+   automatically under `entry.fields`, including nested Matrix and related entries.
+   See [the automatic field contract](CONTENT.md).
 
 No project entry controller, repeated Laravel entry route, custom PHP renderer,
 public middleware class or per-entry SSR policy callback is needed for these ordinary pages.
 The [minimal consumer](../tests/e2e/entry-templates) has native homepage, article,
-journal and nested structure pages with project-owned Vue and schema selection.
+journal and nested structure pages with project-owned Vue and native field layouts.
 Its only explicit web endpoints are independent native Blade/feed controls.
 The provider registers the public view namespace and uses official
 `Inertia::withoutSsr()` to exclude native CP/action paths from the project's SSR
@@ -422,14 +422,15 @@ the new API; do not activate a half-updated old-name lock/vendor tree.
 For each ordinary entry page, leave its native URI and site settings intact,
 clear the explicit route destination and choose `inertia:Component/Name` as its
 Template. Remove only the duplicate detail route/controller integration that is
-now unused. Keep overview and special routes. Select native handles in
-`pages[component]['fields']`, and update the Vue page from old renamed/root props
-to `entry.fields.<nativeHandle>`. Map Matrix presentation to the documented native
-`type` and selected child `fields`; preserve asset list cardinality. Do not move
+now unused. Keep overview and special routes. All layout fields are included
+automatically; remove the obsolete `pages[component]['fields']` setting. Update
+the Vue page from old renamed/root props to `entry.fields.<nativeHandle>`. Map
+Matrix presentation to the documented native `type` and automatic child `fields`;
+preserve asset list cardinality. Do not move
 business-specific PHP into the plugin to make an old component work unchanged.
 
 Check native URLs/sites, initial SSR/hydration, Inertia visits/version changes,
-preview identity, hidden fields, private state and deliberate native fallback
+preview identity, complete field data, private state and deliberate native fallback
 before changing an existing installation. Build matching project bundles and
 restart its workers. The original local Playground has not been migrated or
 activated by the native-template proof; all demonstration changes belong to the
