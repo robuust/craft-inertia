@@ -16,8 +16,9 @@ full AC-06 remain incomplete. See [STEP-06A](https://github.com/robuust/craft-in
 
 An `inertia:` entry page uses the plugin controller through Craft's existing
 site fallback and `ControllerRoute`; there is no second catch-all URL registry.
-The controller actually runs the public adapter around response rendering, since
-native fallback dispatch does not execute hypothetical Laravel route middleware.
+The controller delegates to `PublicRenderer`, which runs the public adapter
+around response rendering, since native fallback dispatch does not execute
+hypothetical Laravel route middleware.
 It uses the configured public root and Vite manifest version, and applies
 private/no-store, `Vary: X-Inertia` and default-deny indexing to HTML and JSON.
 Explicit indexing policy still requires strict `true`; private/auth/token/preview
@@ -27,9 +28,10 @@ Native mapped pages may use SSR when official `inertia.ssr.enabled` is true and
 the host gateway permits it. Guest eligibility excludes native authentication,
 consumed route/site tokens, preview state/markers/headers, old input, errors and
 messages/flash. The plugin does not set a global SSR callback or replace HTTP
-transport. For a private response it clones the resolved gateway, disables SSR
-through `DisablesSsr`, then restores the original in `finally`. A custom gateway
-must implement that official capability. Host disable/configure callbacks and
+transport. For each response it clones the resolved gateway, retaining host
+callbacks and path exclusions. For a private response it disables SSR through `DisablesSsr`,
+then restores the original gateway in `finally`. A custom gateway must implement
+that official capability. Host disable/configure callbacks and
 transport remain intact. Config alone cannot override a host disable callback;
 the conservative private boundary therefore operates on the response's gateway.
 
@@ -51,9 +53,220 @@ does not inherit a `/*` exclusion. No entry-specific callback is needed.
 Public exception presentation remains an optional project concern; configuration
 errors use normal application exception handling and do not serialize values.
 
-The policies below continue to describe explicit project routes and the local
-Playground's earlier SSR, errors, indexing and data-cache integration. Generic
-mapped entry pages need none of that project's rendering/controller boilerplate.
+## Shared public renderer
+
+`Robuust\CraftInertia\Http\PublicRenderer` is the common boundary for native
+entry templates and explicit project controllers. Laravel can resolve it with
+`app(PublicRenderer::class)`; no project binding is required. Its contract is:
+
+```php
+render(
+    Request $request,
+    string $component,
+    Closure $props, // Closure(string $robots): array<string, mixed>
+    ?Entry $entry = null,
+    int $statusCode = 200,
+    array $headers = [],
+): Response
+```
+
+Call it after `web` and `craft` have resolved the session, site and native token
+context. It accepts site page requests; CP/action requests are rejected without
+replacing their native handlers. Do not add another Inertia protocol middleware
+around it. It does not register a route, resolve or authorize an entry, requery
+canonical content, or change precedence of explicit Craft destinations.
+
+The props callback runs inside the cloned response factory and SSR gateway,
+after the public root view, asset version and official errors/flash integration
+are configured. It receives the effective robots directive, computed before
+props or rendering can consume flash. Use that value for SEOmatic or another
+project metadata projection; the response uses the same decision. Final non-200
+responses, including official version conflicts, always get deny headers.
+No global/CP shares or automatic entry fields are added to explicit project
+responses. Only the native controller projects the existing `entry`, `site`,
+`preview` and `seo` defaults. Each render also gets a fresh official `SsrState`,
+so identical page data cannot reuse another render's cached SSR output or bypass
+the current gateway's privacy decision. The factory, gateway and original SSR
+state are restored in `finally`, including failures in policy evaluation,
+projection, view rendering or SSR.
+The renderer stores no entry, site, preview or policy decision on its instance.
+
+Public SSR and indexing require an explicitly supplied live entry for the current
+site. Previews remain renderable using Craft's actual authorized entry, while
+SSR and indexing stay disabled. Missing context, drafts/revisions, disabled or
+unpublished entries, non-200 page statuses, CP/actions, unsafe methods, native
+authentication, route/site tokens, preview markers/headers and session errors,
+messages, old input or Inertia flash are ineligible. These checks are shared
+through `HandleEntryRequests::isPublicGuest()`. They restrict rendering policy;
+Craft and the project still own permission to access and project content.
+Official SSR configuration, path exclusions and host disable/request callbacks
+remain effective. Eligibility alone never enables SSR against those settings.
+
+### Migrate a selected project controller
+
+Keep the existing section-to-component map and selected `data`/`layout`/`seo`
+projection. Replace the copied factory/gateway swapping and middleware invocation:
+
+```php
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Route\CurrentElement;
+use Illuminate\Http\Request;
+use modules\site\services\PageData;
+use Robuust\CraftInertia\Http\PublicRenderer;
+use Symfony\Component\HttpFoundation\Response;
+
+public function __invoke(Request $request, #[CurrentElement] Entry $entry): Response
+{
+    return app(PublicRenderer::class)->render(
+        $request,
+        PageData::COMPONENTS[$entry->getSection()->handle],
+        fn (string $robots): array => (new PageData())->props($entry, $robots),
+        $entry,
+    );
+}
+```
+
+In this migration, update the project's `PageData::props()` and SEO projection to
+accept `string $robots`. Use it to replace any robots meta in the selected SEO
+shape, instead of calling another rendering predicate. Keep field selection,
+queries, layouts, images, SEOmatic and authorization in the project. Move the
+projection into the callback rather than evaluating it before `render()`.
+
+Explicit component names such as `pages/work/[slug]` are passed through the host
+resolver. Native `inertia:` template components still accept only slash-separated
+letters, numbers, underscores and hyphens. Moving this project to automatic entry
+templates requires separately deciding component naming and the wider automatic
+field payload; this renderer does not make that switch. Issue #14 remains the
+separate additive public-props hook with canonical/protocol collision rules.
+
+### Reduce PublicRendering to project policy
+
+For example, configure:
+
+```php
+return [
+    'rootView' => 'frontend::app',
+    'publicPagePolicy' => [App\Http\PublicRendering::class, 'allowsPage'],
+    'indexingPolicy' => [App\Http\PublicRendering::class, 'allowsIndexing'],
+];
+```
+
+The project's policy can now contain only its section selection and environment:
+
+```php
+public static function allowsPage(Request $request, Entry $entry): bool
+{
+    return isset(PageData::COMPONENTS[$entry->getSection()?->handle]);
+}
+
+public static function allowsIndexing(Request $request): bool
+{
+    return app()->isProduction();
+}
+```
+
+`publicPagePolicy` is optional: `null` adds no restriction to built-in eligibility.
+A configured callback must return strict `true`; a non-callable value or truthy
+string denies eligibility. It runs only after all built-in checks pass, so even
+an always-true callback cannot allow private, preview, missing-entry or error
+contexts. Do not call `isPublicGuest()` recursively from this callback. Keep both
+policies pure; eligibility may be evaluated more than once. A project can further
+restrict allowed site handles in either policy without storing request state.
+`indexingPolicy` still requires a callable returning strict `true`, defaults to
+deny and cannot override Craft's `disallowRobots`.
+
+The simplified production-only indexing callback above is for the shared renderer
+and `HandleEntryRequests`. Legacy integrations using only `HandleInertiaRequests`
+still need to establish full public eligibility in their own indexing policy.
+
+### Preserve error responses
+
+The original exception response remains project-owned. Retain its selection
+rules and return it if CMS error projection fails. An illustrative controller
+method, called only for selected HTML/Inertia site errors, is:
+
+```php
+public function error(Request $request, Response $original): Response
+{
+    try {
+        $headers = [];
+        foreach (['Retry-After', 'Refresh'] as $name) {
+            if ($original->headers->has($name)) {
+                $headers[$name] = $original->headers->all($name);
+            }
+        }
+
+        return app(PublicRenderer::class)->render(
+            $request,
+            'error',
+            function (string $robots) use ($original): array {
+                $entry = Entry::find()->section('notfound')->one();
+                $props = (new PageData())->props($entry, $robots);
+                $props['error'] = [
+                    'statusCode' => $original->getStatusCode(),
+                    'statusMessage' => $original->getStatusCode() === 404
+                        ? 'Page not found' : 'Something went wrong',
+                ];
+
+                return $props;
+            },
+            statusCode: $original->getStatusCode(),
+            headers: $headers,
+        );
+    } catch (\Throwable $exception) {
+        report($exception);
+
+        return $original;
+    }
+}
+```
+
+Error content is deliberately queried inside the callback and is not supplied as
+the request's matched entry. No error response can become eligible for SSR or
+indexing, even if that content entry is live. The supplied status is set on the
+page response before official adapter post-processing. An outdated asset version
+can therefore replace a 404/503 page with its own 409 and `X-Inertia-Location`;
+the renderer never resets that final status. Selected original error headers fill
+missing final response headers, including after a version conflict. Adapter and
+privacy headers take precedence. Pass only relevant error headers, rather than
+stale content length/type, protocol or cache fields from the original response.
+
+### Compatibility and verification limits for issue #19
+
+Source compatibility was checked against the consumer at
+[`3501090e`](https://github.com/robuust/robuust-cms/tree/3501090eda683f9c445c6698581f1b77e09c113e),
+including its controller, policy, exception fallback and exact lockfiles
+(inspected 2026-11-12):
+
+| Package | Consumer lock | Verification |
+| --- | --- | --- |
+| Craft core | `6.0.0-beta.1` (`05ce9b81`) | Matching installed Playground source inspected for matched elements, site, entry status, token and flash APIs. |
+| Craft Yii adapter | `6.0.0-beta.1` (`c2038019`) | Consumer lock confirmed; no compatibility changes or runtime acceptance claimed. |
+| CKEditor | `6.0.0-beta.1` (`44208e17`) | Consumer lock confirmed; field serialization is unchanged. |
+| Laravel | `13.42.0` (`f5c01f6b`) | Matching installed source for container/facade and response contracts. |
+| Inertia Laravel | `3.7.0` (`9d3f9060`) | Matching installed adapter source inspected for factory/gateway APIs, middleware, flash, partial props and version-conflict ordering. |
+| Inertia Vue | `3.11.0` | Consumer Yarn lock confirmed; no frontend change. |
+| craft-inertia | `0.1.0-beta.1` (`dae6ab04`) | Consumer baseline; this change adds the shared renderer without altering native routing or default prop keys. |
+
+Composer validation (`composer validate --strict`), all package PHP syntax checks
+(`php -l`, PHP `8.5.12`) and whitespace validation (`git diff --check`) passed.
+This is source inspection, not runtime acceptance. No tests were written or run
+for this implementation. Consumer verification remains open for HTML/JSON and
+partial requests, live/authorized preview and multisite requests, auth/token/form
+exclusions, policy attempts to broaden eligibility, sequential public/private
+responses (including identical page data), failure/nested-render restoration,
+SSR/hydration and host callbacks, final headers after Craft's outer middleware,
+404/503 headers, error-projection fallback and version conflicts. These require the consuming
+project's own locked installation and separately authorized test work. Package
+syntax and Composer validation cannot establish these user-facing outcomes.
+The local Playground's PHP dependency sources match core/Laravel/Inertia, but its
+plugin lock is a historical `0.1.0` path reference; it is not evidence of the
+consumer migration being installed. No consumer source or lockfile is changed.
+
+The remaining sections describe the Playground's earlier manual SSR, errors,
+indexing and data-cache integration. They remain context for legacy integrations;
+the shared renderer replaces its copied rendering boundary, not its content
+queries or business policy.
 
 ## Explicit project SSR policy
 

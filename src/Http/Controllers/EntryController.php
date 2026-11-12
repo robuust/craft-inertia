@@ -9,13 +9,8 @@ use CraftCms\Cms\Route\CurrentElement;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\ResponseFactory;
-use Inertia\Ssr\DisablesSsr;
-use Inertia\Ssr\Gateway;
-use LogicException;
 use Robuust\CraftInertia\Content\EntryProjection;
-use Robuust\CraftInertia\Http\HandleEntryRequests;
+use Robuust\CraftInertia\Http\PublicRenderer;
 use Symfony\Component\HttpFoundation\Response;
 
 /** Renders the authorized native element through an isolated public response. */
@@ -29,43 +24,21 @@ final class EntryController
      */
     public function __invoke(Request $request, #[CurrentElement] Entry $entry, string $component): Response
     {
-        $original = app(ResponseFactory::class);
-        $public = clone $original;
-        $public->flushShared();
-        $gateway = app(Gateway::class);
-        $middleware = app(HandleEntryRequests::class);
-        $guest = $middleware->isPublicGuest($request, $entry);
+        return app(PublicRenderer::class)->render($request, $component, function (string $robots) use ($entry): array {
+            $site = Sites::getCurrentSite();
 
-        // Isolate this response without replacing the host's SSR callbacks or shares.
-        if (!$guest || !config('inertia.ssr.enabled')) {
-            $private = clone $gateway;
-            if (!$private instanceof DisablesSsr) {
-                throw new LogicException('Entry templates require an SSR gateway supporting Inertia\\Ssr\\DisablesSsr.');
-            }
-            $private->disable(true);
-            app()->instance(Gateway::class, $private);
-        }
-        Inertia::swap($public);
-
-        try {
-            return $middleware->handle($request, function () use ($request, $entry, $component, $guest, $middleware): Response {
-                $site = Sites::getCurrentSite();
-                return Inertia::render($component, [
-                    'entry' => app(EntryProjection::class)->entry($entry),
-                    'site' => [
-                        'id' => $site->id, 'uid' => $site->uid, 'handle' => $site->handle,
-                        'name' => $site->name, 'language' => $site->language, 'baseUrl' => $site->getBaseUrl(),
-                    ],
-                    'preview' => $entry->previewing,
-                    'seo' => [
-                        'title' => $entry->title, 'canonical' => $entry->getUrl() === null ? null : Url::removeAllParams($entry->getUrl()),
-                        'robots' => $guest ? $middleware->robots($request) : 'noindex, nofollow',
-                    ],
-                ])->toResponse($request);
-            });
-        } finally {
-            Inertia::swap($original);
-            app()->instance(Gateway::class, $gateway);
-        }
+            return [
+                'entry' => app(EntryProjection::class)->entry($entry),
+                'site' => [
+                    'id' => $site->id, 'uid' => $site->uid, 'handle' => $site->handle,
+                    'name' => $site->name, 'language' => $site->language, 'baseUrl' => $site->getBaseUrl(),
+                ],
+                'preview' => $entry->previewing,
+                'seo' => [
+                    'title' => $entry->title, 'canonical' => $entry->getUrl() === null ? null : Url::removeAllParams($entry->getUrl()),
+                    'robots' => $robots,
+                ],
+            ];
+        }, $entry);
     }
 }
