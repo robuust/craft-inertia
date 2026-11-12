@@ -1,11 +1,12 @@
 # Craft Inertia
 
-Private Craft CMS 6 plugin for a project-owned Inertia/Vue public frontend.
+Craft CMS 6 plugin for a project-owned Inertia/Vue public frontend.
 Craft owns content, native URLs, sites, publication rules and preview authority.
 The plugin connects explicitly selected pages to the official Inertia adapter.
 Composer identity is `robuust/craft-inertia`, PHP namespace
 `Robuust\CraftInertia`, native handle `inertia`; license is proprietary.
-No public package release is implied by the local `0.1.0` development version.
+Source and Composer downloads are public; usage remains subject to the
+[proprietary license](LICENSE.md). This is a beta integration for Craft 6 beta.
 
 ## How it works
 
@@ -54,31 +55,37 @@ The main integration points are [EntryTemplates](src/Routing/EntryTemplates.php)
 
 ## Install
 
-The current target is PHP 8.5, official Craft `6.0.0-beta.1` and
-`inertiajs/inertia-laravel` 3.7. Use an authenticated private Composer source.
-For local development, a consuming project's path repository can use:
+The package requires PHP 8.5, Craft `^6.0.0-beta.1`, Laravel `^13.38` and
+`inertiajs/inertia-laravel` `^3.7`. Install it from
+[Packagist](https://packagist.org/packages/robuust/craft-inertia) in an existing
+Craft 6 project that permits the Craft beta dependencies:
+
+```sh
+composer require 'robuust/craft-inertia:^0.1.0@beta' --with-all-dependencies --no-interaction
+php artisan craft:plugin:install inertia --no-interaction
+php artisan vendor:publish --tag=craft-inertia-config --no-interaction
+```
+
+No custom VCS repository or GitHub credentials are required. When migrating from
+a private VCS source, remove that repository entry and update the package lock.
+Craft discovers the plugin provider automatically. The package publishes its
+integration configuration; the consuming project supplies the frontend files.
+
+For local package development, a consuming project's path repository can use:
 
 ```json
 {
   "repositories": [{
     "type": "path",
     "url": "../craft-inertia",
-    "options": {"symlink": true, "versions": {"robuust/craft-inertia": "0.1.0"}}
+    "options": {"symlink": true, "versions": {"robuust/craft-inertia": "0.1.0-beta.1"}}
   }],
-  "require": {"robuust/craft-inertia": "0.1.0"}
+  "require": {"robuust/craft-inertia": "^0.1.0@beta"}
 }
 ```
 
-```sh
-composer update robuust/craft-inertia --no-interaction
-php artisan craft:plugin:install inertia --no-interaction
-php artisan vendor:publish --tag=craft-inertia-config --no-interaction
-```
-
-Craft discovers the plugin provider automatically. The package publishes its
-integration configuration; the consuming project supplies the frontend files.
-The local path source must be available wherever Composer runs. Docker/CI builds
-need access to that source or an authenticated private Composer distribution.
+The local path must be available wherever Composer runs. Use the published
+package for CI and deployment environments that do not have that checkout.
 
 ## Configure the consuming project
 

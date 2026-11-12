@@ -1,5 +1,11 @@
 # Craft Inertia project initialization
 
+> Publication update (2026-11-12): public GitHub and Packagist distribution is
+> now authorized, retaining the proprietary license and existing API. The
+> private-distribution decisions below record their original scope and are
+> superseded for distribution by this update. Public beta availability does
+> not establish general production acceptance.
+
 The product is a reusable Craft CMS 6 plugin that lets projects replace their
 complete public frontend with Inertia and Vue. Craft keeps ownership of content,
 URLs, editorial workflows, sessions and permissions. Each project supplies its

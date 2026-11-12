@@ -3,7 +3,8 @@
 ## Requirements and ownership
 
 The package requires PHP 8.5, Craft `^6.0.0-beta.1` and the official Inertia
-Laravel adapter `^3.7`. The inspected beta.1 baseline uses CMS source
+Laravel adapter `^3.7`, with Laravel `^13.38`. The inspected beta.1 baseline
+uses CMS source
 `05ce9b81be3704fb27da3a5a6670accfa49ec9a9`, CP assets
 `87acafef481f17c12a10170211bbccda42588dbd` and native schema `6.0.0.36`.
 These exact versions describe the inspected baseline, not every allowed version.
@@ -13,21 +14,25 @@ project owns its content schema, Vue pages, Blade root, frontend dependencies,
 builds and runtime services. It also owns integration verification; this
 repository contains no automated tests, fixtures or preparation scripts.
 
-## Install the private package
+## Install from Packagist
 
-Make `robuust/craft-inertia` available through the project's authenticated
-private Composer source. For local development, use the
-[README path repository](../README.md#install). Its `0.1.0` version is local
-Composer metadata, not a published release. A container or CI environment must
-also have access to the selected source.
+Install `robuust/craft-inertia` from the public
+[Packagist package](https://packagist.org/packages/robuust/craft-inertia).
+The existing Craft 6 project's root requirements must permit its beta
+CMS/assets dependencies. No private VCS repository or GitHub token is needed.
+The package retains its [proprietary license](../LICENSE.md).
+For local package development, use the [README path repository](../README.md#install).
 
 From the consuming project:
 
 ```sh
-composer require robuust/craft-inertia:0.1.0 --no-interaction
+composer require 'robuust/craft-inertia:^0.1.0@beta' --with-all-dependencies --no-interaction
 php artisan craft:plugin:install inertia --no-interaction
 php artisan vendor:publish --tag=craft-inertia-config --no-interaction
 ```
+
+When replacing an existing private VCS requirement, remove its repository entry
+and update the dependency and lock to the published beta release.
 
 Craft discovers the plugin provider. Do not register it again in
 `bootstrap/providers.php` or Laravel package discovery. Configuration publication
@@ -152,8 +157,9 @@ alias or automated migration script.
 2. Uninstall the old plugin natively. A disabled plugin must first be restored
    and enabled with its known old source while the project remains opted out;
    do not force an uninstall with missing code.
-3. Update the consuming Composer requirement and private source to the new
-   identity. The current plugin requires Craft beta.1 APIs, so upgrade the native
+3. Update the consuming Composer requirement to the new public package
+   identity and remove the legacy private repository entry. The current plugin
+   requires Craft beta.1 APIs, so upgrade the native
    CMS/assets and required dependencies deliberately if the old project used an
    earlier baseline. Review the resulting lock changes; this is not guaranteed
    to be an identity-only update with every other package record unchanged.

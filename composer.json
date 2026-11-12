@@ -1,12 +1,32 @@
 {
     "name": "robuust/craft-inertia",
     "description": "Opt-in public Inertia frontend integration for Craft CMS 6.",
+    "keywords": [
+        "craft",
+        "craftcms",
+        "inertia",
+        "laravel",
+        "vue"
+    ],
+    "homepage": "https://github.com/robuust/craft-inertia",
     "type": "craft-plugin",
     "license": "proprietary",
+    "authors": [
+        {
+            "name": "Robuust",
+            "homepage": "https://robuust.digital"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/robuust/craft-inertia/issues",
+        "source": "https://github.com/robuust/craft-inertia",
+        "docs": "https://github.com/robuust/craft-inertia/blob/main/docs/INSTALLATION.md"
+    },
     "require": {
         "php": "^8.5",
         "craftcms/cms": "^6.0.0-beta.1",
-        "inertiajs/inertia-laravel": "^3.7"
+        "inertiajs/inertia-laravel": "^3.7",
+        "laravel/framework": "^13.38"
     },
     "autoload": {
         "psr-4": {
@@ -18,7 +38,8 @@
         "handle": "inertia",
         "name": "Inertia",
         "developer": "Robuust",
-        "schemaVersion": "1.0.0"
+        "schemaVersion": "1.0.0",
+        "developerUrl": "https://robuust.digital"
     },
     "config": {
         "sort-packages": true
