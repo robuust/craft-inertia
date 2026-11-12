@@ -56,6 +56,12 @@ class HandleInertiaRequests extends Middleware
     #[Override]
     public function handle(Request $request, Closure $next): Response
     {
+        return $this->handleWithRobots($request, $next);
+    }
+
+    /** @param string|null $robots Shared renderer's decision, captured before props and one-time flash are consumed. */
+    public function handleWithRobots(Request $request, Closure $next, ?string $robots = null): Response
+    {
         if (!$request->isSiteRequest() || $request->isActionRequest()) {
             return $next($request);
         }
@@ -72,7 +78,7 @@ class HandleInertiaRequests extends Middleware
         }
 
         // The adapter consumes one-time flash while rendering the response.
-        $robots = $this->robots($request);
+        $robots ??= $this->robots($request);
 
         return $this->protectResponse(parent::handle($request, $next), $robots);
     }

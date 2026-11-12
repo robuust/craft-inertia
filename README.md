@@ -44,7 +44,8 @@ flowchart TD
 
 The main integration points are [EntryTemplates](src/Routing/EntryTemplates.php),
 [EntryProjection](src/Content/EntryProjection.php) and
-[EntryController](src/Http/Controllers/EntryController.php).
+[EntryController](src/Http/Controllers/EntryController.php), with the shared
+[PublicRenderer](src/Http/PublicRenderer.php) for explicit project controllers.
 
 | Owner | Responsibilities |
 | --- | --- |
@@ -199,13 +200,54 @@ registered. An already configured project route remains ordinary Laravel code.
 
 ## Bespoke project routes
 
-Existing manual integrations remain supported. Apply
-`Robuust\CraftInertia\Http\HandleInertiaRequests` only to selected page routes,
-after `web` and `craft`; render explicit project props through `Inertia::render()`.
-For native destinations, consume Craft's `#[CurrentElement] Entry` rather than
-requerying a slug/ID. Registered named/controller routes must match native
-URI/domain/method and retain their own middleware. This path suits overviews,
-search, special queries and private/business pages.
+Use `Robuust\CraftInertia\Http\PublicRenderer` for project controllers that select
+their own props. It runs the same isolated response factory, SSR eligibility and
+public protocol policy as the native entry renderer. Resolve props inside its
+callback and use the supplied robots directive in project metadata:
+
+```php
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Route\CurrentElement;
+use Illuminate\Http\Request;
+use Robuust\CraftInertia\Http\PublicRenderer;
+use Symfony\Component\HttpFoundation\Response;
+
+public function __invoke(Request $request, #[CurrentElement] Entry $entry): Response
+{
+    return app(PublicRenderer::class)->render(
+        $request,
+        'pages/work/[slug]',
+        fn (string $robots): array => $this->pageProps($entry, $robots),
+        $entry,
+    );
+}
+```
+
+The project owns `pageProps()`, including its selected content and SEO shape.
+This API adds no automatic `entry`, `site`, `preview` or `seo` props. The native
+entry renderer retains its existing automatic projection. Components passed
+directly to `PublicRenderer` use the host resolver; the stricter `inertia:`
+template syntax is unchanged. Craft's actual matched live or authorized preview
+entry is passed without requerying a canonical ID or slug. Missing entry context
+and non-200 page statuses always disable public SSR and indexing.
+
+The optional `publicPagePolicy(Request, Entry): bool` config callback can restrict
+eligible pages or sections; it cannot allow authentication, preview, token or
+form-state contexts. Existing `indexingPolicy(Request): bool` remains default
+deny, and Craft's `disallowRobots` overrides it. Projects own their content
+selection and authorization. See [RENDERING.md](docs/RENDERING.md#shared-public-renderer)
+for controller, policy and error-response migration examples.
+
+Keep `web` and `craft` context resolution before the controller. The shared
+renderer runs the public Inertia middleware itself; do not wrap it in a second
+Inertia protocol middleware. Native registered named/controller routes still
+match their own URI/domain/method and retain other middleware. No catch-all or
+routing listener is added for explicit controllers.
+
+Existing manual integrations using `HandleInertiaRequests` and `Inertia::render()`
+remain supported. Those integrations retain responsibility for their own share
+isolation, guest SSR and indexing eligibility. The shared renderer centralizes
+that boundary for selected project props and custom error pages.
 
 The native entry renderer currently has a fixed set of props. Project-wide
 navigation/settings queries need a deliberate project integration; global
