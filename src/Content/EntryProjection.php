@@ -95,6 +95,11 @@ final class EntryProjection
             throw new InvalidArgumentException('craft-inertia.fieldSerializers must be an ordered array.');
         }
         if ($serializers !== []) {
+            foreach ($serializers as $name => $serializer) {
+                if (!is_array($serializer) || !is_callable($serializer['matches'] ?? null) || !is_callable($serializer['serialize'] ?? null)) {
+                    throw new InvalidArgumentException("Serializer $name must define callable matches and serialize callbacks.");
+                }
+            }
             $context = new FieldContext(
                 $entry,
                 $field,
@@ -107,9 +112,6 @@ final class EntryProjection
                 fn (Entry $child, array $fields): array => $this->project($child, $ancestors, $depth + 1, $fields, "$path.related"),
             );
             foreach ($serializers as $name => $serializer) {
-                if (!is_array($serializer) || !is_callable($serializer['matches'] ?? null) || !is_callable($serializer['serialize'] ?? null)) {
-                    throw new InvalidArgumentException("Serializer $name must define callable matches and serialize callbacks.");
-                }
                 $matches = $serializer['matches']($context);
                 if (!is_bool($matches)) {
                     throw new InvalidArgumentException("Serializer $name matches must return a boolean for $path.");

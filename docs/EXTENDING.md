@@ -4,25 +4,29 @@
 
 Set `publicProps` in the project's `config/craft-inertia.php` to a callable
 accepting `Robuust\CraftInertia\Http\PublicPageContext` and returning a string-keyed
-array. For example (imports omitted):
+array. Register a public static method so Laravel's `config:cache` deployment
+can export and reload the configuration:
 
 ```php
-'publicProps' => static function (PublicPageContext $context): array {
-    $items = Entry::find()->section('navigation')->siteId($context->site->id)->all();
-    return ['layout' => [
-        'navigation' => array_map(static function (Entry $item): array {
-            ElementCaches::collectCacheInfoForElement($item);
-            return ['title' => $item->title, 'url' => $item->getUrl()];
-        }, $items),
-    ]];
-},
+'publicProps' => [\App\PublicFrontend\PublicPageProps::class, 'navigation'],
 ```
 
-Use `CraftCms\Cms\Entry\Elements\Entry` and
-`CraftCms\Cms\Support\Facades\ElementCaches`. Settings/global queries and their
-selected public fields also belong in this callback. Collect their dependencies
-when participating in native content caching. Never return entire elements,
-queries, users, requests or configuration objects.
+Copy the project-owned [PublicPageProps example](examples/PublicPageProps.php)
+into `app/PublicFrontend/PublicPageProps.php` and adapt its native navigation query
+to the consuming schema. It selects the current site's entries, collects their
+native dependencies, and returns only titles and URLs under `layout.navigation`.
+Settings/global queries and their selected public fields also belong in this
+project callback. Never return entire elements, queries, users, requests or
+configuration objects.
+
+Use cacheable callback references such as `[ProjectClass::class, 'publicStaticMethod']`
+or named function strings for all configured hooks. Do not put anonymous
+functions, first-class callable closures, or service instances in configuration,
+including configuration set during a service provider's `boot()`: Laravel boots
+the application before exporting its configuration cache. Resolve project services
+inside a named callback when it runs, rather than storing instances in config.
+The callback classes must be autoloadable before rebuilding the deployment cache.
+The plugin defaults remain `null`/empty arrays and require no project callbacks.
 
 The callback runs once per native page render, inside `PublicRenderer`, after
 site/token/entry authorization and the SSR/indexing eligibility decision. Context
@@ -56,15 +60,15 @@ remains exactly `title`, `canonical`, and the renderer's effective `robots`; it
 cannot be replaced, extended or shadowed through this hook.
 
 For additional metadata, the project can choose a separate prop name and its own
-adapter. For example, with a project-owned `ProjectMetadata` service:
+adapter. For example, a project-owned `ProjectMetadata` class can expose a public
+static `props(PublicPageContext): array` method, registered with:
 
 ```php
-'publicProps' => static function (PublicPageContext $context): array {
-    return ['head' => app(ProjectMetadata::class)->forEntry(
-        $context->entry, $context->site, $context->request, $context->robots,
-    )];
-},
+'publicProps' => [\App\PublicFrontend\ProjectMetadata::class, 'props'],
 ```
+
+That method receives the current entry/site/request/robots context and can return
+`['head' => /* selected project metadata */]`, alongside layout or other props.
 
 `head` and `ProjectMetadata` are illustrative project choices. The plugin supplies
 no metadata service, tag format, HTML injection or SEO-specific configuration.
@@ -109,11 +113,13 @@ included in this package change.
 
 `fieldSerializers` is an ordered array of named registrations, each containing
 `matches(FieldContext): bool` and `serialize(FieldContext): mixed`. Register them
-in project config (or set that config from a service provider before rendering).
+as public static callback references in project config, just like `publicProps`.
 The **first** matching registration wins; there is no implicit class/handle
 priority or chained merging. No match uses the native projection unchanged. Invalid
-registrations, non-boolean match results and unsupported output throw errors naming
-the serializer and field path. Names are diagnostic, not prop names.
+registrations are all checked before any match callback is evaluated for a
+projected field, including registrations after a potential first match. A
+non-boolean result from an evaluated match callback or unsupported serializer
+output throws an error naming the serializer and field path. Names are diagnostic, not prop names.
 
 `FieldContext` contains the owner `entry`, native `field`, normalized `value`,
 current `site` and `request`, relation `depth` and diagnostic `path`. For native
@@ -149,9 +155,9 @@ owns its new shape/cardinality; ordinary relations remain ordered lists.
 
 This project's `article` type has `cover` (Assets), `related` (Entries) and
 `cta` (Link). Every other field keeps its native serialization. Sizes below are
-**project choices**, not package defaults. Imports in these config examples refer
-to `Robuust\CraftInertia\Content\FieldContext`, `LinkProjection`, Craft's `Asset`,
-`Entry`, and `LinkData`.
+**project choices**, not package defaults. Copy the project-owned
+[ArticleSerializers example](examples/ArticleSerializers.php) into
+`app/PublicFrontend/ArticleSerializers.php` before configuring these callbacks.
 
 ```php
 'imageProfiles' => [
@@ -162,28 +168,16 @@ to `Robuust\CraftInertia\Content\FieldContext`, `LinkProjection`, Craft's `Asset
 ],
 'fieldSerializers' => [
     'article-cover' => [
-        'matches' => static fn (FieldContext $c): bool => $c->entry->getType()->handle === 'article' && $c->field->handle === 'cover',
-        'serialize' => static function (FieldContext $c): array {
-            $images = [];
-            foreach ($c->value as $asset) {
-                $images[] = $c->projectAsset($asset, ['editorialCard']);
-            }
-            return $images;
-        },
+        'matches' => [\App\PublicFrontend\ArticleSerializers::class, 'matchesCover'],
+        'serialize' => [\App\PublicFrontend\ArticleSerializers::class, 'cover'],
     ],
     'related-summaries' => [
-        'matches' => static fn (FieldContext $c): bool => $c->entry->getType()->handle === 'article' && $c->field->handle === 'related',
-        'serialize' => static function (FieldContext $c): array {
-            $entries = [];
-            foreach ($c->value as $entry) {
-                $entries[] = $c->projectEntry($entry, ['summary']);
-            }
-            return $entries;
-        },
+        'matches' => [\App\PublicFrontend\ArticleSerializers::class, 'matchesRelated'],
+        'serialize' => [\App\PublicFrontend\ArticleSerializers::class, 'related'],
     ],
     'published-cta' => [
-        'matches' => static fn (FieldContext $c): bool => $c->field->handle === 'cta' && $c->value instanceof LinkData,
-        'serialize' => static fn (FieldContext $c): ?array => app(LinkProjection::class)->live($c->value),
+        'matches' => [\App\PublicFrontend\ArticleSerializers::class, 'matchesCta'],
+        'serialize' => [\App\PublicFrontend\ArticleSerializers::class, 'cta'],
     ],
 ],
 ```
@@ -201,7 +195,9 @@ serialize through their native ID contract.
 An independent `venue` type has `mapPoint`, a project custom field whose native
 `serializeValue()` contract is `['lat' => float, 'lng' => float]` or null, and
 `gallery` (Assets). The project deliberately changes its public coordinate shape
-and selects a different image policy:
+and selects a different image policy. Copy the project-owned
+[VenueSerializers example](examples/VenueSerializers.php) into
+`app/PublicFrontend/VenueSerializers.php` before using this configuration:
 
 ```php
 'imageProfiles' => [
@@ -212,24 +208,12 @@ and selects a different image policy:
 ],
 'fieldSerializers' => [
     'venue-coordinates' => [
-        'matches' => static fn (FieldContext $c): bool => $c->entry->getType()->handle === 'venue' && $c->field->handle === 'mapPoint',
-        'serialize' => static function (FieldContext $c): ?array {
-            $point = $c->defaultValue();
-            return $point === null ? null : [
-                'latitude' => round($point['lat'], 5),
-                'longitude' => round($point['lng'], 5),
-            ];
-        },
+        'matches' => [\App\PublicFrontend\VenueSerializers::class, 'matchesCoordinates'],
+        'serialize' => [\App\PublicFrontend\VenueSerializers::class, 'coordinates'],
     ],
     'venue-gallery' => [
-        'matches' => static fn (FieldContext $c): bool => $c->entry->getType()->handle === 'venue' && $c->field->handle === 'gallery',
-        'serialize' => static function (FieldContext $c): array {
-            $images = [];
-            foreach ($c->value as $asset) {
-                $images[] = $c->projectAsset($asset, ['galleryFit']);
-            }
-            return $images;
-        },
+        'matches' => [\App\PublicFrontend\VenueSerializers::class, 'matchesGallery'],
+        'serialize' => [\App\PublicFrontend\VenueSerializers::class, 'gallery'],
     ],
 ],
 ```

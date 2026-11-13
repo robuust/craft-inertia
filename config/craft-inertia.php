@@ -6,6 +6,7 @@ return [
     'rootView' => 'app',
 
     // Optional callable(PublicPageContext): array<string, mixed>; additive native page props.
+    // Use [ProjectClass::class, 'publicStaticMethod'] for config:cache; never store closures or instances.
     'publicProps' => null,
 
     // Ordered named {matches: callable(FieldContext): bool, serialize: callable(FieldContext): mixed}.
