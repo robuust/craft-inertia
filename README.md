@@ -307,3 +307,6 @@ remain separate open failures. The local unaccepted account adapter is excluded.
 Full STEP-05, full AC-06/AC-07, general compatibility, release and production
 acceptance remain incomplete. No PHP coverage percentage is claimed without a
 compatible driver. [FRONTEND.md](docs/FRONTEND.md) owns the agreed requirements.
+
+Generic public project props, serializers and image profiles are
+documented in [Public page extensions](docs/EXTENDING.md).

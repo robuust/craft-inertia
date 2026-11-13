@@ -7,9 +7,9 @@ namespace Robuust\CraftInertia\Http\Controllers;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Route\CurrentElement;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
-use Robuust\CraftInertia\Content\EntryProjection;
+use Robuust\CraftInertia\Http\NativePageProps;
+use Robuust\CraftInertia\Http\PublicPageContext;
 use Robuust\CraftInertia\Http\PublicRenderer;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -24,21 +24,8 @@ final class EntryController
      */
     public function __invoke(Request $request, #[CurrentElement] Entry $entry, string $component): Response
     {
-        return app(PublicRenderer::class)->render($request, $component, function (string $robots) use ($entry): array {
-            $site = Sites::getCurrentSite();
-
-            return [
-                'entry' => app(EntryProjection::class)->entry($entry),
-                'site' => [
-                    'id' => $site->id, 'uid' => $site->uid, 'handle' => $site->handle,
-                    'name' => $site->name, 'language' => $site->language, 'baseUrl' => $site->getBaseUrl(),
-                ],
-                'preview' => $entry->previewing,
-                'seo' => [
-                    'title' => $entry->title, 'canonical' => $entry->getUrl() === null ? null : Url::removeAllParams($entry->getUrl()),
-                    'robots' => $robots,
-                ],
-            ];
+        return app(PublicRenderer::class)->render($request, $component, function (string $robots) use ($entry, $request): array {
+            return app(NativePageProps::class)->resolve(new PublicPageContext($entry, Sites::getCurrentSite(), $request, $robots));
         }, $entry);
     }
 }

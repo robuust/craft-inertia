@@ -8,7 +8,7 @@ The project supplies its Vue page, layout, root, resolver and builds.
 
 Every custom field attached to the entry's field layout is automatically
 available under its native handle, for example `entry.fields.summary` or
-`entry.fields.heroImage`. Adding a field to the layout requires no plugin
+`entry.fields.heroImage`. With default configuration, adding a field to the layout requires no plugin
 configuration. Craft's existing section and entry-type project-config YAML
 already carries the template and layout; there is no extra selector or YAML schema.
 
@@ -16,6 +16,10 @@ This supersedes the earlier component-keyed `pages[component].fields` selection.
 That setting is no longer read. All attached fields are sent, including internal
 notes and fields hidden by editor layout conditions. Choosing an `inertia:`
 template makes that entry's complete field content part of its page response.
+
+Project-owned public props use one generic
+[public page extension callback](EXTENDING.md); canonical and protocol names
+remain reserved. Additional metadata projection belongs to the consuming project.
 
 ## Stable page props
 
@@ -57,7 +61,7 @@ is a one-item list and no targets is `[]`. Other relation fields, such as Users,
 use their native serialization contract (IDs), rather than exporting user objects.
 JSON, Color, Money, Table, Content Block and installed custom fields follow their
 own native serializers. No field-specific PHP callback needs to be configured in
-the plugin. A custom serializer must return finite JSON scalars, null, arrays,
+the plugin. Projects can optionally register [field serializers](EXTENDING.md#field-serializers-15). A custom serializer must return finite JSON scalars, null, arrays,
 JSON objects (`stdClass`) or values implementing `JsonSerializable`. Other
 objects/resources and excessively nested data cause an explicit error rather than an implicit object dump.
 
@@ -77,8 +81,10 @@ path. That repeated entry retains its base identity and has `fields: []`.
 Expansion also stops after ten relation levels. Sibling occurrences are expanded
 independently. JSON serialization is bounded at twenty levels.
 
-Assets use their native original URL and dimensions. Automatic entry fields do
-not select image transforms or generate a responsive srcset. Project-specific
+Assets use their native original URL and dimensions. By default automatic entry fields do
+not select image transforms or generate a responsive srcset.
+Opt-in [serializers and image profiles](EXTENDING.md) add selected variants while
+retaining original assets; selected-field helpers support explicit consumers. Project-specific
 transforms, protected downloads and uploads retain their native APIs and
 permission/action contracts in [FORMS.md](FORMS.md).
 
