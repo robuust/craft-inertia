@@ -275,7 +275,9 @@ There is no automatic reconstruction of a previous Twig design.
 [INSTALLATION.md](docs/INSTALLATION.md) covers current setup, local-only migration,
 and native lifecycle/fallback behavior.
 [FORMS.md](docs/FORMS.md) covers native mutations/files, and
-[CONTACT_FORM.md](docs/CONTACT_FORM.md) records bounded optional compatibility.
+[CONTACT_FORM.md](docs/CONTACT_FORM.md) covers the optional native Contact Form
+helper, additive validation rules and project migration policies. Contact Form
+is installed separately; submissions keep its native action and errors/flash.
 
 ## Planned extensions
 
@@ -302,8 +304,10 @@ Earlier development reports and test sources remain available in Git history.
 They describe their original versions and bounded outcomes; they do not establish
 current compatibility or production acceptance.
 
-Four native account regressions and Contact Form's N01 nested-message failure
-remain separate open failures. The local unaccepted account adapter is excluded.
+Four native account regressions remain separate open failures. Contact Form's
+historical N01 nested-message failure is fixed in the inspected 4.0.0 source;
+runtime acceptance of that release remains unverified. The local unaccepted
+account adapter is excluded.
 Full STEP-05, full AC-06/AC-07, general compatibility, release and production
 acceptance remain incomplete. No PHP coverage percentage is claimed without a
 compatible driver. [FRONTEND.md](docs/FRONTEND.md) owns the agreed requirements.

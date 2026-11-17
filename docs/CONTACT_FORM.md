@@ -1,5 +1,189 @@
 # Optional native Contact Form integration
 
+The optional integration adds `Robuust\CraftInertia\Forms\ContactForm::form()`
+and additive `craft-inertia.contactForm.rules`. It uses Contact Form's existing
+action, ruleset, system message and mailer, plus the existing Inertia errors/flash
+bridge. It registers no submission endpoint. Contact Form remains an optional
+project dependency; the default empty rules change no native validation.
+
+## Current source baseline (2026-11-17)
+
+The current release is [Contact Form 4.0.0](https://github.com/craftcms/contact-form/releases/tag/4.0.0)
+at `9df71d068ad2694aad2c9c9d0909c18197ae51c3`, requiring PHP
+`^8.5` and Craft `^6.0.0-beta.1`. Its ruleset rejects unlisted nested message
+fields with validation errors. The earlier nested-field 500 below is historical,
+not a limitation attributed to 4.0.0. This update is based on source inspection
+and package linting; it is **not runtime acceptance** of the new baseline.
+
+Install and enable Contact Form separately in the consuming project:
+
+```sh
+composer require 'craftcms/contact-form:^4.0' --with-all-dependencies
+php artisan craft:plugin:install contact-form --no-interaction
+php artisan vendor:publish --tag=contact-form --no-interaction
+```
+
+Merge the new `contactForm` key into an existing published
+`config/craft-inertia.php`; do not overwrite unrelated project settings.
+
+## Native fields and project validation
+
+Keep recipients, attachment policy and nested fields in the native
+`config/craft/contact-form.php`. For example, the Robuust form can use:
+
+```php
+return [
+    'toEmail' => '$CONTACT_FORM_RECIPIENT',
+    'allowAttachments' => false,
+    'rateLimit' => 5,
+    'allowedMessageFields' => [
+        'Organisatie' => ['nullable', 'string', 'max:255'],
+        'Telefoonnummer' => ['required', 'string', 'max:100'],
+        'Landingpage' => ['nullable', 'string', 'max:255'],
+    ],
+];
+```
+
+The environment reference is resolved by native Contact Form settings. Keep the
+recipient out of submitted data. Configure subject/body in the native
+`contactform_submission` system message to retain the project's wording and
+server-owned subject; native Reply-To continues to use the submitted email/name.
+
+Append additional native rules in `config/craft-inertia.php`:
+
+```php
+'contactForm' => [
+    'rules' => [
+        'fromName' => ['required', 'string', 'max:255'],
+        'fromEmail' => ['string', 'max:255'],
+        'message' => ['array'],
+        'message.body' => ['max:10000'],
+    ],
+],
+```
+
+Each value must be an array of Laravel rules. The listener is scoped to native
+`SubmissionRuleset` and calls `ValidationRulesResolving::addRules()`; it does not
+replace native rules or their unknown-field rejection. Native required email,
+email format, nullable body and attachment validation remain in force.
+
+**Require the parent `message` array when a nested field is required.** Native
+Contact Form accepts scalar messages and conditionally skips nested rules for
+them. Without the parent array rule, a scalar could bypass required telephone.
+A nonempty message array containing telephone permits a blank optional body.
+
+These are example business rules, not plugin defaults. Projects may instead
+register their own scoped `ValidationRulesResolving` listener using Craft's
+native API. There is no additional validator or data model.
+
+## Form props and errors
+
+Inside a project controller's private render callback, add a project-owned prop:
+
+```php
+'contactForm' => app(\Robuust\CraftInertia\Forms\ContactForm::class)
+    ->form($contactSuccessUrl),
+```
+
+`$contactSuccessUrl` must be selected by the server, for example from the current
+site's contact entry, not copied from request input or an unchecked referrer.
+The helper returns only `action`, `csrfToken` and encrypted `redirect`.
+It uses `Url::actionUrl('contact-form/send')`, `csrf_token()` and
+`Crypt::encrypt()`, matching native redirect decryption. Use a fixed success
+URL for pre-validation honeypot acknowledgement; redirect templates depending
+on submitted values require native validated data.
+
+Render through the existing public renderer and keep this form outside guest
+SSR/public content caches using the project's `publicPagePolicy`. Resolve the
+helper per request inside that callback. Never cache its token, put it in
+metadata/JSON-LD, or add session state to the consumer's `PageData`. The
+consumer's existing `data/layout/seo` contract can stay intact.
+
+Submit directly to the returned action with official Inertia `Form` or
+`useForm`, keeping HTML negotiation. Include hidden `_token=csrfToken` and
+`redirect=redirect` inputs. Keep native action middleware and CSRF protection;
+do not attach public page rendering middleware to the action.
+
+| Dutch label | Native input name | Inertia error key |
+| --- | --- | --- |
+| Naam | `fromName` | `fromName` |
+| E-mailadres | `fromEmail` | `fromEmail` |
+| Organisatie | `message[Organisatie]` | `message.Organisatie` |
+| Telefoonnummer | `message[Telefoonnummer]` | `message.Telefoonnummer` |
+| Bericht | `message[body]` | `message.body` |
+| Landingpage | `message[Landingpage]` | `message.Landingpage` |
+
+For `useForm`, submit an actual nested `message` object. Preserve Dutch labels
+and explicitly map the native keys above to the existing UI. Show parent
+`message` errors and global failures as a form summary as well. The existing
+`HandleInertiaRequests` bridge handles native session validation errors and
+native error/success flash. Use the official adapter's `errorBag` option when
+several forms share a page. Read native notices through `usePage().flash`,
+including `success` and `error`; do not copy them into public page props.
+
+## Preserve project anti-spam and analytics behavior
+
+The former Robuust form acknowledges honeypots before field validation and
+returns 429 when throttled. Native defaults differ, so preserve these policies
+explicitly during migration:
+
+1. Retain the native `throttle:contact-form` middleware and configure five
+   attempts per minute. For the existing **429** contract, redefine its named
+   limiter after native plugins boot, via
+   `CraftCms\Cms\Plugin\Events\PluginsRegistered`. Use
+   `Limit::perMinute(5)->by($request->getClientIp())` with a custom
+   `response(Request $request, array $headers)` callback returning an explicit
+   429 response with those headers. This also avoids Craft's Inertia
+   `ThrottleRequestsException` redirect renderer. Native `rateLimit=5` alone
+   redirects HTML/Inertia requests with error flash; JSON callers receive 429.
+2. Register project middleware on the native public send route through
+   `Illuminate\Routing\Events\RouteMatched`, restricted to
+   `!$event->request->isCpRequest()` and
+   `$event->route->getControllerClass() === SendController::class`.
+   Append it with `$event->route->middleware(EarlyContactHoneypot::class)`.
+   This works with cached routes and leaves native throttling before the
+   appended middleware. Retain the native web/session/CSRF stack.
+3. In that middleware, enforce the project's scalar honeypot input boundary.
+   When `Geboortedatum` is nonempty, acknowledge without calling the next
+   middleware/controller. Reuse native `RespondsWithFlash::asSuccess()` with
+   the native success message and server-encrypted fixed redirect; use 303 if
+   retaining the prior response status. Do not emit `MessageSent` or a true
+   delivery flag. Otherwise continue to native validation/send.
+   Native `MessageSending` (including the optional native honeypot plugin)
+   runs **after** validation and cannot preserve this ordering.
+4. Only a project listener for
+   `CraftCms\ContactForm\Events\MessageSent` should set
+   `Inertia::flash(['contactFormDelivered' => true])` for analytics. Scope it to
+   this public form if the project has others. Client analytics should fire
+   only when that flag is present. Native spam can return success without
+   sending. The event proves mailer handoff, not inbox delivery.
+
+Do not infer delivery from a successful visit, HTTP redirect or success notice.
+Keep the limiter, honeypot field, analytics event names and email wording
+project-owned. No SEOmatic integration or dependency is involved.
+
+## Verification limits
+
+This repository has no CI configuration, test scripts, coverage threshold or
+automated test harness. No automated tests or coverage were run for this work,
+as explicitly requested. Consuming projects still need to verify their locked
+versions: empty/invalid values, scalar-parent rejection, nested errors, unknown
+fields, mail failure, genuine handoff, honeypot before validation, 429/CSRF,
+private headers, correct redirects, session isolation and cached-route behavior.
+Issue #17's wider acceptance matrix remains open.
+
+Pinned sources: [native validation](https://github.com/craftcms/contact-form/blob/9df71d068ad2694aad2c9c9d0909c18197ae51c3/src/Validation/SubmissionRuleset.php),
+[native send/events](https://github.com/craftcms/contact-form/blob/9df71d068ad2694aad2c9c9d0909c18197ae51c3/src/Http/Controllers/SendController.php),
+[native rate limiter](https://github.com/craftcms/contact-form/blob/9df71d068ad2694aad2c9c9d0909c18197ae51c3/src/Plugin.php),
+[Craft flash/redirect handling](https://github.com/craftcms/cms/blob/05ce9b81be3704fb27da3a5a6670accfa49ec9a9/src/Http/RespondsWithFlash.php)
+and [Craft throttle handling](https://github.com/craftcms/cms/blob/05ce9b81be3704fb27da3a5a6670accfa49ec9a9/src/Providers/AppServiceProvider.php).
+
+## Historical integration (2026-11-10)
+
+Everything below records the original development baseline only and is
+superseded by the source findings above for Contact Form 4.0.0. It does not
+establish runtime acceptance of the current integration.
+
 STEP-07B records a historical bounded REQ-13 / AC-07 integration. Its
 project-owned Vue page and native action flow did not change the reusable
 plugin's PHP, configuration or dependencies. The plugin no longer contains

@@ -104,8 +104,9 @@ Guests and users lacking file permissions cannot obtain file bytes or metadata.
 
 CSRF remains enabled for native and project actions. The examples retain the
 native Craft guard and session; complete account challenges belong to STEP-05.
-The separately selected [Contact Form integration](CONTACT_FORM.md) adds a bounded
-third-party scalar-form matrix and native limitation. This STEP-04 proof makes no
+The separately selected [Contact Form integration](CONTACT_FORM.md) provides a
+native form helper and additive validation rules, with a historical matrix and
+current source findings. This STEP-04 proof makes no
 claim about arbitrary native actions, other third-party forms, remote upload
 transports, production storage or existing database upgrades. Official API
 references: [Inertia forms](https://inertiajs.com/docs/v3/the-basics/forms),

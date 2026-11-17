@@ -20,4 +20,10 @@ return [
 
     // Optional callable(Request): bool; indexing also requires public guest eligibility in the shared renderer.
     'indexingPolicy' => null,
+
+    // Optional craftcms/contact-form 4 integration; append arrays of native Laravel rules.
+    // Keep nested field rules in craft.contact-form.allowedMessageFields.
+    'contactForm' => [
+        'rules' => [],
+    ],
 ];
