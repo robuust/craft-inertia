@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Robuust\CraftInertia\Http;
 
-use CraftCms\Cms\Support\Url;
 use InvalidArgumentException;
 use Robuust\CraftInertia\Content\EntryProjection;
 use Robuust\CraftInertia\Content\PublicValue;
+use Robuust\CraftInertia\Head\HeadMetadata;
 
 /** Resolves opt-in native page extensions inside the public rendering boundary. */
 final class NativePageProps
 {
     /** @var list<string> Canonical props and adapter-owned protocol names cannot be shadowed. */
     private const RESERVED = [
-        'entry', 'site', 'preview', 'seo', 'errors', 'flash', 'component', 'props', 'url',
+        'entry', 'site', 'preview', 'head', 'errors', 'flash', 'component', 'props', 'url',
         'version', 'clearHistory', 'encryptHistory', 'deferredProps', 'mergeProps',
         'prependProps', 'deepMergeProps', 'matchPropsOn', 'scrollProps', 'onceProps',
         'preserveFragment', 'preserveBigIntegers', 'rememberedState',
@@ -29,6 +29,7 @@ final class NativePageProps
     {
         $entry = $context->entry;
         $site = $context->site;
+        $head = app(HeadMetadata::class)->resolve($context);
         $extra = config('craft-inertia.publicProps');
         $extra = $extra === null ? [] : $this->provide($extra, $context);
         foreach ($extra as $key => $value) {
@@ -44,11 +45,7 @@ final class NativePageProps
                 'name' => $site->name, 'language' => $site->language, 'baseUrl' => $site->getBaseUrl(),
             ],
             'preview' => $entry->previewing,
-            'seo' => [
-                'title' => $entry->title,
-                'canonical' => $entry->getUrl() === null ? null : Url::removeAllParams($entry->getUrl()),
-                'robots' => $context->robots,
-            ],
+            'head' => $head,
         ] + $extra;
     }
 

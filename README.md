@@ -30,8 +30,9 @@ flowchart TD
    such as `inertia:Site/Home` selects the Vue component `Site/Home`. Explicit
    route/controller destinations keep precedence.
 3. The plugin projects the actual matched entry into JSON-compatible page props.
-   It includes every custom field in the entry's field layout under
+   By default it includes every custom field in the entry's field layout under
    `entry.fields.<handle>`, including related entries and Matrix content.
+   Projects can configure recursive public field selection and responsive images.
    Authorized previews retain their matched draft/revision identity.
 4. The plugin renders through the official Inertia Laravel adapter, using an
    isolated public response factory. It excludes CP/global shares and applies
@@ -50,7 +51,7 @@ The main integration points are [EntryTemplates](src/Routing/EntryTemplates.php)
 | Owner | Responsibilities |
 | --- | --- |
 | Craft | Fields, entry types, sections, native URLs, sites, publication, preview identity and authorization. |
-| This plugin | Opt-in entry rendering, automatic field projection, public response isolation and the Craft/Inertia integration policies. |
+| This plugin | Opt-in entry rendering, field/link/image projection, generic Head rendering, public response isolation and Craft/Inertia policy. |
 | Official Inertia adapters | HTML/page-JSON negotiation, client navigation, asset-version handling and SSR transport. |
 | Consuming project | Vue pages and design, public Blade root, Vite builds, website queries, SEO content and runtime/deployment configuration. |
 
@@ -96,7 +97,7 @@ The one-time host setup consists of:
 | --- | --- |
 | `config/craft-inertia.php` | Select the public root view, for example `frontend::app`, and an explicit indexing policy when required. |
 | Project service provider | Register the public view namespace and exclude native CP/action paths from the public SSR resolver. |
-| `resources/views/app.blade.php` | Provide the HTML shell, Vite assets, `<x-inertia::head />` and `<x-inertia::app />`. |
+| `resources/views/app.blade.php` | Provide the HTML shell, Vite assets, `<x-craft-inertia::head :page="$page" />` and `<x-inertia::app />`. |
 | `resources/js/app.js` | Bootstrap the official Vue adapter with `createInertiaApp()`. |
 | `resources/js/pages/` | Supply the Vue components selected by section templates. |
 | `vite.config.js` and `package.json` | Configure Vue and the official Inertia Vite plugin, and build the client and SSR bundles. |
@@ -154,7 +155,7 @@ Keep the section's native URI and select a Vue component in its Template:
 | Content | Native URI | Template |
 | --- | --- | --- |
 | Homepage single | `__home__` | `inertia:Site/Home` |
-| Articles | `articles/{slug}` | `inertia:Site/Articles/Show` |
+| Articles | `articles/{slug}` | `inertia:pages/articles/[slug]` |
 | Structure entry | Native nested URI | `inertia:Site/Places/Show` |
 
 `inertia:Site/Articles/Show` resolves through the project's normal resolver,
@@ -168,26 +169,33 @@ entry's field layout are automatically supplied under their native handles:
 
 No field-selection configuration or admin selector is required. Craft's native
 project-config YAML already stores the section template and entry-type layout.
-The plugin supplies `entry`, `site`, `preview`, `seo` and official protocol props.
+The plugin supplies `entry`, `site`, `preview`, `head` and official protocol props.
 It automatically includes nested Matrix and related entry fields, with bounded
 circular-reference handling. Assets use their original native URLs; other field
 types use their own native serializers. [CONTENT.md](docs/CONTENT.md) defines
-the exact shapes and boundaries. All attached fields, including internal notes,
-are part of the page data, including fields hidden by editor layout conditions;
-the old `pages[component].fields` setting is ignored.
+the exact shapes and boundaries. Configure `entryFields` by entry-type handle
+to preserve a public whitelist for root and related entries. Without a matching
+rule, all attached fields, including internal notes and fields hidden by editor
+layout conditions, remain part of page data. The old `pages[component].fields`
+setting is ignored; it is not the current selection mechanism.
 
 | Page prop | Contents |
 | --- | --- |
-| `entry` | Native identity, title, URL, entry type and all attached custom fields under `fields`. |
+| `entry` | Native identity, title, URL, entry type and selected layout fields under `fields` (all without a matching rule). |
 | `site` | Current site identity, language and base URL. |
 | `preview` | Whether Craft supplied a preview entry. |
-| `seo` | Entry title, canonical URL and the response's robots policy. |
+| `head` | Generic title/meta/link/JSON-LD and effective robots policy; no third-party plugin coupling. |
 | Protocol props | Official adapter errors, flash and other protocol state. |
 
 Assets retain list cardinality, even when a field allows one image. They include
-the original URL, dimensions and alt text, with `srcset: null`. Table rows retain
-their native serialized column keys, such as `col1` and `col2`. The project
-renders those values in Vue and owns description, hreflang and structured data.
+the original URL, dimensions and alt text, with `srcset: null`. Select responsive
+`variants` declaratively through `fieldImageProfiles`; the site chooses its image
+profiles. Links use publication-aware URLs by default. Native HTML field data
+uses its rendered representation. Table rows retain native column keys such as
+`col1` and `col2`. The generic `head` callback accepts project-calculated metadata;
+packaged [Vue/Blade Head components](docs/HEAD.md) render it with consistent
+robots policy, including without SSR. The plugin detects or imports no
+third-party metadata plugin.
 
 Ordinary mapped entry pages need no project entry controller, copied Laravel
 entry route, custom PHP renderer or per-page SSR middleware. Projects still own
@@ -224,11 +232,11 @@ public function __invoke(Request $request, #[CurrentElement] Entry $entry): Resp
 ```
 
 The project owns `pageProps()`, including its selected content and SEO shape.
-This API adds no automatic `entry`, `site`, `preview` or `seo` props. The native
-entry renderer retains its existing automatic projection. Components passed
-directly to `PublicRenderer` use the host resolver; the stricter `inertia:`
-template syntax is unchanged. Craft's actual matched live or authorized preview
-entry is passed without requerying a canonical ID or slug. Missing entry context
+This API adds no automatic `entry`, `site`, `preview` or `head` props. The native
+entry renderer supplies its standard projection. Components passed directly to
+`PublicRenderer` use the host resolver; `inertia:` templates also accept bracketed
+component segments such as `pages/work/[slug]`. Craft's actual matched live or
+authorized preview entry is passed without requerying a canonical ID or slug. Missing entry context
 and non-200 page statuses always disable public SSR and indexing.
 
 The optional `publicPagePolicy(Request, Entry): bool` config callback can restrict
@@ -249,10 +257,11 @@ remain supported. Those integrations retain responsibility for their own share
 isolation, guest SSR and indexing eligibility. The shared renderer centralizes
 that boundary for selected project props and custom error pages.
 
-The native entry renderer currently has a fixed set of props. Project-wide
-navigation/settings queries need a deliberate project integration; global
-`Inertia::share()` values are excluded from that renderer. A dedicated public
-props hook is planned below.
+Project-wide navigation/settings queries use the `publicProps` callback; global
+`Inertia::share()` values remain excluded. Field selection, Assets profile
+selection and generic Head metadata have declarative configuration, so ordinary
+entry pages need no project controller or field serializer. See
+[public page extensions](docs/EXTENDING.md).
 
 ## Rendering, privacy and lifecycle
 
@@ -287,15 +296,14 @@ capabilities; the linked issues define their scope and acceptance criteria.
 | Issue | Extension |
 | --- | --- |
 | [#13](https://github.com/robuust/craft-inertia/issues/13) | Safe frontend scaffolding and installation diagnostics. |
-| [#14](https://github.com/robuust/craft-inertia/issues/14) | An explicit hook for project-owned public page props. |
-| [#15](https://github.com/robuust/craft-inertia/issues/15) | Opt-in field serializers and responsive image profiles. |
 | [#16](https://github.com/robuust/craft-inertia/issues/16) | TypeScript page props generated from Craft field layouts. |
 | [#17](https://github.com/robuust/craft-inertia/issues/17) | A versioned compatibility and production acceptance matrix. |
 
 ## Verification scope
 
-This PHP plugin contains no automated tests, fixtures or test harness. Its Vue
-application and frontend toolchain belong to the consuming Craft project.
+This plugin contains no automated tests, fixtures or application harness. Its
+packaged Vue Head component uses the consuming project's frontend toolchain;
+the complete Vue application remains project-owned.
 Use Composer validation and PHP syntax checks for the package, and verify native
 URLs, complete field data, preview identity, SSR/hydration, forms, privacy and
 fallback in the actual consuming project with its own locked dependencies.

@@ -7,7 +7,7 @@ namespace Robuust\CraftInertia\Content;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 
-/** Opt-in publication-aware Link projection without permissive duplicate URLs. */
+/** Publication-aware native Link projection without permissive duplicate URLs. */
 final class LinkProjection
 {
     /**

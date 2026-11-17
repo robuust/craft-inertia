@@ -42,72 +42,82 @@ props, not deferred, once, merge or always props. CP/global shares stay excluded
 The callback is not applied to bespoke `PublicRenderer` responses, whose explicit
 prop contracts remain project-owned.
 
-`entry`, `site`, `preview`, `seo`, `errors`, `flash`, and adapter protocol names
+`entry`, `site`, `preview`, `head`, `errors`, `flash`, and adapter protocol names
 listed in `NativePageProps::RESERVED` are reserved, including dotted descendants
-(e.g. `seo.title`). Collisions throw an actionable exception. Values must be finite
+(e.g. `head.title`). Collisions throw an actionable exception. Values must be finite
 JSON scalars, null, arrays, `stdClass`, or `JsonSerializable` results, with valid
 UTF-8 and at most twenty nested levels. Closures, adapter prop objects, resources
 and arbitrary objects are rejected before SSR. JSON-compatible is a format
 contract, not permission to publish private data: the project explicitly selects
 what it returns. Hook errors propagate; there is no silent omission/fallback.
 
-## Project-owned metadata
+## Metadata and Head
 
-`publicProps` is the only page-props extension callback. It accepts arbitrary
-project-owned public data, such as navigation, settings or metadata. The plugin
-does not interpret added props or define their schema. The native `seo` object
-remains exactly `title`, `canonical`, and the renderer's effective `robots`; it
-cannot be replaced, extended or shadowed through this hook.
+The generic `head` callback accepts project-calculated title, meta/link attribute
+maps and raw JSON-LD values. The plugin supplies entry defaults, normalizes the
+contract, combines editorial restrictions with its robots policy and renders
+matching Vue/Blade Head output. It has no third-party metadata-plugin dependency,
+detection or adapter. See [HEAD.md](HEAD.md) for the contract and setup.
 
-For additional metadata, the project can choose a separate prop name and its own
-adapter. For example, a project-owned `ProjectMetadata` class can expose a public
-static `props(PublicPageContext): array` method, registered with:
+## Declarative native field selection
+
+Ordinary entry pages need no project controller or field serializer. Configure
+`entryFields` by **entry-type handle**, including Matrix child types, when a site
+needs a public whitelist. `'*'` supplies the fallback for unmatched types:
 
 ```php
-'publicProps' => [\App\PublicFrontend\ProjectMetadata::class, 'props'],
+'entryFields' => [
+    '*' => [],
+    'article' => ['summary', 'body', 'cover', 'related', 'cta'],
+    'teaser' => ['summary', 'cover'],
+],
+'fieldImageProfiles' => [
+    'article' => ['cover' => ['editorialCard']],
+    'teaser' => ['cover' => ['editorialCard']],
+],
 ```
 
-That method receives the current entry/site/request/robots context and can return
-`['head' => /* selected project metadata */]`, alongside layout or other props.
+Every root, related entry and Matrix child applies its own type's selection.
+`[]` means identity with empty fields. With empty `entryFields` config, the
+existing all-layout-fields behavior remains; with no matching type or `'*'`
+rule, all attached fields are still included. Use `'*' => []` when migrating an
+existing selected-field consumer, so a newly introduced child type cannot
+silently publish its fields. Selection lists must name attached fields; invalid
+handles fail explicitly. Editor layout visibility conditions are not a public
+access boundary.
 
-`head` and `ProjectMetadata` are illustrative project choices. The plugin supplies
-no metadata service, tag format, HTML injection or SEO-specific configuration.
-The service chooses public values, combines editorial restrictions with the
-supplied robots boundary, and projects data for the project's Head/root view.
-Initial HTML (with SSR available or unavailable) and subsequent Inertia visits
-must render that same project contract. Keep title, canonical and robots tags
-unique; preserve stricter editorial directives and never weaken renderer
-`noindex, nofollow` denials. The HTTP response policy remains plugin-owned,
-including non-200 and partial responses, regardless of added metadata props.
-The generic hook cannot inspect or sanitize arbitrary project metadata formats;
-its finite-JSON validation does not enforce the project's semantic contract.
+An explicit `EntryProjection::entry($entry, $fields)` selection can narrow the
+configured fields further, but cannot broaden them. Related children still apply
+their own configured rules. Custom serializers remain deliberate project-owned
+code; they must not return private data under another key.
 
-SEOmatic integration belongs entirely in the consuming project's adapter. When
-installed and enabled there, the adapter can use existing public APIs such as
-`previewMetaContainers($uri, $siteId, true, true, $entry)` and
-`renderContainersArrayByType()`. Resolve after route selection, pass the actual
-matched entry (including an authorized preview) as the fifth argument, and use
-the current site/request. Collect metadata once per response and do not cache
-output across sites, users or previews. SEOmatic owns its internal lifecycle;
-the consuming project owns tag selection, encoding and robots merging.
-
-Craft-inertia imports and requires no SEO plugin and has no separate SEO callback
-or SEOmatic adapter. No SEOmatic changes, forks, patches or special release are
-needed. In an existing bespoke `data/layout/seo` consumer, keep its metadata
-projection in `PageData` and its explicit `PublicRenderer` props closure. That
-path already supports project-owned prop names and shapes without changing the
-native page contract.
+`fieldImageProfiles` maps type handles to Assets field handles to profile-name
+lists. `'*'` is the fallback at either map level. A matching type's map replaces
+the wildcard type map. The plugin applies these profiles to ordinary native
+Assets relations; the site chooses crops/sizes without writing a serializer.
+A definition under `imageProfiles` alone still transforms nothing.
 
 ## Migrating an explicit consumer
 
-The additive props callback does not turn a consumer's existing
-`data`/`layout`/custom `seo` contract into the native `entry` contract. For example,
-robuust-cms's `PageData` selects fields, related datasets, team attributes, link
-publication rules and image crops deliberately. Keep its bespoke controller and
-`PublicRenderer` while adopting helpers selectively, or deliberately migrate its
-frontend and whitelist first. Do not swap it to automatic all-field projection
-and accidentally publish fields it currently omits. No consumer changes are
-included in this package change.
+Make the native plugin contract the starting point: `entry/site/preview/head`,
+with selected custom values under `entry.fields`. Map ordinary sections to
+`inertia:pages/work/[slug]` or another actual Vue component name. Craft keeps its
+native URL/site/publication/preview resolution; no duplicate Laravel route or
+page controller is needed.
+
+Before changing routes, configure the existing public field whitelist by entry
+type, with an identity-only `'*'` fallback and independent child rules. Choose
+native image profiles with `fieldImageProfiles`; consume their `variants` in the
+frontend. Link fields now return the publication-aware selected shape by default,
+and native HTML field data renders its references before serialization.
+
+Move navigation, globals, selected queries, filters, user/team selection and form
+props to project callbacks/controllers. Move external metadata calculation to the
+project's generic `head` provider and use the packaged Head components. No
+third-party adapter is part of this plugin. Migrate the old `data/layout/seo`
+envelope and frontend prop access deliberately while keeping existing design,
+HTML/CSS and order. Retain bespoke controllers for actual search/filter/error or
+other project behavior. This package does not modify any consumer.
 
 ## Field serializers (#15)
 
@@ -182,8 +192,9 @@ This project's `article` type has `cover` (Assets), `related` (Entries) and
 ],
 ```
 
-Without these registrations, `cover` is the original ordered asset list with
-`srcset: null`, and `related` includes every attached child field. With them,
+Without these registrations or declarative field/image selections, `cover` is
+the original ordered asset list with `srcset: null`, and `related` includes every
+attached child field. Links are publication-aware by default. With them,
 `cover` retains **all original keys and values**, adding
 `variants.editorialCard.{url,width,height,srcset}`. `related` remains an ordered
 list with only each child's `summary` field. Empty relations remain `[]`.
@@ -224,8 +235,9 @@ configuration and resulting contracts; they are not runtime verification claims.
 
 ## Native responsive image profiles
 
-Profiles are opt-in on each `AssetProjection::project($asset, $names)` or context
-helper call. Merely defining `imageProfiles` transforms nothing. The `transform`
+Profiles are selected through native `fieldImageProfiles` configuration or an
+explicit `AssetProjection::project($asset, $names)` / context helper call. Merely
+defining `imageProfiles` transforms nothing. The `transform`
 is a native named transform handle or configuration array; `widths` is an optional
 list of positive integer widths. Unknown profiles and invalid definitions fail
 clearly. Craft owns further transform validation, focal points, cropping, format,
@@ -243,8 +255,8 @@ the generic package.
 
 ## Publication-aware Link helper
 
-`LinkProjection::live(LinkData)` is an explicit opt-in helper, not a change to the
-native Link default (`toArray()`). It calls `getUrl(false)` in the existing native
+`LinkProjection::live(LinkData)` is the native Link default and is also available
+for selected project queries. It calls `getUrl(false)` in the existing native
 site/preview context, preserving the complete URL, homepage normalization,
 URL suffix and browsing target. An empty/unavailable URL returns null. Available
 links expose `url`, `label`, `target`, `urlSuffix` and native `attributes` with the
@@ -258,22 +270,19 @@ A consumer keeping `[{text,url,target}]` maps these selected values explicitly.
 A consumer can use `EntryProjection::entry($entry, ['heading', 'image'])`,
 `AssetProjection::project($asset, ['galleryFit'])`, and `LinkProjection::live($link)`
 without changing its `data/layout/seo` envelope or using native all-field pages.
-An omitted second argument to `entry()` still means **all** attached fields,
-including related entries' fields. An explicit root whitelist alone does not
-restrict child entries: use a relation serializer with `projectEntry()` and an
-explicit child whitelist. Keep project-owned team/user, globals and special
+An omitted second argument to `entry()` uses the configured type selection, or
+**all** attached fields when no selection applies. Every child independently
+applies `entryFields`; use an identity-only wildcard rule to avoid accidental
+child-field exposure. A relation serializer can narrow children further through
+`projectEntry()`. Keep project-owned team/user, globals and special
 queries explicitly selected, and migrate frontend shapes deliberately.
 
 ## Verification boundaries
 
-The package has no CI workflow, test script/configuration, coverage threshold,
-frontend build or local application harness. This implementation is checked with
-PHP 8.5 syntax lint, host PHP CS Fixer (PSR-12), Composer validation, diff inspection
-and source/API review against installed Craft 6 beta.1 / Inertia 3.7. Direct manual
-PHP calls also inspected JSON navigation/settings output. Project metadata and
-its robots merging remain the consumer's responsibility. Automated tests and
-coverage were explicitly excluded for this task and were not run.
-A consuming application must still manually verify initial HTML with SSR on/off,
-JSON and partial visits, authorized preview, multiple sites, Link publication
-changes, SVG/private assets and actual transform/srcset output before rollout.
-The configuration examples above do not establish those runtime outcomes.
+The package has no CI workflow, test script/configuration, coverage threshold or
+local application harness. Package checks cover PHP syntax/formatting, Composer
+validation, Vue lint/client/SSR compilation and source/diff review. Automated
+tests and coverage are explicitly excluded for this task. Consumer runtime
+acceptance remains separate: manually verify initial HTML with SSR on/off,
+JSON/partial visits, preview identity, multiple sites, Link publication changes,
+SVG/private assets, image transforms and actual metadata before rollout.

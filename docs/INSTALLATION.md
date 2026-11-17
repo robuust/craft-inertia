@@ -42,7 +42,7 @@ of `craft:setup:publish`.
 
 ## Configure the project frontend
 
-1. Supply a public Blade root with Vite assets, `<x-inertia::head />` and
+1. Supply a public Blade root with Vite assets, `<x-craft-inertia::head :page="$page" />` and
    `<x-inertia::app />`. Register a public view namespace and set
    `craft-inertia.rootView` to e.g. `frontend::app`, separate from Craft's CP root.
 2. Supply the Vue entry point, page components and resolver. With the official
@@ -180,3 +180,10 @@ Verify fallback, HTML, Inertia JSON, statuses, complete field data, preview
 identity, metadata and SSR in the consuming project. Historical migration
 reports apply only to their original locked inputs and remain in Git history;
 they are not a runnable migration procedure for current dependencies.
+
+## Native Head setup
+
+Use the packaged Vue Head component once in the native page layout, together
+with the Blade component above. [HEAD.md](HEAD.md) documents the Vite alias,
+shared metadata contract and generic project provider. Remove duplicate
+title/canonical/robots renderers when migrating an existing frontend.

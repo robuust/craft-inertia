@@ -8,6 +8,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Route\CurrentElement;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Http\Request;
+use Robuust\CraftInertia\Http\HandleEntryRequests;
 use Robuust\CraftInertia\Http\NativePageProps;
 use Robuust\CraftInertia\Http\PublicPageContext;
 use Robuust\CraftInertia\Http\PublicRenderer;
@@ -24,8 +25,14 @@ final class EntryController
      */
     public function __invoke(Request $request, #[CurrentElement] Entry $entry, string $component): Response
     {
-        return app(PublicRenderer::class)->render($request, $component, function (string $robots) use ($entry, $request): array {
-            return app(NativePageProps::class)->resolve(new PublicPageContext($entry, Sites::getCurrentSite(), $request, $robots));
+        $effectiveRobots = 'noindex, nofollow';
+        $response = app(PublicRenderer::class)->render($request, $component, function (string $robots) use ($entry, $request, &$effectiveRobots): array {
+            $props = app(NativePageProps::class)->resolve(new PublicPageContext($entry, Sites::getCurrentSite(), $request, $robots));
+            $effectiveRobots = $props['head']['robots'];
+            return $props;
         }, $entry);
+
+        // Project metadata may restrict policy further; adapter 409/error responses still force noindex.
+        return app(HandleEntryRequests::class)->protectResponse($response, $effectiveRobots);
     }
 }
