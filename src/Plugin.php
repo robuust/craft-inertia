@@ -6,10 +6,8 @@ namespace Robuust\CraftInertia;
 
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Plugin\Plugin as CraftPlugin;
-use CraftCms\Cms\Validation\Events\ValidationRulesResolving;
 use Illuminate\Support\Facades\Event;
 use Override;
-use Robuust\CraftInertia\Forms\ContactForm;
 use Robuust\CraftInertia\Routing\EntryTemplates;
 
 /** Registers opt-in native entry rendering and public adapter configuration. */
@@ -29,7 +27,6 @@ final class Plugin extends CraftPlugin
     public function boot(): void
     {
         Event::listen(SetRoute::class, EntryTemplates::class);
-        Event::listen(ValidationRulesResolving::class, ContactForm::class);
 
         $this->publishes([
             __DIR__.'/../config/craft-inertia.php' => config_path('craft-inertia.php'),

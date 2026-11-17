@@ -274,10 +274,10 @@ There is no automatic reconstruction of a previous Twig design.
 
 [INSTALLATION.md](docs/INSTALLATION.md) covers current setup, local-only migration,
 and native lifecycle/fallback behavior.
-[FORMS.md](docs/FORMS.md) covers native mutations/files, and
-[CONTACT_FORM.md](docs/CONTACT_FORM.md) covers the optional native Contact Form
-helper, additive validation rules and project migration policies. Contact Form
-is installed separately; submissions keep its native action and errors/flash.
+[FORMS.md](docs/FORMS.md) covers the generic `NativeForm::props($action, $redirect)`
+helper and native mutations/files. [CONTACT_FORM.md](docs/CONTACT_FORM.md) shows
+Contact Form as an optional project integration, using native validation events,
+its existing action and the shared errors/flash bridge.
 
 ## Planned extensions
 

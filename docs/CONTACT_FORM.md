@@ -1,10 +1,10 @@
 # Optional native Contact Form integration
 
-The optional integration adds `Robuust\CraftInertia\Forms\ContactForm::form()`
-and additive `craft-inertia.contactForm.rules`. It uses Contact Form's existing
-action, ruleset, system message and mailer, plus the existing Inertia errors/flash
-bridge. It registers no submission endpoint. Contact Form remains an optional
-project dependency; the default empty rules change no native validation.
+This project-owned example uses the generic
+`Robuust\CraftInertia\Forms\NativeForm::props()` helper and existing Inertia
+errors/flash bridge with Contact Form's native action, ruleset, system message
+and mailer. Contact Form is an optional project dependency. The reusable package
+registers no Contact Form listener, validation configuration or submission endpoint.
 
 ## Current source baseline (2026-11-17)
 
@@ -23,8 +23,7 @@ php artisan craft:plugin:install contact-form --no-interaction
 php artisan vendor:publish --tag=contact-form --no-interaction
 ```
 
-Merge the new `contactForm` key into an existing published
-`config/craft-inertia.php`; do not overwrite unrelated project settings.
+No Contact Form-specific configuration is added to `config/craft-inertia.php`.
 
 ## Native fields and project validation
 
@@ -49,40 +48,40 @@ recipient out of submitted data. Configure subject/body in the native
 `contactform_submission` system message to retain the project's wording and
 server-owned subject; native Reply-To continues to use the submitted email/name.
 
-Append additional native rules in `config/craft-inertia.php`:
+Copy [ContactFormValidation.php](examples/ContactFormValidation.php) into the
+project at `app/ContactForms/ContactFormValidation.php`, adapting its business
+rules as needed. Register it in the project service provider's `boot()` method
+after installing and enabling Contact Form:
 
 ```php
-'contactForm' => [
-    'rules' => [
-        'fromName' => ['required', 'string', 'max:255'],
-        'fromEmail' => ['string', 'max:255'],
-        'message' => ['array'],
-        'message.body' => ['max:10000'],
-    ],
-],
+use App\ContactForms\ContactFormValidation;
+use CraftCms\Cms\Validation\Events\ValidationRulesResolving;
+use Illuminate\Support\Facades\Event;
+
+// Inside the project service provider's boot() method:
+Event::listen(ValidationRulesResolving::class, ContactFormValidation::class);
 ```
 
-Each value must be an array of Laravel rules. The listener is scoped to native
-`SubmissionRuleset` and calls `ValidationRulesResolving::addRules()`; it does not
-replace native rules or their unknown-field rejection. Native required email,
-email format, nullable body and attachment validation remain in force.
+The example scopes the native event to `SubmissionRuleset`. It appends required
+name and string/length limits for name, email and body, plus the parent array
+rule, using native `addRule()` / `addRules()`. It preserves native required email,
+email format, nullable body, unknown-field rejection and attachment validation.
 
 **Require the parent `message` array when a nested field is required.** Native
 Contact Form accepts scalar messages and conditionally skips nested rules for
 them. Without the parent array rule, a scalar could bypass required telephone.
 A nonempty message array containing telephone permits a blank optional body.
 
-These are example business rules, not plugin defaults. Projects may instead
-register their own scoped `ValidationRulesResolving` listener using Craft's
-native API. There is no additional validator or data model.
+These are project business rules using Craft's existing validation API. The
+plugin supplies no validation registry, defaults, validator or contact data model.
 
 ## Form props and errors
 
 Inside a project controller's private render callback, add a project-owned prop:
 
 ```php
-'contactForm' => app(\Robuust\CraftInertia\Forms\ContactForm::class)
-    ->form($contactSuccessUrl),
+'contactForm' => app(\Robuust\CraftInertia\Forms\NativeForm::class)
+    ->props('contact-form/send', $contactSuccessUrl),
 ```
 
 `$contactSuccessUrl` must be selected by the server, for example from the current
