@@ -107,6 +107,9 @@ final class HeadMetadata
         $noindex = $none || in_array('noindex', $tokens, true);
         $nofollow = $none || in_array('nofollow', $tokens, true);
         $extra = array_values(array_diff($tokens, ['all', 'none', 'index', 'follow', 'noindex', 'nofollow']));
+        if ($noindex) {
+            $extra = array_values(array_diff($extra, ['indexifembedded']));
+        }
         return implode(', ', [$noindex ? 'noindex' : 'index', $nofollow ? 'nofollow' : 'follow', ...$extra]);
     }
 

@@ -25,6 +25,15 @@ current site, request and robots ceiling. It may return any of these keys:
 | `link` | Ordered attribute maps, such as canonical/alternate links. Omission keeps the entry canonical; `[]` removes it. |
 | `jsonLd` | Keyed JSON-compatible objects, **before** JSON encoding. |
 
+`head.title` is the **complete document title**, including any site name or other
+formatting selected by the project provider. In both client and SSR
+`createInertiaApp()` setup, omit the `title` callback or use an identity callback.
+Remove an existing callback that adds a prefix/suffix or otherwise changes titles;
+move that formatting into the project provider instead. The packaged Vue Head
+passes this complete title to Inertia, while the Blade fallback renders it
+directly. A transforming Inertia title callback would make the SSR/hydrated title
+differ from initial HTML when SSR is disabled or unavailable.
+
 Attributes must have valid HTML names and string or boolean values. False is
 omitted and true becomes an empty-string presence attribute, so Blade and Vue
 have the same HTML semantics. Return only deliberately selected
@@ -87,6 +96,8 @@ The renderer retains authority over preview, auth, token, form state, site and
 publication eligibility. Provider metadata can only restrict that policy further.
 `none` means `noindex, nofollow`; `noindex` and `nofollow` override their positive
 counterparts, while additional directives such as `noarchive` are retained.
+`indexifembedded` is removed whenever the combined policy contains `noindex`,
+so embedding cannot provide an exception to that indexing denial.
 `head.robots`, its meta tag and the final HTTP header use the same effective
 policy. Adapter version conflicts and other non-200 responses remain
 non-indexable. Default-deny indexing and Craft `disallowRobots` still apply.

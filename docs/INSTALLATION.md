@@ -187,3 +187,8 @@ Use the packaged Vue Head component once in the native page layout, together
 with the Blade component above. [HEAD.md](HEAD.md) documents the Vite alias,
 shared metadata contract and generic project provider. Remove duplicate
 title/canonical/robots renderers when migrating an existing frontend.
+
+The provider supplies the complete `head.title`, including any project branding.
+Remove transforming `title` callbacks from both client and SSR `createInertiaApp()`
+setup (omit the option or keep it as identity), so Inertia Head and the non-SSR
+Blade fallback render the same title.
