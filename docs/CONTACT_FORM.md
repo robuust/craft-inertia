@@ -159,7 +159,7 @@ explicitly during migration:
 
 Do not infer delivery from a successful visit, HTTP redirect or success notice.
 Keep the limiter, honeypot field, analytics event names and email wording
-project-owned. No SEOmatic integration or dependency is involved.
+project-owned.
 
 ## Verification limits
 

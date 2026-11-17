@@ -6,20 +6,24 @@ preview authorization. The plugin renders `Site/Articles/Show` using the native
 matched entry, without a project entry controller or duplicate Laravel route.
 The project supplies its Vue page, layout, root, resolver and builds.
 
-Every custom field attached to the entry's field layout is automatically
-available under its native handle, for example `entry.fields.summary` or
-`entry.fields.heroImage`. With default configuration, adding a field to the layout requires no plugin
-configuration. Craft's existing section and entry-type project-config YAML
+By default, every custom field attached to the entry's field layout is
+automatically available under its native handle, for example `entry.fields.summary` or
+`entry.fields.heroImage`. With default configuration, adding a field to the
+layout requires no plugin configuration. Craft's existing section and entry-type project-config YAML
 already carries the template and layout; there is no extra selector or YAML schema.
 
 This supersedes the earlier component-keyed `pages[component].fields` selection.
-That setting is no longer read. All attached fields are sent, including internal
-notes and fields hidden by editor layout conditions. Choosing an `inertia:`
-template makes that entry's complete field content part of its page response.
+That setting is no longer read. The current `entryFields` config can select
+public field handles by entry-type handle, recursively for roots, related entries
+and Matrix children. Use an identity-only wildcard fallback when migrating an
+existing whitelist. Without a matching rule, all attached fields are sent,
+including internal notes and fields hidden by editor layout conditions. See
+[declarative field selection](EXTENDING.md#declarative-native-field-selection).
 
 Project-owned public props use one generic
 [public page extension callback](EXTENDING.md); canonical and protocol names
-remain reserved. Additional metadata projection belongs to the consuming project.
+remain reserved. The generic [Head integration](HEAD.md) normalizes
+project-calculated metadata and supplies native entry defaults, without third-party dependencies.
 
 ## Stable page props
 
@@ -30,10 +34,10 @@ remain reserved. Additional metadata projection belongs to the consuming project
 | `entry.canonicalId` | Craft canonical identity; it grants no additional access. |
 | `entry.type` | Native entry-type handle, including each Matrix child's type. |
 | `entry.postDate` | Native date as ISO 8601 with timezone, or null. |
-| `entry.fields` | All custom fields in the entry's layout, with native handles. |
+| `entry.fields` | Selected layout fields, or all fields without a matching rule, with native handles. |
 | `site` | Native current `id`, `uid`, `handle`, `name`, `language`, `baseUrl`. |
 | `preview` | Native matched element's `previewing` flag. |
-| `seo` | Native `title`, `canonical` URL and response-policy `robots`. |
+| `head` | Normalized `title`, `meta`, `link`, HTML-safe `jsonLd` and effective `robots`. |
 | `errors` / page `flash` | Official adapter protocol and native session messages. |
 
 Only the listed base attributes are exported; whole elements, field layouts and
@@ -50,18 +54,21 @@ ID/handle and native URLs. Vue owns presentation and metadata via Inertia Head.
 | Single choice | Selected `{value, label}`. |
 | Multiple choices | Native ordered list of selected `{value, label}`. |
 | Markdown | Native HTML sanitized with Craft's `HtmlSanitizers`. |
-| Link | Native `LinkData::toArray()`, including the resolved URL. |
+| Link | Publication-aware `{url, label, target, urlSuffix, attributes}`, or null for unavailable destinations. |
+| Native HTML field data | Rendered HTML, including native references and embedded-content rendering. |
 | Assets | List of `id`, `uid`, `title`, original `url`, `width`, `height`, `alt`, `srcset: null`. |
-| Entries | Ordered native visible entries, including all their layout fields. |
-| Matrix | Ordered native visible child entries and type identity, including all their layout fields. |
+| Entries | Ordered native visible entries, applying each child type's field selection. |
+| Matrix | Ordered native visible child entries and type identity, applying each child type's field selection. |
 | Other core/custom fields | The field's own `serializeValue(value, entry)` result. |
 
 Relations retain native collection cardinality: an Assets field with one target
 is a one-item list and no targets is `[]`. Other relation fields, such as Users,
 use their native serialization contract (IDs), rather than exporting user objects.
 JSON, Color, Money, Table, Content Block and installed custom fields follow their
-own native serializers. No field-specific PHP callback needs to be configured in
-the plugin. Projects can optionally register [field serializers](EXTENDING.md#field-serializers-15). A custom serializer must return finite JSON scalars, null, arrays,
+own native serializers. No field-specific PHP callback is required for ordinary
+entry pages, Links, rendered HTML or configured responsive image profiles.
+Projects can optionally register [field serializers](EXTENDING.md#field-serializers-15).
+A custom serializer must return finite JSON scalars, null, arrays,
 JSON objects (`stdClass`) or values implementing `JsonSerializable`. Other
 objects/resources and excessively nested data cause an explicit error rather than an implicit object dump.
 
@@ -81,10 +88,11 @@ path. That repeated entry retains its base identity and has `fields: []`.
 Expansion also stops after ten relation levels. Sibling occurrences are expanded
 independently. JSON serialization is bounded at twenty levels.
 
-Assets use their native original URL and dimensions. By default automatic entry fields do
-not select image transforms or generate a responsive srcset.
-Opt-in [serializers and image profiles](EXTENDING.md) add selected variants while
-retaining original assets; selected-field helpers support explicit consumers. Project-specific
+Assets use their native original URL and dimensions. Configured
+`fieldImageProfiles` adds selected responsive `variants` using native transforms;
+no profiles are chosen by the plugin. Original asset data remains unchanged.
+[Serializers and image profiles](EXTENDING.md) support deliberate project
+representations and selected-field helpers for bespoke consumers. Project-specific
 transforms, protected downloads and uploads retain their native APIs and
 permission/action contracts in [FORMS.md](FORMS.md).
 

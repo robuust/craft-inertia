@@ -33,7 +33,7 @@ final class EntryTemplates
         }
 
         $component = substr($settings->template, strlen('inertia:'));
-        if (!preg_match('~^[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*$~D', $component)) {
+        if (!preg_match('~^(?:[A-Za-z0-9_-]+|\[[A-Za-z0-9_-]+\])(?:/(?:[A-Za-z0-9_-]+|\[[A-Za-z0-9_-]+\]))*$~D', $component)) {
             throw new InvalidArgumentException('An inertia: entry template must name a page component.');
         }
 

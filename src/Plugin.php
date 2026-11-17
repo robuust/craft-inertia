@@ -27,6 +27,7 @@ final class Plugin extends CraftPlugin
     public function boot(): void
     {
         Event::listen(SetRoute::class, EntryTemplates::class);
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'craft-inertia');
 
         $this->publishes([
             __DIR__.'/../config/craft-inertia.php' => config_path('craft-inertia.php'),

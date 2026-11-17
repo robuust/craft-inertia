@@ -15,16 +15,17 @@ use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\HtmlField\HtmlFieldData;
 use DateTimeInterface;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
 
-/** All native layout fields, without exposing the element's internal attributes. */
+/** Native layout fields with recursive public selection, without internal element attributes. */
 final class EntryProjection
 {
     /**
      * @param Entry $entry Actual matched/authorized entry; no canonical requery is performed.
-     * @param list<string>|null $fields Explicit selected handles, or null for all native layout fields.
+     * @param list<string>|null $fields Explicit selected handles, or null for the configured/native layout selection.
      * @return array<string, mixed> Native identity and the requested field values.
      */
     public function entry(Entry $entry, ?array $fields = null): array
@@ -36,7 +37,7 @@ final class EntryProjection
      * @param Entry $entry Visible native entry.
      * @param array<string, true> $ancestors Entry identities on this relation path.
      * @param int $depth Current relation depth.
-     * @param list<string>|null $fields Explicit handles, or null for all fields.
+     * @param list<string>|null $fields Explicit handles, or null for the configured/native selection.
      * @param string $path Diagnostic projection path.
      * @return array<string, mixed> Repeated/deep entries retain identity with empty fields.
      */
@@ -53,6 +54,10 @@ final class EntryProjection
                 }
             }
             $layout = array_filter($layout, static fn (FieldInterface $field): bool => in_array($field->handle, $fields, true));
+        }
+        $selection = $this->selection($entry);
+        if ($selection !== null) {
+            $layout = array_filter($layout, static fn (FieldInterface $field): bool => in_array($field->handle, $selection, true));
         }
         $layout = isset($ancestors[$identity]) || $depth >= 10 ? [] : $layout;
         $ancestors[$identity] = true;
@@ -140,7 +145,7 @@ final class EntryProjection
             $values = [];
             foreach ($value as $element) {
                 if ($element instanceof Asset) {
-                    $values[] = app(AssetProjection::class)->project($element);
+                    $values[] = app(AssetProjection::class)->project($element, $this->imageProfiles($entry, $field));
                 } elseif ($element instanceof Entry) {
                     $values[] = $this->project($element, $ancestors, $depth + 1, path: "$path.related");
                 } else {
@@ -151,12 +156,62 @@ final class EntryProjection
         }
         return PublicValue::normalize(match (true) {
             $value instanceof MarkdownData => HtmlSanitizers::sanitize($value->getHtml()),
+            $value instanceof HtmlFieldData => (string) $value,
             $value instanceof DateTimeInterface => $value->format(DATE_ATOM),
             $value instanceof MultiOptionsFieldData => array_map($this->option(...), iterator_to_array($value)),
             $value instanceof OptionData => $this->option($value),
-            $value instanceof LinkData => $value->toArray(),
+            $value instanceof LinkData => app(LinkProjection::class)->live($value),
             default => $field->serializeValue($value, $entry),
         }, $path);
+    }
+
+    /**
+     * @param Entry $entry Current root, related or Matrix entry.
+     * @return list<string>|null Public handles, or null for the existing all-layout-fields contract.
+     */
+    private function selection(Entry $entry): ?array
+    {
+        $selections = config('craft-inertia.entryFields', []);
+        if (!is_array($selections)) {
+            throw new InvalidArgumentException('craft-inertia.entryFields must map entry-type handles to field lists.');
+        }
+        $type = $entry->getType()->handle;
+        if (!array_key_exists($type, $selections) && !array_key_exists('*', $selections)) {
+            return null;
+        }
+        $fields = array_key_exists($type, $selections) ? $selections[$type] : $selections['*'];
+        $handles = array_map(static fn (FieldInterface $field): string => $field->handle, $entry->getFieldLayout()?->getCustomFields() ?? []);
+        if (!is_array($fields) || !array_is_list($fields)) {
+            throw new InvalidArgumentException("craft-inertia.entryFields.$type must be a list of attached field handles.");
+        }
+        foreach ($fields as $handle) {
+            if (!is_string($handle) || !in_array($handle, $handles, true)) {
+                throw new InvalidArgumentException("craft-inertia.entryFields.$type contains an unknown field handle.");
+            }
+        }
+        return $fields;
+    }
+
+    /**
+     * @param Entry $entry Current field owner.
+     * @param FieldInterface $field Native Assets field.
+     * @return list<string> Project-selected responsive image profiles.
+     */
+    private function imageProfiles(Entry $entry, FieldInterface $field): array
+    {
+        $mapping = config('craft-inertia.fieldImageProfiles', []);
+        if (!is_array($mapping)) {
+            throw new InvalidArgumentException('craft-inertia.fieldImageProfiles must map entry types to Assets field profiles.');
+        }
+        $fields = $mapping[$entry->getType()->handle] ?? $mapping['*'] ?? [];
+        if (!is_array($fields)) {
+            throw new InvalidArgumentException('craft-inertia.fieldImageProfiles entry-type values must be field maps.');
+        }
+        $profiles = $fields[$field->handle] ?? $fields['*'] ?? [];
+        if (!is_array($profiles) || !array_is_list($profiles)) {
+            throw new InvalidArgumentException('craft-inertia.fieldImageProfiles field values must be profile-name lists.');
+        }
+        return $profiles;
     }
 
     /**

@@ -1,5 +1,12 @@
 # Public rendering and response policies
 
+> For ordinary entry pages, use native `inertia:` templates and the current
+> `entry/site/preview/head` contract. [HEAD.md](HEAD.md) and
+> [EXTENDING.md](EXTENDING.md) describe plugin-owned rendering/selection and
+> project-owned metadata providers. Bespoke controller examples below retain
+> their own explicit contracts; historical Playground `seo` examples do not
+> define the current native page contract.
+
 The [installation checklist](INSTALLATION.md) describes project-owned setup and
 native lifecycle behavior. CP pages must stay outside the public SSR resolver.
 Consuming projects own verification of the privacy policies below; the plugin
@@ -38,7 +45,8 @@ the conservative private boundary therefore operates on the response's gateway.
 The renderer also clones the official response factory and clears its shared
 props for this response, preventing host/CP globals from entering public pages.
 The original factory, shares and SSR gateway are restored even on projection
-failure. Public props are all attached layout fields plus official errors
+failure. Public props use the configured recursive field selection (all layout fields
+without a matching rule), native Head metadata and official errors
 and native flash; no account adapter is introduced. The project owns its Blade
 root, Vue Head/layout, resolver, matching client/SSR bundles and service operation.
 When enabling a project SSR bundle, exclude native CP/action paths once through
@@ -79,12 +87,12 @@ canonical content, or change precedence of explicit Craft destinations.
 The props callback runs inside the cloned response factory and SSR gateway,
 after the public root view, asset version and official errors/flash integration
 are configured. It receives the effective robots directive, computed before
-props or rendering can consume flash. Use that value for SEOmatic or another
+props or rendering can consume flash. Use that value for the
 project metadata projection; the response uses the same decision. Final non-200
 responses, including official version conflicts, always get deny headers.
 No global/CP shares or automatic entry fields are added to explicit project
 responses. Only the native controller projects the existing `entry`, `site`,
-`preview` and `seo` defaults. Each render also gets a fresh official `SsrState`,
+`preview` and `head` defaults. Each render also gets a fresh official `SsrState`,
 so identical page data cannot reuse another render's cached SSR output or bypass
 the current gateway's privacy decision. The factory, gateway and original SSR
 state are restored in `finally`, including failures in policy evaluation,
@@ -129,7 +137,7 @@ public function __invoke(Request $request, #[CurrentElement] Entry $entry): Resp
 In this migration, update the project's `PageData::props()` and SEO projection to
 accept `string $robots`. Use it to replace any robots meta in the selected SEO
 shape, instead of calling another rendering predicate. Keep field selection,
-queries, layouts, images, SEOmatic and authorization in the project. Move the
+queries, layouts, external metadata calculation and authorization in the project. Move the
 projection into the callback rather than evaluating it before `render()`.
 
 Explicit component names such as `pages/work/[slug]` are passed through the host
@@ -242,7 +250,7 @@ including its controller, policy, exception fallback and exact lockfiles
 | --- | --- | --- |
 | Craft core | `6.0.0-beta.1` (`05ce9b81`) | Matching installed Playground source inspected for matched elements, site, entry status, token and flash APIs. |
 | Craft Yii adapter | `6.0.0-beta.1` (`c2038019`) | Consumer lock confirmed; no compatibility changes or runtime acceptance claimed. |
-| CKEditor | `6.0.0-beta.1` (`44208e17`) | Consumer lock confirmed; field serialization is unchanged. |
+| CKEditor | `6.0.0-beta.1` (`44208e17`) | Consumer lock confirmed; field serialization at that historical baseline was unchanged. |
 | Laravel | `13.42.0` (`f5c01f6b`) | Matching installed source for container/facade and response contracts. |
 | Inertia Laravel | `3.7.0` (`9d3f9060`) | Matching installed adapter source inspected for factory/gateway APIs, middleware, flash, partial props and version-conflict ordering. |
 | Inertia Vue | `3.11.0` | Consumer Yarn lock confirmed; no frontend change. |
@@ -306,7 +314,7 @@ Metadata fields and content choices belong to this example, not the package.
 The public Blade root contains one Inertia head output and no competing static
 title. Guest SSR supplies meaningful body content and head tags in initial HTML;
 client rendering owns them after navigation or an SSR outage. STEP-06B adds the
-bounded indexing and structured-data policy below. No third-party SEO integration
+bounded indexing and structured-data policy below. No third-party metadata integration
 is advertised.
 
 ## Project indexing and structured data
