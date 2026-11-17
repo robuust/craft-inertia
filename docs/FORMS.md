@@ -12,6 +12,31 @@ CMS `0506c32b44efbe3e7f5fded46a7c1d39de699d5b` and matching assets
 sources, aliased for Composer compatibility; they are not the released alpha.20.
 See [STEP-04 evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP04.md).
 
+## Native action form props
+
+Use `Robuust\CraftInertia\Forms\NativeForm::props($action, $redirect)` inside a
+project controller's private render callback to prepare a native action form:
+
+```php
+'entryForm' => app(\Robuust\CraftInertia\Forms\NativeForm::class)
+    ->props('entries/save-entry', $returnUrl),
+```
+
+The server selects the native action path without the configured action trigger
+and a trusted success URL. The helper returns `action` from `Url::actionUrl()`,
+`csrfToken` from the current session and `redirect` from `Crypt::encrypt()`.
+Submit to `action` with hidden `_token=csrfToken` and `redirect=redirect`
+inputs, retaining the action's native field names and required inputs. Keep
+HTML negotiation for redirect/session-based Inertia forms.
+
+Resolve these props per request. Keep them outside guest SSR, public content
+caches and metadata; follow the project's private rendering policy. The helper
+does not submit, validate, authorize, select HTTP methods or change middleware.
+The owning native action retains those responsibilities. No plugin-specific
+configuration or validation registry is added. The optional
+[Contact Form example](CONTACT_FORM.md) shows this helper with project-owned
+validation through Craft's native events.
+
 ## Select the transport for each operation
 
 | Owner / operation | Request and response | Project caller |
@@ -104,8 +129,9 @@ Guests and users lacking file permissions cannot obtain file bytes or metadata.
 
 CSRF remains enabled for native and project actions. The examples retain the
 native Craft guard and session; complete account challenges belong to STEP-05.
-The separately selected [Contact Form integration](CONTACT_FORM.md) adds a bounded
-third-party scalar-form matrix and native limitation. This STEP-04 proof makes no
+The separately selected [Contact Form example](CONTACT_FORM.md) uses the generic
+form helper and project-owned native validation, with a historical matrix and
+current source findings. This STEP-04 proof makes no
 claim about arbitrary native actions, other third-party forms, remote upload
 transports, production storage or existing database upgrades. Official API
 references: [Inertia forms](https://inertiajs.com/docs/v3/the-basics/forms),
