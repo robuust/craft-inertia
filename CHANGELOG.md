@@ -7,6 +7,7 @@
 
 - Made custom fields opt-in for native entry pages. An entry with no matching `entryFields` rule keeps its base properties and exposes no custom fields. This also applies to related entries and Matrix blocks.
 - To retain the previous full-layout fallback, explicitly set `entryFields` to `['*' => '*']`. This includes fields hidden by editor layout conditions and fields added later. Use entry-type field lists to expose only the fields your frontend needs.
+- Added opt-in frontend scaffolding and read-only setup diagnostics for Craft consumers.
 
 ## 1.0.1 - 2026-11-18
 

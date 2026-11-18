@@ -6,15 +6,25 @@ namespace Robuust\CraftInertia;
 
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Plugin\Plugin as CraftPlugin;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Event;
 use Override;
+use Robuust\CraftInertia\Console\DoctorCommand;
+use Robuust\CraftInertia\Console\ScaffoldCommand;
 use Robuust\CraftInertia\Routing\EntryTemplates;
 
-/** Registers opt-in native entry rendering and public adapter configuration. */
+/** Registers native entry rendering, public adapter configuration and setup commands. */
 final class Plugin extends CraftPlugin
 {
     #[Override]
     public bool $config = false;
+
+    /** @var list<class-string<Command>> */
+    #[Override]
+    protected array $commands = [
+        DoctorCommand::class,
+        ScaffoldCommand::class,
+    ];
 
     /** {@inheritdoc} */
     #[Override]

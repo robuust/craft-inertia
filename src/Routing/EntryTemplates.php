@@ -14,6 +14,9 @@ use Robuust\CraftInertia\Http\Controllers\EntryController;
 /** Selects Vue pages only after matching native entry eligibility and destinations. */
 final class EntryTemplates
 {
+    /** Pattern for slash-separated Vue page names in native entry templates. */
+    public const string COMPONENT_PATTERN = '~^(?:[A-Za-z0-9_-]+|\[[A-Za-z0-9_-]+\])(?:/(?:[A-Za-z0-9_-]+|\[[A-Za-z0-9_-]+\]))*$~D';
+
     /** @param SetRoute $event Native route selection, including prior listener decisions. */
     public function __invoke(SetRoute $event): void
     {
@@ -33,7 +36,7 @@ final class EntryTemplates
         }
 
         $component = substr($settings->template, strlen('inertia:'));
-        if (!preg_match('~^(?:[A-Za-z0-9_-]+|\[[A-Za-z0-9_-]+\])(?:/(?:[A-Za-z0-9_-]+|\[[A-Za-z0-9_-]+\]))*$~D', $component)) {
+        if (!preg_match(self::COMPONENT_PATTERN, $component)) {
             throw new InvalidArgumentException('An inertia: entry template must name a page component.');
         }
 
