@@ -21,6 +21,10 @@ return [
     // Ordered named {matches: callable(FieldContext): bool, serialize: callable(FieldContext): mixed}.
     'fieldSerializers' => [],
 
+    // Effective entry type => field handle => complete TypeScript type expression.
+    // Used by craft-inertia:types. This does not change the exposed fields or their values.
+    'entryFieldTypes' => [],
+
     // Named {transform: native handle|array, widths: list<int>}; no profiles apply automatically.
     'imageProfiles' => [],
 

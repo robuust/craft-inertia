@@ -2,12 +2,13 @@
 
 ## Requirements and ownership
 
-The package requires PHP 8.5, Craft `^6.0.0-beta.1` and the official Inertia
+The package requires PHP `^8.5`, Craft `^6.0.0-beta.1` and the official Inertia
 Laravel adapter `^3.7`, with Laravel `^13.38`. The inspected beta.1 baseline
 uses CMS source
 `05ce9b81be3704fb27da3a5a6670accfa49ec9a9`, CP assets
 `87acafef481f17c12a10170211bbccda42588dbd` and native schema `6.0.0.36`.
-These exact versions describe the inspected baseline, not every allowed version.
+See the [compatibility matrix](COMPATIBILITY.md#baseline) for the versioned
+acceptance target and verification status.
 
 The plugin contains PHP integration code and configuration. The consuming Craft
 project owns its content schema, Vue pages, Blade root, frontend dependencies,
@@ -31,14 +32,15 @@ The Plugin Store handles package installation and registration through Craft.
 
 ## Install from Packagist
 
-Install `robuust/craft-inertia` from the public
-[Packagist package](https://packagist.org/packages/robuust/craft-inertia).
+Craft Inertia [v1.0.2](https://github.com/robuust/craft-inertia/releases/tag/v1.0.2)
+is available on [Packagist](https://packagist.org/packages/robuust/craft-inertia#v1.0.2)
+as `robuust/craft-inertia`. See [consumer checks](COMPATIBILITY.md#consumer-checks)
+for installation and runtime verification status.
 The existing Craft 6 project's root requirements must permit its beta
 CMS/assets dependencies. No private VCS repository or GitHub token is needed.
 The package is distributed under the [Craft License](../LICENSE.md).
 
-Once 1.0.2 is published, run these commands from the consuming project for a
-new installation.
+For a new installation, run these commands from the consuming project's root.
 
 ```sh
 composer require 'robuust/craft-inertia:^1.0.2' --with-all-dependencies --no-interaction
@@ -62,7 +64,7 @@ of `craft:setup:publish`.
 
 ### Try a pinned candidate
 
-To verify an unreleased 1.0.2 candidate, use a clean clone of the plugin
+To verify an unreleased change, use a clean clone of the plugin
 checked out at the full candidate commit SHA. Add it as a path repository
 in the consuming project's `composer.json`. Adjust the path to match where
 Composer will run.
@@ -75,14 +77,14 @@ Composer will run.
         "symlink": false,
         "reference": "auto",
         "versions": {
-            "robuust/craft-inertia": "1.0.2-RC1"
+            "robuust/craft-inertia": "dev-local-candidate"
         }
     }
 }
 ```
 
 ```sh
-composer require 'robuust/craft-inertia:1.0.2-RC1' --with-all-dependencies --no-interaction
+composer require 'robuust/craft-inertia:dev-local-candidate' --with-all-dependencies --no-interaction
 ```
 
 The version override is local to this Composer repository. Check the plugin's

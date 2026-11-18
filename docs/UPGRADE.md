@@ -5,8 +5,9 @@
 | `0.1.0-beta.3` | `inertia` | [Remove the beta registration with beta.3 code, then install under the new handle](#from-beta3). |
 | `1.0.0` or `1.0.1` | `craft-inertia` | [Keep the registration and update field selection and the package](#from-100-or-101). |
 
-The Composer package is `robuust/craft-inertia` in both releases. To rehearse
-before 1.0.2 is published, use a [pinned 1.0.2 candidate](INSTALLATION.md#try-a-pinned-candidate).
+The Composer package is `robuust/craft-inertia` in each release. Rehearse the
+upgrade with the [published 1.0.2 package](https://packagist.org/packages/robuust/craft-inertia#v1.0.2)
+and retain the resulting consumer lockfile.
 
 ## Prepare public field selections
 
@@ -94,10 +95,8 @@ nested entries and metadata. See the [content contract](CONTENT.md) and
 
 ### Install under the new handle
 
-1. Update Composer and deploy the chosen 1.0.2 build and lockfile with normal
-   package discovery. Use the [pinned candidate](INSTALLATION.md#try-a-pinned-candidate)
-   for acceptance or run the following command in your update checkout once
-   1.0.2 is published.
+1. Update Composer in your update checkout and deploy the reviewed lockfile
+   with normal package discovery.
 
    ```sh
    composer require 'robuust/craft-inertia:^1.0.2' --with-all-dependencies --no-interaction
@@ -162,9 +161,7 @@ original enabled state and the mapped pages or native fallback work.
 1. Keep the existing `craft-inertia` registration. Back up the current lockfile,
    project frontend settings and assets. Prepare the public field allowlists,
    or prepare the deliberate `'*' => '*'` fallback to deploy with 1.0.2.
-2. Resolve and review the new package and lock. Use the
-   [pinned candidate](INSTALLATION.md#try-a-pinned-candidate) for acceptance or,
-   once 1.0.2 is published, update your consuming project.
+2. Resolve and review the new package and lock in your consuming project.
 
    ```sh
    composer require 'robuust/craft-inertia:^1.0.2' --with-all-dependencies --no-interaction
@@ -182,4 +179,4 @@ original enabled state and the mapped pages or native fallback work.
    workers again.
 
 Use the [compatibility matrix](COMPATIBILITY.md) to record results against the
-actual consumer lockfile and candidate revision.
+actual consumer lockfile and installed release.

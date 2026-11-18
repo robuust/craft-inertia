@@ -1,9 +1,12 @@
 # Craft Plugin Store submission reference
 
-Robuust has submitted the Craft Inertia application. Approval, initial and
-renewal prices, and screenshot completion are unverified. The current
-[Packagist release](https://packagist.org/packages/robuust/craft-inertia) is
-1.0.1. Version 1.0.2 is awaiting release.
+Robuust has submitted the Craft Inertia application. The public Store catalog
+returned no entry for `craft-inertia` during the 1.0.2 release check. Approval,
+initial and renewal prices, and screenshot completion are unverified.
+
+Craft Inertia [v1.0.2](https://github.com/robuust/craft-inertia/releases/tag/v1.0.2)
+is available on [Packagist](https://packagist.org/packages/robuust/craft-inertia#v1.0.2).
+Installation in a clean Craft 6 project remains to be verified.
 
 ## Listing details
 
@@ -56,7 +59,7 @@ if offered for your license.
 allows its prerelease dependencies. From the project root, run:
 
 ```sh
-composer require 'robuust/craft-inertia:^1.0' --with-all-dependencies
+composer require 'robuust/craft-inertia:^1.0.2' --with-all-dependencies
 php artisan craft:plugin:install craft-inertia
 ```
 
@@ -74,8 +77,6 @@ submission for these screenshots, captured from the same working demo entry:
    `inertia:Site/Home` template.
 2. The published Vue page with selected fields rendered at its native URL.
 3. Craft’s native preview with a draft edit visible in the Vue page.
-
-Use the actual 1.0.2 release date in the changelog heading when tagging.
 
 After approval, verify the public listing’s developer, package, Craft
 compatibility, and version against Packagist and the changelog. In a clean

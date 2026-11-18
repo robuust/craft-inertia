@@ -1,5 +1,9 @@
 # Release Notes for Craft Inertia
 
+## 1.1.0 - 2026-11-18
+
+- Added `craft-inertia:types` to generate TypeScript page props from the applied Craft schema and check declarations for drift.
+
 ## 1.0.2 - 2026-11-18
 
 > [!IMPORTANT]

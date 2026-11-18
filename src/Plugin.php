@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Event;
 use Override;
 use Robuust\CraftInertia\Console\DoctorCommand;
 use Robuust\CraftInertia\Console\ScaffoldCommand;
+use Robuust\CraftInertia\Console\TypeScriptCommand;
 use Robuust\CraftInertia\Routing\EntryTemplates;
 
 /** Registers native entry rendering, public adapter configuration and setup commands. */
@@ -24,6 +25,7 @@ final class Plugin extends CraftPlugin
     protected array $commands = [
         DoctorCommand::class,
         ScaffoldCommand::class,
+        TypeScriptCommand::class,
     ];
 
     /** {@inheritdoc} */
