@@ -20,7 +20,7 @@ Install `robuust/craft-inertia` from the public
 [Packagist package](https://packagist.org/packages/robuust/craft-inertia).
 The existing Craft 6 project's root requirements must permit its beta
 CMS/assets dependencies. No private VCS repository or GitHub token is needed.
-The package retains its [proprietary license](../LICENSE.md).
+The package is distributed under the [Craft License](../LICENSE.md).
 For local package development, use the [README path repository](../README.md#install).
 
 From the consuming project:
@@ -169,7 +169,8 @@ Keep your `inertia:` section templates and published `config/craft-inertia.php`.
 The old identity is Composer `robuust/craft-inertia-poc`, PHP
 `Robuust\CraftInertiaPoc`, native handle `inertia-poc` and config `inertia-poc.*`.
 The current identity is `robuust/craft-inertia`, `Robuust\CraftInertia`, native
-handle `craft-inertia` and config `craft-inertia.*`. The license remains proprietary.
+handle `craft-inertia` and config `craft-inertia.*`. See the
+[Craft License](../LICENSE.md).
 
 1. Back up project source, database and configuration. Inventory custom hooks,
    cached routes/config and workers. Select the project's native fallback and

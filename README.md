@@ -118,7 +118,7 @@ integration configuration; the consuming project supplies the frontend files.
 
 The plugin uses the PHP namespace `Robuust\CraftInertia` and the native handle
 `craft-inertia`. Its source and Composer downloads are public under the
-[proprietary license](LICENSE.md).
+[Craft License](LICENSE.md).
 
 If you previously installed the plugin as `inertia`, follow the
 [handle upgrade guide](docs/INSTALLATION.md#upgrade-from-the-inertia-handle).
