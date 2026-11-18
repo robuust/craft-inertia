@@ -23,11 +23,12 @@ coexist with your Inertia pages.
 
 ### Use your Craft fields directly in Vue
 
-Read custom fields by handle, such as `entry.fields.summary`. Page props include
-entry and site details, preview status, and field data, including Matrix blocks,
-related entries, and assets. The plugin includes the entry’s layout fields by
-default. You can configure which fields are sent to the frontend and define
-responsive image variants for asset fields.
+Read selected custom fields by handle, such as `entry.fields.summary`. Page
+props include entry and site details, preview status, and the field data you
+choose to send to the frontend. Configure selections for the main entry,
+related entries, and Matrix blocks, and define responsive image variants for
+asset fields. In 1.0.2, entries start with identity and empty `fields` until
+you select fields for them.
 
 Authorized previews use the draft or revision Craft resolved, so editors can
 see their changes in the Vue frontend before publishing.
@@ -44,13 +45,14 @@ Vite setup. The plugin also provides helpers for rendering page metadata,
 connecting native Craft forms to Inertia’s validation and flash handling, and
 rendering custom pages from your own controllers.
 
-### Requirements
+### Requirements and guides
 
 Craft Inertia 1.0 requires PHP `^8.5`, Craft CMS `^6.0.0-beta.1`, Laravel
 `^13.38`, and the official Inertia Laravel adapter
 (`inertiajs/inertia-laravel` `^3.7`).
 
-[Installation and configuration guide](docs/INSTALLATION.md)
+[Quickstart](docs/QUICKSTART.md) · [Installation](docs/INSTALLATION.md) ·
+[Upgrade](docs/UPGRADE.md) · [Compatibility](docs/COMPATIBILITY.md)
 
 ## How it works
 
@@ -74,10 +76,9 @@ flowchart TD
    such as `inertia:Site/Home` selects the Vue component `Site/Home`. Explicit
    route/controller destinations keep precedence.
 3. The plugin projects the actual matched entry into JSON-compatible page props.
-   By default it includes every custom field in the entry's field layout under
-   `entry.fields.<handle>`, including related entries and Matrix content.
-   Projects can configure recursive public field selection and responsive images.
-   Authorized previews retain their matched draft/revision identity.
+   In 1.0.2, `entryFields` determines which custom fields are sent for the main
+   entry, related entries and Matrix blocks. Authorized previews retain their
+   matched draft/revision identity.
 4. The plugin renders through the official Inertia Laravel adapter, using an
    isolated public response factory. It excludes CP/global shares and applies
    the configured root view, asset version, flash/error handling and response
@@ -103,10 +104,11 @@ The main integration points are [EntryTemplates](src/Routing/EntryTemplates.php)
 
 Install the `robuust/craft-inertia` package from
 [Packagist](https://packagist.org/packages/robuust/craft-inertia) in an existing
-Craft 6 project that permits the Craft beta dependencies:
+Craft 6 project that permits the Craft beta dependencies. Once 1.0.2 is
+published, run the following commands for a new installation.
 
 ```sh
-composer require 'robuust/craft-inertia:^1.0' --with-all-dependencies --no-interaction
+composer require 'robuust/craft-inertia:^1.0.2' --with-all-dependencies --no-interaction
 php artisan craft:plugin:install craft-inertia --no-interaction
 php artisan vendor:publish --tag=craft-inertia-config --no-interaction
 ```
@@ -117,27 +119,14 @@ Craft discovers the plugin provider automatically. The package publishes its
 integration configuration; the consuming project supplies the frontend files.
 
 The plugin uses the PHP namespace `Robuust\CraftInertia` and the native handle
-`craft-inertia`. Its source and Composer downloads are public under the
-[Craft License](LICENSE.md).
+`craft-inertia`. Use of the public source and Composer downloads is subject to
+the [Craft License](LICENSE.md).
 
-If you previously installed the plugin as `inertia`, follow the
-[handle upgrade guide](docs/INSTALLATION.md#upgrade-from-the-inertia-handle).
-
-For local package development, a consuming project's path repository can use:
-
-```json
-{
-  "repositories": [{
-    "type": "path",
-    "url": "../craft-inertia",
-    "options": {"symlink": true, "versions": {"robuust/craft-inertia": "1.0.0"}}
-  }],
-  "require": {"robuust/craft-inertia": "^1.0"}
-}
-```
-
-The local path must be available wherever Composer runs. Use the published
-package for CI and deployment environments that do not have that checkout.
+Versions 1.0.0 and 1.0.1 include all layout fields whenever no field rule
+matches. Use the [tagged 1.0.1 guide](https://github.com/robuust/craft-inertia/blob/v1.0.1/docs/INSTALLATION.md)
+for that release, or see [Installation](docs/INSTALLATION.md#try-a-pinned-candidate)
+for a pinned 1.0.2 candidate. For an existing installation, use the
+[upgrade guide](docs/UPGRADE.md).
 
 ## Configure the consuming project
 
@@ -209,29 +198,31 @@ Keep the section's native URI and select a Vue component in its Template:
 | Structure entry | Native nested URI | `inertia:Site/Places/Show` |
 
 `inertia:Site/Articles/Show` resolves through the project's normal resolver,
-for example `resources/js/pages/Site/Articles/Show.vue`. All fields from the
-entry's field layout are automatically supplied under their native handles:
+for example `resources/js/pages/Site/Articles/Show.vue`. To expose `summary`
+for entries of type `article`, add a rule in `config/craft-inertia.php`.
+
+```php
+'entryFields' => [
+    'article' => ['summary'],
+],
+```
+
+Read the selected field under its native handle.
 
 ```vue
 <p>{{ entry.fields.summary }}</p>
-<img v-for="image in entry.fields.heroImage" :key="image.id" :src="image.url" :alt="image.alt" />
 ```
 
-No field-selection configuration or admin selector is required. Craft's native
-project-config YAML already stores the section template and entry-type layout.
-The plugin supplies `entry`, `site`, `preview`, `head` and official protocol props.
-It automatically includes nested Matrix and related entry fields, with bounded
-circular-reference handling. Assets use their original native URLs; other field
-types use their own native serializers. [CONTENT.md](docs/CONTENT.md) defines
-the exact shapes and boundaries. Configure `entryFields` by entry-type handle
-to preserve a public whitelist for root and related entries. Without a matching
-rule, all attached fields, including internal notes and fields hidden by editor
-layout conditions, remain part of page data. The old `pages[component].fields`
-setting is ignored; it is not the current selection mechanism.
+Craft's project config stores the section template and entry-type layout. Each
+entry applies its own type rule, including entries from relation and Matrix
+fields. A type rule takes precedence over `'*'`. An absent rule or an explicit
+`[]` produces empty `fields`. Set `'*' => '*'` in 1.0.2 to deliberately expose
+all layout fields for unmatched types. See the [content contract](docs/CONTENT.md)
+for field shapes and circular-reference handling.
 
 | Page prop | Contents |
 | --- | --- |
-| `entry` | Native identity, title, URL, entry type and selected layout fields under `fields` (all without a matching rule). |
+| `entry` | Native identity, title, URL, entry type and selected layout fields under `fields`. |
 | `site` | Current site identity, language and base URL. |
 | `preview` | Whether Craft supplied a preview entry. |
 | `head` | Generic title/meta/link/JSON-LD and effective robots policy; no third-party plugin coupling. |
@@ -331,8 +322,7 @@ Disabling an `inertia:`-only template leaves normal native template interpretati
 a working Twig/Blade fallback must be deliberately configured and retained.
 There is no automatic reconstruction of a previous Twig design.
 
-[INSTALLATION.md](docs/INSTALLATION.md) covers current setup, local-only migration,
-and native lifecycle/fallback behavior.
+[Installation](docs/INSTALLATION.md) covers native lifecycle and fallback.
 [FORMS.md](docs/FORMS.md) covers the generic `NativeForm::props($action, $redirect)`
 helper and native mutations/files. [CONTACT_FORM.md](docs/CONTACT_FORM.md) shows
 Contact Form as an optional project integration, using native validation events,
@@ -347,28 +337,27 @@ capabilities; the linked issues define their scope and acceptance criteria.
 | --- | --- |
 | [#13](https://github.com/robuust/craft-inertia/issues/13) | Safe frontend scaffolding and installation diagnostics. |
 | [#16](https://github.com/robuust/craft-inertia/issues/16) | TypeScript page props generated from Craft field layouts. |
-| [#17](https://github.com/robuust/craft-inertia/issues/17) | A versioned compatibility and production acceptance matrix. |
 
 ## Verification scope
 
 This plugin contains no automated tests, fixtures or application harness. Its
 packaged Vue Head component uses the consuming project's frontend toolchain;
 the complete Vue application remains project-owned.
-Use Composer validation and PHP syntax checks for the package, and verify native
-URLs, complete field data, preview identity, SSR/hydration, forms, privacy and
-fallback in the actual consuming project with its own locked dependencies.
+Use Composer validation and PHP syntax checks for the package. Verify native
+URLs, field selection, preview identity, SSR/hydration, forms, privacy and
+fallback in the consuming project with its locked dependencies. See the
+[compatibility matrix](docs/COMPATIBILITY.md).
 
 Earlier development reports and test sources remain available in Git history.
 They describe their original versions and bounded outcomes; they do not establish
 current compatibility or production acceptance.
 
-Four native account regressions remain separate open failures. Contact Form's
-historical N01 nested-message failure is fixed in the inspected 4.0.0 source;
-runtime acceptance of that release remains unverified. The local unaccepted
-account adapter is excluded.
-Full STEP-05, full AC-06/AC-07, general compatibility, release and production
-acceptance remain incomplete. No PHP coverage percentage is claimed without a
-compatible driver. [FRONTEND.md](docs/FRONTEND.md) owns the agreed requirements.
+Earlier integration work recorded four native account regressions and a nested
+Contact Form message issue. The inspected Contact Form 4.0.0 source contains
+the nested-message fix. Runtime acceptance of that release remains unverified.
+The 1.0 scope covers public entry pages, optional SSR, and native public forms.
+Full account flows and generated TypeScript props are deferred. See
+[frontend requirements](docs/FRONTEND.md) for the wider project scope.
 
 Generic public project props, serializers and image profiles are
 documented in [Public page extensions](docs/EXTENDING.md).

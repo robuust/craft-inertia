@@ -1,4 +1,4 @@
-# Automatic entry fields
+# Public entry fields
 
 For ordinary native entry pages, set the section's Template to
 `inertia:Site/Articles/Show`. Craft owns its URI, site, publication rules and
@@ -6,24 +6,27 @@ preview authorization. The plugin renders `Site/Articles/Show` using the native
 matched entry, without a project entry controller or duplicate Laravel route.
 The project supplies its Vue page, layout, root, resolver and builds.
 
-By default, every custom field attached to the entry's field layout is
-automatically available under its native handle, for example `entry.fields.summary` or
-`entry.fields.heroImage`. With default configuration, adding a field to the
-layout requires no plugin configuration. Craft's existing section and entry-type project-config YAML
-already carries the template and layout; there is no extra selector or YAML schema.
+Starting in 1.0.2, use `entryFields` in `config/craft-inertia.php` to expose
+fields by entry-type handle. Selected fields appear under their native handles,
+for example `entry.fields.summary` or `entry.fields.heroImage`. Each entry the
+plugin projects, including children of Entries and Matrix fields, resolves its
+own type rule before considering the `'*'` fallback. With no matching rule or
+an empty list, the entry keeps its identity and returns `fields: []`.
 
-This supersedes the earlier component-keyed `pages[component].fields` selection.
-That setting is no longer read. The current `entryFields` config can select
-public field handles by entry-type handle, recursively for roots, related entries
-and Matrix children. Use an identity-only wildcard fallback when migrating an
-existing whitelist. Without a matching rule, all attached fields are sent,
-including internal notes and fields hidden by editor layout conditions. See
+With a list of field handles, a field added to a projected entry remains absent
+from initial page data and Inertia JSON until the project selects it. To expose
+all attached fields, including those hidden by editor layout conditions, set a
+type's rule to `'*'`. Beta.3, 1.0.0 and 1.0.1 expose all attached fields
+when no rule matches. Set `entryFields` to `['*' => '*']` to retain that fallback deliberately.
+See the [upgrade guide](UPGRADE.md) and
 [declarative field selection](EXTENDING.md#declarative-native-field-selection).
 
 Project-owned public props use one generic
 [public page extension callback](EXTENDING.md); canonical and protocol names
 remain reserved. The generic [Head integration](HEAD.md) normalizes
 project-calculated metadata and supplies native entry defaults, without third-party dependencies.
+Review what your `publicProps` and `head` callbacks and bespoke controllers
+publish. `entryFields` governs values produced by the entry projector.
 
 ## Stable page props
 
@@ -34,7 +37,7 @@ project-calculated metadata and supplies native entry defaults, without third-pa
 | `entry.canonicalId` | Craft canonical identity; it grants no additional access. |
 | `entry.type` | Native entry-type handle, including each Matrix child's type. |
 | `entry.postDate` | Native date as ISO 8601 with timezone, or null. |
-| `entry.fields` | Selected layout fields, or all fields without a matching rule, with native handles. |
+| `entry.fields` | Selected layout fields keyed by native handle, or `[]` when the selection is empty. |
 | `site` | Native current `id`, `uid`, `handle`, `name`, `language`, `baseUrl`. |
 | `preview` | Native matched element's `previewing` flag. |
 | `head` | Normalized `title`, `meta`, `link`, HTML-safe `jsonLd` and effective `robots`. |
@@ -65,9 +68,12 @@ Relations retain native collection cardinality: an Assets field with one target
 is a one-item list and no targets is `[]`. Other relation fields, such as Users,
 use their native serialization contract (IDs), rather than exporting user objects.
 JSON, Color, Money, Table, Content Block and installed custom fields follow their
-own native serializers. No field-specific PHP callback is required for ordinary
-entry pages, Links, rendered HTML or configured responsive image profiles.
-Projects can optionally register [field serializers](EXTENDING.md#field-serializers-15).
+own native serializers. Selecting a composite field exposes the serializer's
+output, including the nested values it returns. A native Content Block, for
+example, can serialize its whole layout, including a Matrix field inside it.
+Review the output of selected fields and use a
+[field serializer](EXTENDING.md#field-serializers-15) when a project needs a
+narrower shape.
 A custom serializer must return finite JSON scalars, null, arrays,
 JSON objects (`stdClass`) or values implementing `JsonSerializable`. Other
 objects/resources and excessively nested data cause an explicit error rather than an implicit object dump.

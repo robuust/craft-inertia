@@ -13,8 +13,9 @@ return [
     // Supplies project metadata; the plugin retains response/preview/robots policy and Head rendering.
     'head' => null,
 
-    // Entry-type handle => public field handles; '*' supplies the fallback for every related entry too.
-    // Empty config retains all layout fields. Use ['*' => []] when migrating a selected-field consumer.
+    // Entry-type handle => public field handles or '*' for all attached fields.
+    // The '*' key applies to unmatched types, including relations and Matrix children.
+    // Without a matching rule, entries retain their identity and have empty fields.
     'entryFields' => [],
 
     // Ordered named {matches: callable(FieldContext): bool, serialize: callable(FieldContext): mixed}.

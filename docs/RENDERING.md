@@ -45,9 +45,8 @@ the conservative private boundary therefore operates on the response's gateway.
 The renderer also clones the official response factory and clears its shared
 props for this response, preventing host/CP globals from entering public pages.
 The original factory, shares and SSR gateway are restored even on projection
-failure. Public props use the configured recursive field selection (all layout fields
-without a matching rule), native Head metadata and official errors
-and native flash; no account adapter is introduced. The project owns its Blade
+failure. Public props use the [recursive field selection](CONTENT.md), native
+Head metadata, official errors and native flash. The project owns its Blade
 root, Vue Head/layout, resolver, matching client/SSR bundles and service operation.
 When enabling a project SSR bundle, exclude native CP/action paths once through
 official `Inertia::withoutSsr()` in the host provider, or retain the host's

@@ -25,8 +25,8 @@ final class EntryProjection
 {
     /**
      * @param Entry $entry Actual matched/authorized entry; no canonical requery is performed.
-     * @param list<string>|null $fields Explicit selected handles, or null for the configured/native layout selection.
-     * @return array<string, mixed> Native identity and the requested field values.
+     * @param list<string>|null $fields Optional restriction on configured public field handles.
+     * @return array<string, mixed> Native identity and the selected field values.
      */
     public function entry(Entry $entry, ?array $fields = null): array
     {
@@ -37,7 +37,7 @@ final class EntryProjection
      * @param Entry $entry Visible native entry.
      * @param array<string, true> $ancestors Entry identities on this relation path.
      * @param int $depth Current relation depth.
-     * @param list<string>|null $fields Explicit handles, or null for the configured/native selection.
+     * @param list<string>|null $fields Optional restriction on configured public field handles.
      * @param string $path Diagnostic projection path.
      * @return array<string, mixed> Repeated/deep entries retain identity with empty fields.
      */
@@ -45,9 +45,10 @@ final class EntryProjection
     {
         ElementCaches::collectCacheInfoForElement($entry);
         $identity = $entry->id !== null ? "$entry->id:$entry->siteId" : 'new:'.spl_object_id($entry);
+        $type = $entry->getType()->handle;
         $layout = $entry->getFieldLayout()?->getCustomFields() ?? [];
+        $handles = array_map(static fn (FieldInterface $field): string => $field->handle, $layout);
         if ($fields !== null) {
-            $handles = array_map(static fn (FieldInterface $field): string => $field->handle, $layout);
             foreach ($fields as $handle) {
                 if (!is_string($handle) || !in_array($handle, $handles, true)) {
                     throw new InvalidArgumentException("$path contains an unknown selected field handle.");
@@ -55,8 +56,8 @@ final class EntryProjection
             }
             $layout = array_filter($layout, static fn (FieldInterface $field): bool => in_array($field->handle, $fields, true));
         }
-        $selection = $this->selection($entry);
-        if ($selection !== null) {
+        $selection = $this->selection($type, $handles);
+        if ($selection !== '*') {
             $layout = array_filter($layout, static fn (FieldInterface $field): bool => in_array($field->handle, $selection, true));
         }
         $layout = isset($ancestors[$identity]) || $depth >= 10 ? [] : $layout;
@@ -69,13 +70,13 @@ final class EntryProjection
             'id' => $entry->id, 'uid' => $entry->uid, 'canonicalId' => $entry->getCanonicalId(),
             'title' => $entry->title, 'slug' => $entry->slug, 'url' => $entry->getUrl(),
             'postDate' => $entry->postDate?->format(DATE_ATOM),
-            'type' => $entry->getType()->handle, 'fields' => $values,
+            'type' => $type, 'fields' => $values,
         ];
     }
 
     /**
      * @param Entry $entry Native owner entry.
-     * @param FieldInterface $field Field selected by the layout or explicit whitelist.
+     * @param FieldInterface $field Field selected for public projection.
      * @param array<string, true> $ancestors Entry identities on this relation path.
      * @param int $depth Current entry relation depth.
      * @param string $path Diagnostic field path.
@@ -166,27 +167,30 @@ final class EntryProjection
     }
 
     /**
-     * @param Entry $entry Current root, related or Matrix entry.
-     * @return list<string>|null Public handles, or null for the existing all-layout-fields contract.
+     * @param string $type Current root, related or Matrix entry's type handle.
+     * @param array<array-key, string> $handles Field handles in the entry layout.
+     * @return list<string>|'*' Public handles, or '*' for all attached layout fields.
      */
-    private function selection(Entry $entry): ?array
+    private function selection(string $type, array $handles): array|string
     {
         $selections = config('craft-inertia.entryFields', []);
         if (!is_array($selections)) {
-            throw new InvalidArgumentException('craft-inertia.entryFields must map entry-type handles to field lists.');
+            throw new InvalidArgumentException("craft-inertia.entryFields must map entry-type handles to field lists or '*'.");
         }
-        $type = $entry->getType()->handle;
-        if (!array_key_exists($type, $selections) && !array_key_exists('*', $selections)) {
-            return null;
+        $key = array_key_exists($type, $selections) ? $type : '*';
+        if (!array_key_exists($key, $selections)) {
+            return [];
         }
-        $fields = array_key_exists($type, $selections) ? $selections[$type] : $selections['*'];
-        $handles = array_map(static fn (FieldInterface $field): string => $field->handle, $entry->getFieldLayout()?->getCustomFields() ?? []);
+        $fields = $selections[$key];
+        if ($fields === '*') {
+            return $fields;
+        }
         if (!is_array($fields) || !array_is_list($fields)) {
-            throw new InvalidArgumentException("craft-inertia.entryFields.$type must be a list of attached field handles.");
+            throw new InvalidArgumentException("craft-inertia.entryFields.$key must be a list of attached field handles or '*'.");
         }
         foreach ($fields as $handle) {
             if (!is_string($handle) || !in_array($handle, $handles, true)) {
-                throw new InvalidArgumentException("craft-inertia.entryFields.$type contains an unknown field handle.");
+                throw new InvalidArgumentException("craft-inertia.entryFields.$key contains an unknown field handle for entry type $type.");
             }
         }
         return $fields;
