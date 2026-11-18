@@ -21,15 +21,20 @@ Install `robuust/craft-inertia` from the public
 The existing Craft 6 project's root requirements must permit its beta
 CMS/assets dependencies. No private VCS repository or GitHub token is needed.
 The package is distributed under the [Craft License](../LICENSE.md).
-For local package development, use the [README path repository](../README.md#install).
 
-From the consuming project:
+Once 1.0.2 is published, run these commands from the consuming project for a
+new installation.
 
 ```sh
-composer require 'robuust/craft-inertia:^1.0' --with-all-dependencies --no-interaction
+composer require 'robuust/craft-inertia:^1.0.2' --with-all-dependencies --no-interaction
 php artisan craft:plugin:install craft-inertia --no-interaction
 php artisan vendor:publish --tag=craft-inertia-config --no-interaction
 ```
+
+Versions 1.0.0 and 1.0.1 use the same handle and include every attached field
+when no field rule matches. Their setup is documented in the
+[tagged 1.0.1 guide](https://github.com/robuust/craft-inertia/blob/v1.0.1/docs/INSTALLATION.md).
+Follow the [upgrade guide](UPGRADE.md) for an existing installation.
 
 When replacing an existing private VCS requirement, remove its repository entry
 and update the dependency and lock to the published release.
@@ -39,6 +44,37 @@ Craft discovers the plugin provider. Do not register it again in
 does not overwrite existing values without `--force`; reconcile existing files
 instead of forcing publication. Craft's own CP assets remain the responsibility
 of `craft:setup:publish`.
+
+### Try a pinned candidate
+
+To verify an unreleased 1.0.2 candidate, use a clean clone of the plugin
+checked out at the full candidate commit SHA. Add it as a path repository
+in the consuming project's `composer.json`. Adjust the path to match where
+Composer will run.
+
+```json
+{
+    "type": "path",
+    "url": "../craft-inertia-candidate",
+    "options": {
+        "symlink": false,
+        "reference": "auto",
+        "versions": {
+            "robuust/craft-inertia": "1.0.2-RC1"
+        }
+    }
+}
+```
+
+```sh
+composer require 'robuust/craft-inertia:1.0.2-RC1' --with-all-dependencies --no-interaction
+```
+
+The version override is local to this Composer repository. Check the plugin's
+`dist.reference` in the consumer lockfile against the candidate SHA and record
+the locked dependencies with your [acceptance results](COMPATIBILITY.md). For a
+new installation, run the native install and config publication commands above.
+For an upgrade, follow the cutover order in the [upgrade guide](UPGRADE.md).
 
 ## Configure the project frontend
 
@@ -69,16 +105,27 @@ Template to `inertia:Site/Articles/Show`. Supply the matching Vue component thro
 the project's resolver, for example
 `resources/js/pages/Site/Articles/Show.vue`.
 
-Every attached field is included automatically under `entry.fields`, including
-internal notes, fields hidden by editor conditions, nested Matrix and related
-entries. See [CONTENT.md](CONTENT.md). No field-selection config, project entry
-controller, duplicate Laravel route or per-entry SSR callback is required.
+In 1.0.2, each entry has identity and empty `fields` until a rule selects its
+custom fields. For example, add this rule to the returned array in
+`config/craft-inertia.php` to expose `entry.fields.summary` for the `article`
+entry type.
 
-The exact `inertia:` prefix opts in. Component segments may contain letters,
-digits, `_` and `-`, separated by `/`; an empty or invalid component is a
-configuration error. Explicit native route/controller destinations take
-precedence. Twig/Blade, dynamic view routes, CP/actions, APIs and feeds keep
-their own handlers; unknown URLs retain native 404 handling.
+```php
+'entryFields' => [
+    'article' => ['summary'],
+],
+```
+
+Configure each related or Matrix entry type's own selection.
+A type rule takes precedence over the `'*'` fallback. An empty list selects no
+custom fields. See the [content contract](CONTENT.md) and [quickstart](QUICKSTART.md).
+
+The exact `inertia:` prefix opts in. Separate component segments with `/`.
+Segments can use letters, digits, `_` and `-`, and support bracketed names such
+as `[slug]`. An empty or invalid component is a configuration error. Explicit
+native route/controller destinations take precedence. Twig/Blade, dynamic view
+routes, CP/actions, APIs and feeds keep their own handlers. Unknown URLs retain
+native 404 handling.
 
 ## Bespoke project pages
 
@@ -145,24 +192,9 @@ php artisan config:cache --no-interaction
 
 ## Upgrade from the `inertia` handle
 
-Craft stores the installed plugin under its handle. Projects that installed an
-earlier beta as `inertia` must reinstall it under `craft-inertia`. Use a maintenance
-window if the site serves `inertia:` templates during normal operation.
-
-1. If Craft force-disables the old handle through `disabledPlugins` or safe mode,
-   temporarily lift that restriction and clear the configuration cache with
-   `php artisan config:clear --no-interaction`.
-2. While the previous beta is still installed through Composer, uninstall it with
-   `php artisan craft:plugin:uninstall inertia --no-interaction`. If it is
-   disabled, enable it before uninstalling.
-3. Update the Composer package to a release that declares `craft-inertia`.
-   Replace references to the old handle in plugin checks.
-4. Run `php artisan craft:plugin:install craft-inertia --no-interaction`. Restore
-   the previous enabled or disabled state and any temporary configuration changes,
-   using `craft-inertia` in `disabledPlugins`. Rebuild configuration caches and
-   restart long-lived workers.
-
-Keep your `inertia:` section templates and published `config/craft-inertia.php`.
+Use the [beta.3 upgrade procedure](UPGRADE.md#from-beta3) to move the
+`inertia` registration to `craft-inertia`. For projects already using the new
+handle, see [Upgrade from 1.0.0 or 1.0.1](UPGRADE.md#from-100-or-101).
 
 ## Migrate the legacy package identity
 
@@ -197,7 +229,7 @@ detail route destination and choose `inertia:Component/Name`. Adapt Vue to
 Remove obsolete `pages[component]['fields']` settings. Special queries and
 business rules stay with the project.
 
-Verify fallback, HTML, Inertia JSON, statuses, complete field data, preview
+Verify fallback, HTML, Inertia JSON, statuses, intended field data, preview
 identity, metadata and SSR in the consuming project. Historical migration
 reports apply only to their original locked inputs and remain in Git history;
 they are not a runnable migration procedure for current dependencies.

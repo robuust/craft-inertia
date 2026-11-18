@@ -9,7 +9,8 @@ acceptance criteria remain in [FRONTEND.md](FRONTEND.md).
 Craft `6.0.0-beta.1` source `05ce9b81be3704fb27da3a5a6670accfa49ec9a9`.
 The earlier initialization inspected plugin `aa36100`, local Playground
 `f7dd95d` and alpha.20; historical contracts/reports retain their original scope.
-[CONTENT.md](CONTENT.md) owns the automatic field shape.
+[CONTENT.md](CONTENT.md) owns the public field selection and shape, including
+the explicit selection default introduced in 1.0.2.
 
 ## Actors and authority
 
@@ -34,7 +35,7 @@ ID, site ID, draft ID or preview marker has not thereby obtained access.
 | Site variant              | Representation of an entry in one configured site.                        | Entry identity and current site jointly determine the content/URL context; do not replace them with a slug alone.                           |
 | Preview content           | Version related to a canonical entry and a site.                          | Craft validates authorization and supplies the preview element. Ordinary queries must not inherit another request's preview state.          |
 | Page selection            | Chooses a project page and its public projection for a resolved request.  | A project page may represent an entry or an overview with no matched element. Native `inertia:Component` templates use plugin rendering; explicit native destinations retain precedence. |
-| Public projection         | Craft values made public by automatic native entry templates or explicit project code.                  | Preserve existing canonical names where applicable. Do not dump an element, user, field layout or query object into props.                  |
+| Public projection         | Craft values made public by native entry templates or explicit project code.                  | Native templates expose identity and fields selected by entry type. Preserve canonical names and return explicit values from project code. |
 | Compatibility integration | Named external plugin, version range and supported operations.            | That plugin remains responsible for its calculations, validation and permissions. Installation alone does not establish compatibility.      |
 
 These are logical relationships using Craft's existing model. A project may
@@ -78,9 +79,12 @@ content-data caching. HTTP output caching and production acceptance remain defer
    the destination consumes Craft's matched element; an overview uses a
    project-owned query. Explicit route configuration determines which requests
    opt into Inertia.
-3. For `inertia:` entry templates, plugin code projects safe base context and
-   all attached field-layout fields using native APIs. Native field types own
-   their serialization; projects own bespoke query/projection behavior.
+3. For `inertia:` entry templates, the plugin projects base context and selected
+   field-layout fields using native APIs. Root, related and Matrix entries each
+   resolve an `entryFields` rule by entry type, then fall back to the wildcard.
+   With no matching rule, an entry retains identity with `fields: []`. Native
+   field types provide the default serialization. Projects own bespoke queries,
+   projections, metadata and serializer overrides.
 4. The official Inertia adapter supplies initial HTML or an Inertia page JSON
    response. The project owns the public root view, page resolver and client/SSR
    builds. Craft's CP uses its own root view, props and assets.
@@ -170,6 +174,7 @@ projects keep those signatures disjoint from Inertia page routes. See the
 
 The STEP-02 project example retained STEP-01 field names and added explicit
 optional content, globals, filter and pagination values in the consuming project.
-The package remains schema-free. Current generic automatic-field props are defined
-separately in [CONTENT.md](CONTENT.md); they retain native handles. Native Markdown is the covered rich-text variant;
-native singles and Entries relations supply alpha.20 globals and taxonomy.
+The package remains schema-free. The current native entry props retain native
+handles and are documented in [CONTENT.md](CONTENT.md). The STEP-02 example used
+native Markdown for rich text, and native singles and Entries relations for
+alpha.20 globals and taxonomy.

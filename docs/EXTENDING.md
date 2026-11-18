@@ -61,15 +61,15 @@ detection or adapter. See [HEAD.md](HEAD.md) for the contract and setup.
 
 ## Declarative native field selection
 
-Ordinary entry pages need no project controller or field serializer. Configure
-`entryFields` by **entry-type handle**, including Matrix child types, when a site
-needs a public whitelist. `'*'` supplies the fallback for unmatched types:
+Ordinary entry pages need no project controller or field serializer. Select
+which fields to publish in `entryFields`, keyed by **entry-type handle** for
+root entries, related entries and Matrix children.
 
 ```php
 'entryFields' => [
-    '*' => [],
-    'article' => ['summary', 'body', 'cover', 'related', 'cta'],
+    'article' => ['summary', 'body', 'cover', 'related', 'cta', 'blocks'],
     'teaser' => ['summary', 'cover'],
+    'textBlock' => ['text'],
 ],
 'fieldImageProfiles' => [
     'article' => ['cover' => ['editorialCard']],
@@ -77,19 +77,24 @@ needs a public whitelist. `'*'` supplies the fallback for unmatched types:
 ],
 ```
 
-Every root, related entry and Matrix child applies its own type's selection.
-`[]` means identity with empty fields. With empty `entryFields` config, the
-existing all-layout-fields behavior remains; with no matching type or `'*'`
-rule, all attached fields are still included. Use `'*' => []` when migrating an
-existing selected-field consumer, so a newly introduced child type cannot
-silently publish its fields. Selection lists must name attached fields; invalid
-handles fail explicitly. Editor layout visibility conditions are not a public
-access boundary.
+Each entry uses its type's rule first, including `[]`, then the wildcard rule
+if configured. An empty list or no matching rule yields identity with
+`fields: []`. Lists must name attached fields of the projected type. A wildcard
+list must be valid for each type that uses it.
 
-An explicit `EntryProjection::entry($entry, $fields)` selection can narrow the
-configured fields further, but cannot broaden them. Related children still apply
-their own configured rules. Custom serializers remain deliberate project-owned
-code; they must not return private data under another key.
+Set an entry-type rule to the string `'*'` to include all its attached fields.
+Set `entryFields` to `['*' => '*']` to retain the earlier default for every
+unmatched type, as in beta.3, 1.0.0 and 1.0.1. These rules also expose fields hidden by editor layout
+conditions and any fields later added to the layout. See the
+[upgrade guide](UPGRADE.md) when moving to 1.0.2.
+
+An explicit `EntryProjection::entry($entry, $fields)` selection narrows the
+configured fields to the intersection. Related children still apply their own
+configured rules when the projector handles them. Review the values returned
+by selected fields that use native composite serializers, by your field
+serializers, and by your `publicProps` and `head` callbacks and bespoke pages.
+These can publish nested values beyond the fields selected on projected
+entries. See [field values](CONTENT.md#field-values).
 
 `fieldImageProfiles` maps type handles to Assets field handles to profile-name
 lists. `'*'` is the fallback at either map level. A matching type's map replaces
@@ -105,8 +110,8 @@ with selected custom values under `entry.fields`. Map ordinary sections to
 native URL/site/publication/preview resolution; no duplicate Laravel route or
 page controller is needed.
 
-Before changing routes, configure the existing public field whitelist by entry
-type, with an identity-only `'*'` fallback and independent child rules. Choose
+Before changing routes, configure the public field list for each entry type used
+by the page, including related entries and Matrix children. Choose
 native image profiles with `fieldImageProfiles`; consume their `variants` in the
 frontend. Link fields now return the publication-aware selected shape by default,
 and native HTML field data renders its references before serialization.
@@ -143,9 +148,10 @@ Helpers:
 
 - `defaultValue()` invokes this field's native projection without re-entering its
   serializer selector. Child fields still use the normal serializer pipeline.
-- `projectEntry($entry, ['summary'])` retains native identity and selects only the
-  listed attached fields. `[]` (the default) returns identity with empty fields.
-  It shares the current relation ancestry and depth limit; unknown handles fail.
+- `projectEntry($entry, ['summary'])` retains native identity and includes
+  `summary` when the child's configured rule selects it. `[]` (the default)
+  returns identity with empty fields. It shares the current relation ancestry
+  and depth limit. Unknown handles fail.
 - `projectAsset($asset, ['card'])` returns the original asset plus selected image
   variants. `[]` returns the unchanged native asset shape.
 - `collect($element)` adds an extra queried element to Craft's active dependency
@@ -163,13 +169,16 @@ owns its new shape/cardinality; ordinary relations remain ordered lists.
 
 ### Example A: magazine schema
 
-This project's `article` type has `cover` (Assets), `related` (Entries) and
-`cta` (Link). Every other field keeps its native serialization. Sizes below are
-**project choices**, not package defaults. Copy the project-owned
+This project's `article` type has `summary` (text), `cover` (Assets), `related`
+(Entries) and `cta` (Link). Other selected fields keep their native
+serialization. Sizes below are project choices. Copy the project-owned
 [ArticleSerializers example](examples/ArticleSerializers.php) into
 `app/PublicFrontend/ArticleSerializers.php` before configuring these callbacks.
 
 ```php
+'entryFields' => [
+    'article' => ['summary', 'cover', 'related', 'cta'],
+],
 'imageProfiles' => [
     'editorialCard' => [
         'transform' => ['width' => 960, 'height' => 540, 'mode' => 'crop', 'format' => 'webp', 'quality' => 80],
@@ -192,14 +201,13 @@ This project's `article` type has `cover` (Assets), `related` (Entries) and
 ],
 ```
 
-Without these registrations or declarative field/image selections, `cover` is
-the original ordered asset list with `srcset: null`, and `related` includes every
-attached child field. Links are publication-aware by default. With them,
-`cover` retains **all original keys and values**, adding
-`variants.editorialCard.{url,width,height,srcset}`. `related` remains an ordered
-list with only each child's `summary` field. Empty relations remain `[]`.
-An unregistered Table field still retains native column keys, and Users still
-serialize through their native ID contract.
+Without the serializer registrations, the configured `cover` is the original
+ordered asset list with `srcset: null`, and `related` includes each child's
+configured fields. Links are publication-aware by default. With the registrations,
+`cover` adds `variants.editorialCard.{url,width,height,srcset}` to each original
+asset. `related` remains an ordered list and includes only each child's `summary`
+when selected by its type rule. Empty relations remain `[]`. When selected, an
+unregistered Table field retains native column keys and Users serialize to IDs.
 
 ### Example B: directory schema and a custom field
 
@@ -211,6 +219,9 @@ and selects a different image policy. Copy the project-owned
 `app/PublicFrontend/VenueSerializers.php` before using this configuration:
 
 ```php
+'entryFields' => [
+    'venue' => ['mapPoint', 'gallery'],
+],
 'imageProfiles' => [
     'galleryFit' => [
         'transform' => ['width' => 1200, 'mode' => 'fit', 'format' => 'webp'],
@@ -269,20 +280,19 @@ A consumer keeping `[{text,url,target}]` maps these selected values explicitly.
 
 A consumer can use `EntryProjection::entry($entry, ['heading', 'image'])`,
 `AssetProjection::project($asset, ['galleryFit'])`, and `LinkProjection::live($link)`
-without changing its `data/layout/seo` envelope or using native all-field pages.
-An omitted second argument to `entry()` uses the configured type selection, or
-**all** attached fields when no selection applies. Every child independently
-applies `entryFields`; use an identity-only wildcard rule to avoid accidental
-child-field exposure. A relation serializer can narrow children further through
-`projectEntry()`. Keep project-owned team/user, globals and special
+within its own `data/layout/seo` envelope. `entry()` uses the configured selection
+and intersects it with the optional handles passed as its second argument. A
+missing rule yields `fields: []` even when the caller supplies handles. Each child
+resolves its own rule, and a relation serializer can narrow that selection
+through `projectEntry()`. Keep project-owned team/user, globals and special
 queries explicitly selected, and migrate frontend shapes deliberately.
 
 ## Verification boundaries
 
-The package has no CI workflow, test script/configuration, coverage threshold or
-local application harness. Package checks cover PHP syntax/formatting, Composer
-validation, Vue lint/client/SSR compilation and source/diff review. Automated
-tests and coverage are explicitly excluded for this task. Consumer runtime
-acceptance remains separate: manually verify initial HTML with SSR on/off,
-JSON/partial visits, preview identity, multiple sites, Link publication changes,
+Package checks cover PHP syntax/formatting, Composer validation, Vue
+lint/client/SSR compilation and source/diff review. In the consuming project,
+verify that initial page data and Inertia JSON include selected fields and omit
+unselected fields on roots, related entries and Matrix children. Include a field
+added to a layout with an existing allowlist. Verify initial HTML with SSR on/off,
+partial visits, preview identity, multiple sites, Link publication changes,
 SVG/private assets, image transforms and actual metadata before rollout.

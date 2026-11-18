@@ -9,15 +9,16 @@
 The product is a reusable Craft CMS 6 plugin that lets projects replace their
 complete public frontend with Inertia and Vue. Craft keeps ownership of content,
 URLs, editorial workflows, sessions and permissions. Each project supplies its
-Vue presentation; native entry templates automatically expose their attached
-layout fields.
+Vue presentation and selects the layout fields to expose for each entry type.
 
-**Current implementation:** native `inertia:Component` entry templates and
-automatic all-layout-field serialization target Craft beta.1.
-Generic entry rendering/projection now belongs to the
-plugin; Vue/layout/build and business queries remain project-owned. The latest
-human decision supersedes explicit field selection: all attached entry fields
-are included automatically, using each field's native serialization contract.
+Native `inertia:Component` entry templates and generic entry projection target
+Craft beta.1. The plugin provides the projection and uses each selected field's
+native serialization contract by default. Projects own Vue, layouts, builds and
+business queries. The 2026-11-18 decision for
+[issue #25](https://github.com/robuust/craft-inertia/issues/25) requires explicit
+field selection starting in 1.0.2. Beta.3, 1.0.0 and 1.0.1 include all attached
+layout fields when no rule matches. Projects can retain that fallback deliberately
+through `entryFields`. See [UPGRADE.md](UPGRADE.md).
 See [CONTENT.md](CONTENT.md) and
 [INSTALLATION.md](INSTALLATION.md), which records the inspected beta.1 source
 and asset identities. Current policy keeps tests, fixtures, preparation scripts
