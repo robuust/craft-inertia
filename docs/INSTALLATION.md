@@ -26,13 +26,13 @@ For local package development, use the [README path repository](../README.md#ins
 From the consuming project:
 
 ```sh
-composer require 'robuust/craft-inertia:^0.1.0@beta' --with-all-dependencies --no-interaction
-php artisan craft:plugin:install inertia --no-interaction
+composer require 'robuust/craft-inertia:^1.0' --with-all-dependencies --no-interaction
+php artisan craft:plugin:install craft-inertia --no-interaction
 php artisan vendor:publish --tag=craft-inertia-config --no-interaction
 ```
 
 When replacing an existing private VCS requirement, remove its repository entry
-and update the dependency and lock to the published beta release.
+and update the dependency and lock to the published release.
 
 Craft discovers the plugin provider. Do not register it again in
 `bootstrap/providers.php` or Laravel package discovery. Configuration publication
@@ -94,7 +94,7 @@ its middleware and for choosing the Inertia or native response:
 
 ```php
 return config('frontend.enabled')
-    && app(\CraftCms\Cms\Plugin\Plugins::class)->isPluginEnabled('inertia');
+    && app(\CraftCms\Cms\Plugin\Plugins::class)->isPluginEnabled('craft-inertia');
 ```
 
 Composer classes still exist while the plugin is disabled. Checking only at
@@ -122,8 +122,8 @@ See [RENDERING.md](RENDERING.md) for the response and privacy contracts.
 ## Disable, fallback and cached routes
 
 ```sh
-php artisan craft:plugin:disable inertia --no-interaction
-php artisan craft:plugin:enable inertia --no-interaction
+php artisan craft:plugin:disable craft-inertia --no-interaction
+php artisan craft:plugin:enable craft-inertia --no-interaction
 ```
 
 Native disable removes the listener on a fresh boot; enable restores it, including
@@ -143,13 +143,33 @@ php artisan config:clear --no-interaction
 php artisan config:cache --no-interaction
 ```
 
+## Upgrade from the `inertia` handle
+
+Craft stores the installed plugin under its handle. Projects that installed an
+earlier beta as `inertia` must reinstall it under `craft-inertia`. Use a maintenance
+window if the site serves `inertia:` templates during normal operation.
+
+1. If Craft force-disables the old handle through `disabledPlugins` or safe mode,
+   temporarily lift that restriction and clear the configuration cache with
+   `php artisan config:clear --no-interaction`.
+2. While the previous beta is still installed through Composer, uninstall it with
+   `php artisan craft:plugin:uninstall inertia --no-interaction`. If it is
+   disabled, enable it before uninstalling.
+3. Update the Composer package to a release that declares `craft-inertia`.
+   Replace references to the old handle in plugin checks.
+4. Run `php artisan craft:plugin:install craft-inertia --no-interaction`. Restore
+   the previous enabled or disabled state and any temporary configuration changes,
+   using `craft-inertia` in `disabledPlugins`. Rebuild configuration caches and
+   restart long-lived workers.
+
+Keep your `inertia:` section templates and published `config/craft-inertia.php`.
+
 ## Migrate the legacy package identity
 
 The old identity is Composer `robuust/craft-inertia-poc`, PHP
 `Robuust\CraftInertiaPoc`, native handle `inertia-poc` and config `inertia-poc.*`.
-The current identity is `robuust/craft-inertia`, `Robuust\CraftInertia`, `inertia`
-and `craft-inertia.*`. The license remains proprietary. There is no compatibility
-alias or automated migration script.
+The current identity is `robuust/craft-inertia`, `Robuust\CraftInertia`, native
+handle `craft-inertia` and config `craft-inertia.*`. The license remains proprietary.
 
 1. Back up project source, database and configuration. Inventory custom hooks,
    cached routes/config and workers. Select the project's native fallback and
@@ -166,7 +186,7 @@ alias or automated migration script.
 4. Update imports, registry predicates and config reads. Move custom
    `config/inertia-poc.php` values to `config/craft-inertia.php`, reconciling any
    existing destination. Keep the official `config/inertia.php` untouched.
-5. Run package discovery, install `inertia` natively and publish configuration
+5. Run package discovery, install `craft-inertia` natively and publish configuration
    without `--force`. Restore the old enabled/disabled intent, rebuild caches
    and bundles, restart workers and verify the project before restoring traffic.
 
