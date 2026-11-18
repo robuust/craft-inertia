@@ -102,6 +102,9 @@ The main integration points are [EntryTemplates](src/Routing/EntryTemplates.php)
 
 ## Install
 
+When Craft Inertia is available in the Plugin Store, use the
+[control panel installation guide](docs/INSTALLATION.md#install-from-the-plugin-store).
+
 Install the `robuust/craft-inertia` package from
 [Packagist](https://packagist.org/packages/robuust/craft-inertia) in an existing
 Craft 6 project that permits the Craft beta dependencies. Once 1.0.2 is
@@ -335,7 +338,6 @@ capabilities; the linked issues define their scope and acceptance criteria.
 
 | Issue | Extension |
 | --- | --- |
-| [#13](https://github.com/robuust/craft-inertia/issues/13) | Safe frontend scaffolding and installation diagnostics. |
 | [#16](https://github.com/robuust/craft-inertia/issues/16) | TypeScript page props generated from Craft field layouts. |
 
 ## Verification scope

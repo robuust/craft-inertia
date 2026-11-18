@@ -11,6 +11,8 @@ installation, including beta.3 under the old `inertia` handle, follow the
 [upgrade guide](UPGRADE.md) before changing the Composer requirement. If you
 already installed a [pinned candidate](INSTALLATION.md#try-a-pinned-candidate),
 keep it pinned and continue at [step 2](#2-set-up-the-public-blade-root).
+If you installed through the [Plugin Store](INSTALLATION.md#install-from-the-plugin-store)
+and published the configuration, do the same.
 
 Run these commands from the Craft project root. Check the [PHP, Craft and
 adapter requirements](INSTALLATION.md#requirements-and-ownership) first.
@@ -23,6 +25,25 @@ php artisan vendor:publish --tag=craft-inertia-config
 
 Craft discovers the plugin provider automatically. Merge the settings below
 into any existing `config/craft-inertia.php`.
+
+### Preview or copy the example files
+
+With Craft Inertia 1.0.2 installed and enabled, preview the scaffold from the
+consuming project root:
+
+```sh
+php artisan craft-inertia:scaffold --no-interaction
+```
+
+Use `--write` to copy the missing Blade root, Vue entry point and example page.
+Merge changes into preserved project files manually. To replace different
+files, preview the plan with `--force` before applying it with
+`--write --force`. The command leaves identical files, dependencies, locks,
+Vite, provider configuration, routes, content and Craft project config in place.
+
+Continue with step 2 to configure the namespace and field selection, then
+follow the Vite and Craft configuration steps. If you copied a file in this
+step, use that copy in place of the matching manual example below.
 
 ## 2. Set up the public Blade root
 
@@ -68,9 +89,9 @@ Create `resources/views/frontend/app.blade.php`.
 
 This namespaced view is the public root for native mapped pages. Use the
 project's existing root and Vue entry if they already serve that purpose. Keep
-the Blade asset path and Vite input aligned, and use the paired [Head
-components](HEAD.md#packaged-head-components) for metadata on first loads and
-subsequent Inertia visits.
+the Blade asset path and Vite input aligned. To update metadata on subsequent
+Inertia visits, add the packaged [Vue Head component](HEAD.md#packaged-head-components)
+to the project layout after setting up the first page.
 
 ## 3. Add the Vue entry and Vite build
 
@@ -90,7 +111,6 @@ For a new Vite setup, create `vite.config.mjs`.
 import inertia from '@inertiajs/vite';
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
-import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -99,11 +119,6 @@ export default defineConfig({
         vue(),
         inertia({ ssr: false }),
     ],
-    resolve: {
-        alias: {
-            '@craft-inertia': fileURLToPath(new URL('./vendor/robuust/craft-inertia/resources/js', import.meta.url)),
-        },
-    },
 });
 ```
 
@@ -121,15 +136,12 @@ Create `resources/js/pages/Site/Quickstart.vue`.
 
 ```vue
 <script setup>
-import PageHead from '@craft-inertia/PageHead.vue';
-
 defineProps({
     entry: { type: Object, required: true },
 });
 </script>
 
 <template>
-    <PageHead />
     <main>
         <h1>{{ entry.title }}</h1>
         <p v-if="entry.fields.summary">{{ entry.fields.summary }}</p>
@@ -167,6 +179,21 @@ controller. For an existing section, keep its URI and change only the selected
 site's Template after checking the component and the fields it exposes.
 
 ## Read-only troubleshooting checklist
+
+With Craft Inertia 1.0.2 installed and enabled, run the read-only setup command
+from the Craft project. For earlier versions, use the manual checklist below.
+
+```sh
+php artisan craft-inertia:doctor --component=Site/Quickstart --no-interaction
+```
+
+If the command is missing, use `php artisan craft:plugin:list` to confirm that
+Craft discovered and enabled `craft-inertia`. Use `--pages` for a different
+Vue pages directory, `--entry` for a different Vite input, and
+`--build-directory` when overriding the Laravel Vite build directory in
+Blade. The doctor checks file and manifest availability. Verify your actual
+JavaScript resolver, dev server reachability and form behavior using the
+checks below.
 
 | Symptom | Check |
 | --- | --- |

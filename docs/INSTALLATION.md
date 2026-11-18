@@ -11,8 +11,23 @@ These exact versions describe the inspected baseline, not every allowed version.
 
 The plugin contains PHP integration code and configuration. The consuming Craft
 project owns its content schema, Vue pages, Blade root, frontend dependencies,
-builds and runtime services. It also owns integration verification; this
-repository contains no automated tests, fixtures or preparation scripts.
+builds, runtime services and integration verification.
+
+## Install from the Plugin Store
+
+When the listing is available, open **Plugin Store** in the Craft 6 control
+panel and search for **Craft Inertia** by Robuust. On a compatible development
+installation with admin changes and updates enabled, choose **Try** or
+**Install**, depending on the license shown by Craft.
+
+After Craft installs and enables the plugin, publish its configuration:
+
+```sh
+php artisan vendor:publish --tag=craft-inertia-config --no-interaction
+```
+
+Continue at [quickstart step 2](QUICKSTART.md#2-set-up-the-public-blade-root).
+The Plugin Store handles package installation and registration through Craft.
 
 ## Install from Packagist
 
@@ -77,6 +92,10 @@ new installation, run the native install and config publication commands above.
 For an upgrade, follow the cutover order in the [upgrade guide](UPGRADE.md).
 
 ## Configure the project frontend
+
+The [quickstart](QUICKSTART.md) covers the optional scaffold and read-only
+diagnostics. Craft registers these commands when the plugin is installed and
+enabled.
 
 1. Supply a public Blade root with Vite assets, `<x-craft-inertia::head :page="$page" />` and
    `<x-inertia::app />`. Register a public view namespace and set
