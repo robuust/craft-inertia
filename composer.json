@@ -35,8 +35,8 @@
     },
     "extra": {
         "class": "Robuust\\CraftInertia\\Plugin",
-        "handle": "inertia",
-        "name": "Inertia",
+        "handle": "craft-inertia",
+        "name": "Craft Inertia",
         "developer": "Robuust",
         "schemaVersion": "1.0.0",
         "developerUrl": "https://robuust.digital"

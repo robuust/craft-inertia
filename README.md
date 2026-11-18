@@ -1,12 +1,56 @@
 # Craft Inertia
 
-Craft CMS 6 plugin for a project-owned Inertia/Vue public frontend.
-Craft owns content, native URLs, sites, publication rules and preview authority.
-The plugin connects explicitly selected pages to the official Inertia adapter.
-Composer identity is `robuust/craft-inertia`, PHP namespace
-`Robuust\CraftInertia`, native handle `inertia`; license is proprietary.
-Source and Composer downloads are public; usage remains subject to the
-[proprietary license](LICENSE.md). This is a beta integration for Craft 6 beta.
+Render Craft CMS 6 entries as Vue pages with Inertia.js while keeping Craft’s
+native URLs and previews.
+
+## Overview
+
+Build your Craft CMS 6 frontend with Inertia.js and Vue while keeping Craft’s
+native content editing, URLs, multisite routing, and previews. The Craft Inertia
+plugin connects selected Craft entries to your Vue pages and passes their
+content directly to the components that render them.
+
+### Turn a Craft entry into a Vue page
+
+Set a section’s **Template** to `inertia:Site/Home` to render it with your
+`Site/Home.vue` component. Craft resolves the URL, current site, and matching
+entry using its normal publication and preview rules. The plugin then passes
+the entry data to the official Inertia Laravel adapter.
+
+Routing through Craft’s existing section settings lets you adopt Inertia one
+section at a time. Existing Twig and Blade pages and explicit routes can
+coexist with your Inertia pages.
+
+### Use your Craft fields directly in Vue
+
+Read custom fields by handle, such as `entry.fields.summary`. Page props include
+entry and site details, preview status, and field data, including Matrix blocks,
+related entries, and assets. The plugin includes the entry’s layout fields by
+default. You can configure which fields are sent to the frontend and define
+responsive image variants for asset fields.
+
+Authorized previews use the draft or revision Craft resolved, so editors can
+see their changes in the Vue frontend before publishing.
+
+### Use Inertia navigation and optional server-side rendering
+
+The first visit returns an HTML document. Navigation through an Inertia `Link`
+loads the next page’s component and props as JSON, so Vue can update the page
+without a full reload. You can enable server-side rendering for eligible public
+requests so the first response already contains the rendered page.
+
+Your project supplies its own Vue components, layouts, Blade root view, and
+Vite setup. The plugin also provides helpers for rendering page metadata,
+connecting native Craft forms to Inertia’s validation and flash handling, and
+rendering custom pages from your own controllers.
+
+### Requirements
+
+Craft Inertia 1.0 requires PHP `^8.5`, Craft CMS `^6.0.0-beta.1`, Laravel
+`^13.38`, and the official Inertia Laravel adapter
+(`inertiajs/inertia-laravel` `^3.7`).
+
+[Installation and configuration guide](docs/INSTALLATION.md)
 
 ## How it works
 
@@ -57,14 +101,13 @@ The main integration points are [EntryTemplates](src/Routing/EntryTemplates.php)
 
 ## Install
 
-The package requires PHP 8.5, Craft `^6.0.0-beta.1`, Laravel `^13.38` and
-`inertiajs/inertia-laravel` `^3.7`. Install it from
+Install the `robuust/craft-inertia` package from
 [Packagist](https://packagist.org/packages/robuust/craft-inertia) in an existing
 Craft 6 project that permits the Craft beta dependencies:
 
 ```sh
-composer require 'robuust/craft-inertia:^0.1.0@beta' --with-all-dependencies --no-interaction
-php artisan craft:plugin:install inertia --no-interaction
+composer require 'robuust/craft-inertia:^1.0' --with-all-dependencies --no-interaction
+php artisan craft:plugin:install craft-inertia --no-interaction
 php artisan vendor:publish --tag=craft-inertia-config --no-interaction
 ```
 
@@ -73,6 +116,13 @@ a private VCS source, remove that repository entry and update the package lock.
 Craft discovers the plugin provider automatically. The package publishes its
 integration configuration; the consuming project supplies the frontend files.
 
+The plugin uses the PHP namespace `Robuust\CraftInertia` and the native handle
+`craft-inertia`. Its source and Composer downloads are public under the
+[proprietary license](LICENSE.md).
+
+If you previously installed the plugin as `inertia`, follow the
+[handle upgrade guide](docs/INSTALLATION.md#upgrade-from-the-inertia-handle).
+
 For local package development, a consuming project's path repository can use:
 
 ```json
@@ -80,9 +130,9 @@ For local package development, a consuming project's path repository can use:
   "repositories": [{
     "type": "path",
     "url": "../craft-inertia",
-    "options": {"symlink": true, "versions": {"robuust/craft-inertia": "0.1.0-beta.1"}}
+    "options": {"symlink": true, "versions": {"robuust/craft-inertia": "1.0.0"}}
   }],
-  "require": {"robuust/craft-inertia": "^0.1.0@beta"}
+  "require": {"robuust/craft-inertia": "^1.0"}
 }
 ```
 

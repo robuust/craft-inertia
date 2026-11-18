@@ -57,11 +57,15 @@ version ranges work.
 At initialization, the GitHub repository and local folder were named
 `craft-inertia`; the package used Composer name `robuust/craft-inertia-poc`, namespace `Robuust\CraftInertiaPoc`
 and plugin handle `inertia-poc`. This is a historical source fact.
-STEP-07C intentionally migrates current code to `robuust/craft-inertia`,
+STEP-07C migrated the package to `robuust/craft-inertia`,
 `Robuust\CraftInertia`, handle `inertia` and display name `Inertia`. The human
 selected private distribution and retaining the proprietary license.
 See the [migration checklist](INSTALLATION.md#migrate-the-legacy-package-identity)
 and [bounded identity evidence](https://github.com/robuust/craft-inertia/blob/6ee7ac878370a854da076b41087687a8642860f3/reports/e2e/STEP07C.md); no public release is implied.
+
+The current display name is Craft Inertia and the handle is `craft-inertia`.
+See [the handle upgrade guide](INSTALLATION.md#upgrade-from-the-inertia-handle)
+for earlier beta installations.
 
 ## Historical source register
 
