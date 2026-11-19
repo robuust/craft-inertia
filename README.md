@@ -102,13 +102,14 @@ The main integration points are [EntryTemplates](src/Routing/EntryTemplates.php)
 
 ## Install
 
-When Craft Inertia is available in the Plugin Store, use the
-[control panel installation guide](docs/INSTALLATION.md#install-from-the-plugin-store).
+Craft Inertia is available in the
+[Craft Plugin Store](https://plugins.craftcms.com/craft-inertia). Follow the
+[control panel installation guide](docs/INSTALLATION.md#install-from-the-plugin-store)
+to install it from your project.
 
 Install the `robuust/craft-inertia` package from
 [Packagist](https://packagist.org/packages/robuust/craft-inertia) in an existing
-Craft 6 project that permits the Craft beta dependencies. Once 1.0.2 is
-published, run the following commands for a new installation.
+Craft 6 project that permits the Craft beta dependencies:
 
 ```sh
 composer require 'robuust/craft-inertia:^1.0.2' --with-all-dependencies --no-interaction
@@ -126,10 +127,8 @@ The plugin uses the PHP namespace `Robuust\CraftInertia` and the native handle
 the [Craft License](LICENSE.md).
 
 Versions 1.0.0 and 1.0.1 include all layout fields whenever no field rule
-matches. Use the [tagged 1.0.1 guide](https://github.com/robuust/craft-inertia/blob/v1.0.1/docs/INSTALLATION.md)
-for that release, or see [Installation](docs/INSTALLATION.md#try-a-pinned-candidate)
-for a pinned 1.0.2 candidate. For an existing installation, use the
-[upgrade guide](docs/UPGRADE.md).
+matches. For an existing beta or 1.0 installation, follow the
+[upgrade guide](docs/UPGRADE.md) before changing the package version.
 
 ## Configure the consuming project
 
@@ -331,14 +330,12 @@ helper and native mutations/files. [CONTACT_FORM.md](docs/CONTACT_FORM.md) shows
 Contact Form as an optional project integration, using native validation events,
 its existing action and the shared errors/flash bridge.
 
-## Planned extensions
+## TypeScript declarations
 
-These proposals extend the current integration. They are not implemented
-capabilities; the linked issues define their scope and acceptance criteria.
-
-| Issue | Extension |
-| --- | --- |
-| [#16](https://github.com/robuust/craft-inertia/issues/16) | TypeScript page props generated from Craft field layouts. |
+The planned 1.1.0 release adds native page prop declarations generated from
+the consuming project's Craft entry types and public field settings. See the
+[TypeScript guide](docs/TYPESCRIPT.md) for generation, custom field metadata
+and CI checks.
 
 ## Verification scope
 
@@ -358,7 +355,7 @@ Earlier integration work recorded four native account regressions and a nested
 Contact Form message issue. The inspected Contact Form 4.0.0 source contains
 the nested-message fix. Runtime acceptance of that release remains unverified.
 The 1.0 scope covers public entry pages, optional SSR, and native public forms.
-Full account flows and generated TypeScript props are deferred. See
+Full account flows remain outside that scope. See
 [frontend requirements](docs/FRONTEND.md) for the wider project scope.
 
 Generic public project props, serializers and image profiles are

@@ -56,7 +56,7 @@ final class EntryProjection
             }
             $layout = array_filter($layout, static fn (FieldInterface $field): bool => in_array($field->handle, $fields, true));
         }
-        $selection = $this->selection($type, $handles);
+        $selection = self::selection($type, $handles);
         if ($selection !== '*') {
             $layout = array_filter($layout, static fn (FieldInterface $field): bool => in_array($field->handle, $selection, true));
         }
@@ -167,11 +167,12 @@ final class EntryProjection
     }
 
     /**
+     * @internal Shared with static entry schema discovery.
      * @param string $type Current root, related or Matrix entry's type handle.
      * @param array<array-key, string> $handles Field handles in the entry layout.
      * @return list<string>|'*' Public handles, or '*' for all attached layout fields.
      */
-    private function selection(string $type, array $handles): array|string
+    public static function selection(string $type, array $handles): array|string
     {
         $selections = config('craft-inertia.entryFields', []);
         if (!is_array($selections)) {
