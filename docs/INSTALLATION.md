@@ -16,10 +16,10 @@ builds, runtime services and integration verification.
 
 ## Install from the Plugin Store
 
-When the listing is available, open **Plugin Store** in the Craft 6 control
-panel and search for **Craft Inertia** by Robuust. On a compatible development
-installation with admin changes and updates enabled, choose **Try** or
-**Install**, depending on the license shown by Craft.
+Open **Plugin Store** in the Craft 6 control panel and search for
+[Craft Inertia by Robuust Digital](https://plugins.craftcms.com/craft-inertia).
+On a compatible development installation with admin changes and updates
+enabled, choose **Try** or **Install**, depending on the license shown by Craft.
 
 After Craft installs and enables the plugin, publish its configuration:
 

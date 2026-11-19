@@ -10,8 +10,10 @@ and the `source.reference` and `dist.reference` in
 [Packagist's package metadata](https://repo.packagist.org/p2/robuust/craft-inertia.json)
 resolve to `04c5d050b0c1896ad286972d8dbe034c5fce9f07`.
 [Packagist package availability](https://packagist.org/packages/robuust/craft-inertia#v1.0.2)
-is verified. Clean installation, upgrades, and runtime acceptance remain
-unverified. Track Store approval and installation in the
+is verified. On 2026-11-19, the public [Store listing](https://plugins.craftcms.com/craft-inertia)
+and [Store changelog](https://plugins.craftcms.com/craft-inertia/changelog)
+also showed 1.0.2 for Craft 6. Clean installation, upgrades, and runtime
+acceptance remain unverified. Record Store installation results in the
 [release issue](https://github.com/robuust/craft-inertia/issues/27).
 
 ## Baseline
@@ -50,6 +52,7 @@ alongside the results. The cases below still need consumer verification.
 | Case | Observable acceptance |
 | --- | --- |
 | Clean install | Install the [published Packagist package](INSTALLATION.md#install-from-packagist). Continue at [quickstart step 2](QUICKSTART.md#2-set-up-the-public-blade-root) to build the client bundle. Confirm native `craft-inertia` registration, first HTML, client navigation, and the configured fallback after disable/enable. |
+| Plugin Store install | In a separate clean Craft 6 consumer, install via the [control panel](INSTALLATION.md#install-from-the-plugin-store). Confirm the installed package and version, native registration, and the first mapped entry in the quickstart. |
 | Frontend setup ([#13](https://github.com/robuust/craft-inertia/issues/13)) | Preview and apply the scaffold in both a clean and an existing configured consumer. Confirm the dry run preserves the filesystem, an ordinary write preserves existing files, an explicit replacement affects only scaffolded files, and a repeat reports unchanged files. Verify provider discovery and the doctor's plugin status, view and component paths, dependency versions, build artifacts and production SSR connectivity reports. |
 | Upgrade from beta.3 ([#24](https://github.com/robuust/craft-inertia/issues/24)) | Follow the [upgrade guide](UPGRADE.md#from-beta3) from enabled and disabled beta.3. Confirm removal of the old registration while beta.3 is still installed, installation under `craft-inertia`, restoration of the previous enabled state, project-config propagation, retained content and frontend files, mapped rendering with the chosen field selection, and rollback with matching backup and sources. |
 | Native routing and preview | Check home, nested and detail URLs across sites, existing native routes and explicit destinations, authorized draft/revision identity, and unauthenticated access to unpublished content. Confirm native statuses and redirects and CP/action isolation. |

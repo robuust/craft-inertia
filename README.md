@@ -102,8 +102,10 @@ The main integration points are [EntryTemplates](src/Routing/EntryTemplates.php)
 
 ## Install
 
-When Craft Inertia is available in the Plugin Store, use the
-[control panel installation guide](docs/INSTALLATION.md#install-from-the-plugin-store).
+Craft Inertia is available in the
+[Craft Plugin Store](https://plugins.craftcms.com/craft-inertia). Follow the
+[control panel installation guide](docs/INSTALLATION.md#install-from-the-plugin-store)
+to install it from your project.
 
 Install the `robuust/craft-inertia` package from
 [Packagist](https://packagist.org/packages/robuust/craft-inertia) in an existing
