@@ -1,5 +1,9 @@
 # Release Notes for Craft Inertia
 
+## 1.2.0 - 2026-11-26
+
+- Added `deferredEntryFields` to load expensive fields on native entry pages after the first render, with optional groups that load in parallel.
+
 ## 1.1.1 - 2026-11-26
 
 - Generate `RelatedEntry[]` for entry relation fields such as Reverse Entry Relations, and use `JsonValue` for fields without a known serialized type.

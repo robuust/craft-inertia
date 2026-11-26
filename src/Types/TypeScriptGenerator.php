@@ -6,6 +6,7 @@ namespace Robuust\CraftInertia\Types;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use InvalidArgumentException;
+use Robuust\CraftInertia\Content\EntryProjection;
 
 /** Builds TypeScript declarations for the native public page contract. */
 final class TypeScriptGenerator
@@ -41,6 +42,16 @@ final class TypeScriptGenerator
         ? NativeEntry<Handle, EntryFieldsByType[Handle]>
         : RelatedEntry<Handle>;
 
+    type WithDeferredFields<Fields, Handles> = Fields extends EmptyFields
+        ? Fields
+        : keyof Fields extends Handles
+            ? Partial<Fields> | EmptyFields
+            : Omit<Fields, keyof Fields & Handles> & Partial<Pick<Fields, keyof Fields & Handles>>;
+
+    type NativePageEntry<Handle extends string> = Handle extends keyof DeferredEntryFieldsByType & keyof EntryFieldsByType
+        ? NativeEntry<Handle, WithDeferredFields<EntryFieldsByType[Handle], DeferredEntryFieldsByType[Handle]>>
+        : ProjectedEntry<Handle>;
+
     export interface NativeSite {
         id: number | null;
         uid: string | null;
@@ -59,7 +70,7 @@ final class TypeScriptGenerator
     }
 
     export interface NativePageProps<Handle extends string = keyof EntryFieldsByType extends never ? string : keyof EntryFieldsByType> {
-        entry: ProjectedEntry<Handle>;
+        entry: NativePageEntry<Handle>;
         site: NativeSite;
         preview: boolean;
         head: NativeHead;
@@ -121,6 +132,7 @@ final class TypeScriptGenerator
 
         ksort($types, SORT_STRING);
         $declarations = [];
+        $deferredDeclarations = [];
         foreach ($types as $type => $layouts) {
             $variants = [];
             foreach ($layouts as $fields) {
@@ -130,11 +142,20 @@ final class TypeScriptGenerator
             sort($variants, SORT_STRING);
             $handle = json_encode($type, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
             $declarations[] = '    '.$handle.': '.implode(' | ', $variants).';';
+
+            $deferred = array_keys(EntryProjection::deferredFieldGroups($type));
+            if ($deferred !== []) {
+                sort($deferred, SORT_STRING);
+                $keys = array_map(static fn (string $field): string => json_encode($field, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES), $deferred);
+                $deferredDeclarations[] = '    '.$handle.': '.implode(' | ', $keys).';';
+            }
         }
 
         $fields = $declarations === [] ? '' : implode("\n", $declarations)."\n";
+        $deferredFields = $deferredDeclarations === [] ? '' : implode("\n", $deferredDeclarations)."\n";
 
-        return self::MARKER."\n\n".self::DECLARATIONS."\n\nexport interface EntryFieldsByType {\n".$fields."}\n";
+        return self::MARKER."\n\n".self::DECLARATIONS."\n\nexport interface EntryFieldsByType {\n".$fields."}\n"
+            ."\ninterface DeferredEntryFieldsByType {\n".$deferredFields."}\n";
     }
 
     /**

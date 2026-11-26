@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\HtmlField\HtmlFieldData;
 use DateTimeInterface;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use InvalidArgumentException;
 
 /** Native layout fields with recursive public selection, without internal element attributes. */
@@ -26,11 +27,12 @@ final class EntryProjection
     /**
      * @param Entry $entry Actual matched/authorized entry; no canonical requery is performed.
      * @param list<string>|null $fields Optional restriction on configured public field handles.
+     * @param bool $deferFields Apply deferred field configuration when rendering a native page.
      * @return array<string, mixed> Native identity and the selected field values.
      */
-    public function entry(Entry $entry, ?array $fields = null): array
+    public function entry(Entry $entry, ?array $fields = null, bool $deferFields = false): array
     {
-        return $this->project($entry, fields: $fields);
+        return $this->project($entry, fields: $fields, deferFields: $deferFields);
     }
 
     /**
@@ -39,9 +41,10 @@ final class EntryProjection
      * @param int $depth Current relation depth.
      * @param list<string>|null $fields Optional restriction on configured public field handles.
      * @param string $path Diagnostic projection path.
+     * @param bool $deferFields Apply deferred field configuration to this page entry.
      * @return array<string, mixed> Repeated/deep entries retain identity with empty fields.
      */
-    private function project(Entry $entry, array $ancestors = [], int $depth = 0, ?array $fields = null, string $path = 'entry'): array
+    private function project(Entry $entry, array $ancestors = [], int $depth = 0, ?array $fields = null, string $path = 'entry', bool $deferFields = false): array
     {
         ElementCaches::collectCacheInfoForElement($entry);
         $identity = $entry->id !== null ? "$entry->id:$entry->siteId" : 'new:'.spl_object_id($entry);
@@ -62,9 +65,13 @@ final class EntryProjection
         }
         $layout = isset($ancestors[$identity]) || $depth >= 10 ? [] : $layout;
         $ancestors[$identity] = true;
+        $deferred = $deferFields ? self::deferredFieldGroups($type) : [];
         $values = [];
         foreach ($layout as $field) {
-            $values[$field->handle] = $this->field($entry, $field, $ancestors, $depth, "$path.fields.$field->handle");
+            $resolve = fn (): mixed => $this->field($entry, $field, $ancestors, $depth, "$path.fields.$field->handle");
+            $values[$field->handle] = isset($deferred[$field->handle])
+                ? Inertia::defer($resolve, $deferred[$field->handle])
+                : $resolve();
         }
         return [
             'id' => $entry->id, 'uid' => $entry->uid, 'canonicalId' => $entry->getCanonicalId(),
@@ -195,6 +202,43 @@ final class EntryProjection
             }
         }
         return $fields;
+    }
+
+    /**
+     * @internal Shared with the native page type generator.
+     * @param string $type Effective entry-type handle.
+     * @return array<string, string> Deferred field handles mapped to their Inertia groups.
+     */
+    public static function deferredFieldGroups(string $type): array
+    {
+        $mapping = config('craft-inertia.deferredEntryFields', []);
+        if (!is_array($mapping)) {
+            throw new InvalidArgumentException('craft-inertia.deferredEntryFields must map entry-type handles to fields and named groups.');
+        }
+
+        $fields = array_key_exists($type, $mapping) ? $mapping[$type] : [];
+        if (!is_array($fields)) {
+            throw new InvalidArgumentException("craft-inertia.deferredEntryFields.$type must be an array of fields and named groups.");
+        }
+
+        $groups = [];
+        foreach ($fields as $key => $value) {
+            $group = is_int($key) ? 'default' : $key;
+            $handles = is_int($key) ? [$value] : $value;
+            if (trim($group) === '' || !is_array($handles) || !array_is_list($handles)) {
+                throw new InvalidArgumentException("craft-inertia.deferredEntryFields.$type must map each named group to a list of field handles.");
+            }
+            foreach ($handles as $handle) {
+                if (!is_string($handle) || trim($handle) === '') {
+                    throw new InvalidArgumentException("craft-inertia.deferredEntryFields.$type must contain non-empty field handles.");
+                }
+                if (isset($groups[$handle]) && $groups[$handle] !== $group) {
+                    throw new InvalidArgumentException("craft-inertia.deferredEntryFields.$type assigns field $handle to more than one group.");
+                }
+                $groups[$handle] = $group;
+            }
+        }
+        return $groups;
     }
 
     /**

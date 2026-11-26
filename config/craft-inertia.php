@@ -18,6 +18,9 @@ return [
     // Without a matching rule, entries retain their identity and have empty fields.
     'entryFields' => [],
 
+    // Entry-type handle => deferred public field handles and optional group names mapped to field lists.
+    'deferredEntryFields' => [],
+
     // Ordered named {matches: callable(FieldContext): bool, serialize: callable(FieldContext): mixed}.
     'fieldSerializers' => [],
 

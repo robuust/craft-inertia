@@ -30,6 +30,11 @@ empty lists and wildcard rules. It retains native field handles and respects
 the usage handles assigned in sections and Matrix fields. Layouts with the
 same effective type handle are represented as alternatives.
 
+Fields listed in [`deferredEntryFields`](EXTENDING.md#deferred-entry-fields)
+are optional on `NativePageProps` because they arrive after the first render.
+When all selected fields are deferred, the initial response has `fields: []`.
+`ProjectedEntry` and `RelatedEntry` keep the types for their full projections.
+
 ## Native fields and relations
 
 The declarations describe serialized values, such as nullable scalars,

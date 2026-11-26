@@ -39,7 +39,7 @@ final class NativePageProps
             }
         }
         return [
-            'entry' => app(EntryProjection::class)->entry($entry),
+            'entry' => app(EntryProjection::class)->entry($entry, deferFields: true),
             'site' => [
                 'id' => $site->id, 'uid' => $site->uid, 'handle' => $site->handle,
                 'name' => $site->name, 'language' => $site->language, 'baseUrl' => $site->getBaseUrl(),
