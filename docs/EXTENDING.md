@@ -102,6 +102,55 @@ the wildcard type map. The plugin applies these profiles to ordinary native
 Assets relations; the site chooses crops/sizes without writing a serializer.
 A definition under `imageProfiles` alone still transforms nothing.
 
+### Deferred entry fields
+
+List expensive fields by entry-type handle in `deferredEntryFields`.
+
+```php
+'entryFields' => [
+    'article' => ['summary', 'related', 'gallery', 'video'],
+],
+'deferredEntryFields' => [
+    'article' => [
+        'related',
+        'media' => ['gallery', 'video'],
+    ],
+],
+```
+
+On this native `inertia:Component` page, the example loads the article fields in
+three requests.
+
+- The initial request returns `summary`, so it is available on the first render
+  and for SSR.
+- The `default` group requests `related`. Fields listed directly under the entry
+  type share this group.
+- The `media` group requests `gallery` and `video` together in one request.
+
+Inertia starts both group requests in parallel after the first render. Each
+group can render as soon as its fields arrive. The fields still need to be public
+under `entryFields`. Assign each field to one group. Deferred fields use their
+normal queries, serializers, and image profiles when requested. A deferred
+relation or Matrix field loads its projected children with it.
+
+In Vue, import `Deferred` from `@inertiajs/vue3` and use the original prop path.
+
+```vue
+<Deferred data="entry.fields.related">
+    <template #fallback>
+        <p>Loading related entries…</p>
+    </template>
+    <ul>
+        <li v-for="item in entry.fields.related ?? []" :key="item.id">
+            {{ item.title }}
+        </li>
+    </ul>
+</Deferred>
+```
+
+To render the gallery and video together when both are ready, pass
+`:data="['entry.fields.gallery', 'entry.fields.video']"` to `Deferred`.
+
 ## Migrating an explicit consumer
 
 Make the native plugin contract the starting point: `entry/site/preview/head`,
