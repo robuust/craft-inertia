@@ -153,7 +153,7 @@ final class TypeScriptGenerator
         $members = [];
         foreach ($fields as $handle => $field) {
             $key = json_encode($handle, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
-            $type = $metadata[$handle] ?? ($usesSerializers ? 'unknown' : $this->fieldType->nativeType($field));
+            $type = $metadata[$handle] ?? ($usesSerializers ? 'JsonValue' : $this->fieldType->nativeType($field));
             $members[] = '        '.$key.': '.$type.';';
         }
 
