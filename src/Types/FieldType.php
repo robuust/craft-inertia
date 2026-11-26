@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Robuust\CraftInertia\Types;
 
 use CraftCms\Ckeditor\Field as CkeditorField;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\TableCells;
@@ -36,11 +37,12 @@ final class FieldType
             Field\Checkboxes::class, Field\MultiSelect::class => 'NativeOption[]',
             Field\Link::class => 'NativeLink | null',
             Field\Assets::class => 'NativeAsset[]',
-            Field\Entries::class => 'RelatedEntry[]',
             Field\Users::class => 'Array<number | null>',
             Field\Matrix::class => $this->matrixType($field),
             Field\Table::class => $this->tableType($field),
-            default => 'unknown',
+            default => $field instanceof Field\Entries && is_a($field::elementType(), Entry::class, true)
+                ? 'RelatedEntry[]'
+                : 'JsonValue',
         };
     }
 

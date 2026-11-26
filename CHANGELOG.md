@@ -1,5 +1,9 @@
 # Release Notes for Craft Inertia
 
+## 1.1.1 - 2026-11-26
+
+- Generate `RelatedEntry[]` for entry relation fields such as Reverse Entry Relations, and use `JsonValue` for fields without a known serialized type.
+
 ## 1.1.0 - 2026-11-18
 
 - Added `craft-inertia:types` to generate TypeScript page props from the applied Craft schema and check declarations for drift.

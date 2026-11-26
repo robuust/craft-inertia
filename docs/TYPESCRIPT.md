@@ -1,9 +1,9 @@
 # Generate TypeScript page props
 
-Use a [pinned candidate](INSTALLATION.md#try-a-pinned-candidate) to try the
-unreleased `craft-inertia:types` command. With the plugin installed and enabled,
-apply the project's Craft configuration before generating so the command sees
-the entry types and field layouts the site uses.
+The `craft-inertia:types` command is available from Craft Inertia 1.1.0. With
+the plugin installed and enabled, apply the project's Craft configuration
+before generating so the command sees the entry types and field layouts the
+site uses.
 
 ```sh
 php artisan craft-inertia:types --no-interaction
@@ -33,15 +33,17 @@ same effective type handle are represented as alternatives.
 ## Native fields and relations
 
 The declarations describe serialized values, such as nullable scalars,
-date strings, native Link objects, Asset lists and Table rows. Table keys
-follow Craft's native column IDs. Unsupported field or cell types are
-`unknown`.
+date strings, native Link objects, Asset lists and Table rows. Fields with an
+unrecognized JSON shape use `JsonValue`. Table keys follow Craft's native
+column IDs. Unrecognized Table cell types use `unknown`.
 
-Related entries and Matrix children can return `fields: []` when projection
-reaches its recursion limit or encounters an ancestor again. For a known
-related type, `RelatedEntry<'article'>` includes that entry's selected fields
-and the empty projection. Matrix declarations include the configured child
-types and a broad entry for historical or dynamically provided children.
+Entries fields and their subclasses that relate to entries, such as Reverse
+Entry Relations, use `RelatedEntry[]`. Related entries and Matrix children
+can return `fields: []` when projection reaches its recursion limit or
+encounters an ancestor again. For a known related type, `RelatedEntry<'article'>`
+includes that entry's selected fields and the empty projection. Matrix
+declarations include the configured child types and a broad entry for
+historical or dynamically provided children.
 Validate the actual shape when narrowing arbitrary relation values. A type
 handle alone can correspond to several layouts.
 
@@ -66,9 +68,14 @@ rest of its declarations.
 
 The generator leaves runtime serializers unevaluated. Their matching callbacks
 can depend on the request, field value, or relation path. With field serializers
-configured, any field without explicit metadata is `unknown`, including
+configured, any field without explicit metadata uses `JsonValue`, including
 otherwise known core fields. Metadata affects declarations for selected fields
 only. Review it alongside the field serializer whenever the output changes.
+
+To add built-in typing for a plugin field, add an exact field-class mapping in
+[`FieldType::nativeType()`](../src/Types/FieldType.php) for its public serialized
+value. The CKEditor mapping is an example. The generator applies a mapping when
+the project has that field in a selected layout.
 
 ## Check for drift
 
